@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "Réagis",
+    "slug": "reagis",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#0A0A0A"
+    },
+    "ios": {
+      "supportsTablet": false
+    },
+    "android": {
+      "package": "com.reagis.app"
+    }
+  }
+}

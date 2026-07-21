@@ -1,0 +1,36 @@
+Liste,Nom de la carte,Description,Étiquettes
+📋 Backlog,Idée : compte participant (évolution future),Non prioritaire pour le MVP. Le schema Vote est déjà prêt (user OU participantToken).,🟢 Facile
+📋 Backlog,Idée : export des résultats (CSV),Bonus si le temps le permet.,🟢 Facile
+📋 Backlog,"Idée : autres types de questions (QCM, nuage de mots)",Hors scope MVP — un seul type : sondage à choix unique.,🟡 Moyen
+🎯 S1 · 10-14/08 · Fondations,Setup repo (Node/Express + React + Mongo local),"Structure de dossiers, .env, connexion Mongo, script de démarrage.",🟢 Facile | Moi
+🎯 S1 · 10-14/08 · Fondations,"Créer les schemas Mongoose (User, Session, Question, Vote)","Index unique sur Vote, options embarquées dans Question.",🟢 Facile | Moi
+🎯 S1 · 10-14/08 · Fondations,Auth du présentateur (signup/login/JWT),"Hash bcrypt, génération JWT, middleware de vérification.",🟡 Moyen | Binôme
+🎯 S1 · 10-14/08 · Fondations,Setup Redux store (slices vides),"session, question, votes, ui — structure seulement.",🟢 Facile | Moi
+🎯 S1 · 10-14/08 · Fondations,Wireframes → composants React statiques,Convertir les wireframes en composants sans logique.,🟢 Facile | Binôme
+🎯 S1 · 10-14/08 · Fondations,Setup React Native (navigation de base),"Un seul écran, structure de navigation à venir.",🟢 Facile | Moi
+🎯 S2 · 17-21/08 · Core,"CRUD Session (créer, lister, détail)","Routes REST + contrôleurs, sans temps réel.",🟡 Moyen | Binôme
+🎯 S2 · 17-21/08 · Core,CRUD Question (liée à une session),Ajout/suppression/réordonnancement des questions.,🟡 Moyen | Binôme
+🎯 S2 · 17-21/08 · Core,Écran 'Créer une session' fonctionnel,Connecter le formulaire aux routes CRUD.,🟢 Facile | Binôme
+🎯 S2 · 17-21/08 · Core,Écran 'Mes sessions' avec données réelles,"Table connectée à l'API, statut affiché.",🟢 Facile | Binôme
+🎯 S2 · 17-21/08 · Core,Rejoindre une session (code + token participant),"Validation du code, génération du token anonyme.",🟡 Moyen | Moi
+🎯 S2 · 17-21/08 · Core,Écran 'Rejoindre' mobile fonctionnel,Connecter le champ de code à l'API de join.,🟢 Facile | Binôme
+🎯 S2 · 17-21/08 · Core,Endpoint de vote + index unique Mongo,Empêche le double vote au niveau base de données.,🟡 Moyen | Moi
+🎯 S3 · 24-28/08 · Temps réel P1,Setup Socket.io côté serveur (rooms par session),Un client rejoint la room de sa session au connect.,🔴 Complexe | Moi
+🎯 S3 · 24-28/08 · Temps réel P1,Connecter le client web au WS + middleware Redux,Les événements WS déclenchent des actions Redux.,🔴 Complexe | Moi
+🎯 S3 · 24-28/08 · Temps réel P1,Connecter le client mobile au WS,"Même logique que web, adaptée à React Native.",🟡 Moyen | Moi + Binôme observe
+🎯 S3 · 24-28/08 · Temps réel P1,Dashboard présentateur : graphique en direct,Barres qui se mettent à jour à chaque vote reçu.,🟡 Moyen | Binôme (aide WS)
+🎯 S3 · 24-28/08 · Temps réel P1,Écran résultat participant en direct,Même principe côté mobile.,🟡 Moyen | Binôme
+🎯 S4 · 31/08-04/09 · Temps réel P2,Fonctionnalité réaction (config + compteur + broadcast),"Présentateur choisit l'emoji, compteur agrégé toutes les 500ms.",🟡 Moyen | Moi
+🎯 S4 · 31/08-04/09 · Temps réel P2,Gestion de la reconnexion WebSocket,Re-sync de l'état si la connexion tombe (mobile surtout).,🔴 Complexe | Moi
+🎯 S4 · 31/08-04/09 · Temps réel P2,Machine à états de la session (draft/active/finished),Contrôles pause / question suivante / terminer.,🟡 Moyen | Binôme
+🎯 S4 · 31/08-04/09 · Temps réel P2,QR code fonctionnel,"Génération + lecture, redirige vers le join pré-rempli.",🟢 Facile | Binôme
+🎯 S4 · 31/08-04/09 · Temps réel P2,Buffer technique (rattrapage si S3 a débordé),Ne pas assigner de tâche précise — marge de sécurité.,🔴 Complexe | Ensemble
+🎯 S5 · 07-11/09 · Tests + UI,Appliquer le UI Kit sur tous les écrans,"Cohérence des couleurs, typographie, composants partout.",🟢 Facile | Binôme
+🎯 S5 · 07-11/09 · Tests + UI,Test de charge simulée (plusieurs clients votant),Script ou plusieurs onglets/devices votant en même temps.,🟡 Moyen | Moi
+🎯 S5 · 07-11/09 · Tests + UI,Corriger les bugs remontés par les tests,Prioriser : perte de vote > double vote > affichage.,🟡 Moyen | Ensemble
+🎯 S5 · 07-11/09 · Tests + UI,Responsive : vérifier mobile / desktop / projection,Reprendre les breakpoints définis dans le UI Kit.,🟢 Facile | Binôme
+🎯 S5 · 07-11/09 · Tests + UI,Préparer les données de démo pour le jury,"Session prête à l'emploi, questions pertinentes.",🟢 Facile | Ensemble
+🎯 S6 · 14-19/09 · Répétition & buffer,Répéter le speech (FR) + déroulé de la démo live,"Chronométrer, anticiper les questions du jury.",🟢 Facile | Ensemble
+🎯 S6 · 14-19/09 · Répétition & buffer,Répétition générale avec QR code + jury fictif,Simuler la salle : plusieurs téléphones qui votent.,🟢 Facile | Ensemble
+🎯 S6 · 14-19/09 · Répétition & buffer,Finaliser les slides / support de présentation,"Diagramme d'architecture, UI Kit, schémas Mongo.",🟢 Facile | Ensemble
+🎯 S6 · 14-19/09 · Répétition & buffer,Buffer final (imprévus de dernière minute),Ne rien planifier ici — marge de sécurité avant la soutenance.,🔴 Complexe | Ensemble
