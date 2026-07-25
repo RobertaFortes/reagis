@@ -1,0 +1,11 @@
+{
+  "name": "reagis",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Réagis — monorepo (back / web / shared). Le mobile (Expo) reste isolé.",
+  "workspaces": [
+    "apps/back",
+    "apps/web",
+    "packages/shared"
+  ]
+}
