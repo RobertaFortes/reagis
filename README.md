@@ -7,19 +7,29 @@ Plateforme de réactions collectives en temps réel — projet de fin de cours, 
 ```
 reagis/
 ├── apps/
-│   ├── back/       Node + Express + Mongoose + Socket.io
-│   ├── web/        React + Redux (présentateur)
-│   └── mobile/     React Native (participant)
+│   ├── back/       Node + Express + Mongoose + Socket.io  (workspace)
+│   ├── web/        React + Redux (présentateur)           (workspace)
+│   └── mobile/     React Native (participant)             — hors workspace
 ├── packages/
-│   └── shared/     Types et constantes partagés (événements WS, statuts...)
+│   └── shared/     Types et constantes partagés (événements WS, statuts...) (workspace)
 └── docs/           Wireframes, UI Kit, schémas Mongo, notes d'architecture
 ```
 
+Le monorepo utilise les **npm workspaces** pour `apps/back`, `apps/web` et
+`packages/shared` : le back et le web importent `@reagis/shared` (source unique de
+vérité pour les noms d'événements WebSocket et les statuts).
+
+Le **mobile (Expo) reste volontairement hors du workspace** : la résolution d'un
+package partagé via Metro est fragile. Il recopie donc les constantes localement
+dans `apps/mobile/src/constants/` (à garder synchronisées avec `packages/shared/`).
+
 ## Stack
 
-- **Backend** : Node.js, Express, MongoDB (Mongoose), Socket.io
-- **Web** : React, Redux
-- **Mobile** : React Native (Expo)
+- **Langage** : TypeScript sur tout le monorepo (mode graduel/leniente — `strict: false`,
+  pour permettre d'écrire du TS sans bloquer sur les types dès le départ)
+- **Backend** : Node.js, Express, MongoDB (Mongoose), Socket.io — exécuté avec `tsx`
+- **Web** : React, Redux (Redux Toolkit), build Vite
+- **Mobile** : React Native (Expo, preset TypeScript)
 - **Base de données** : MongoDB Atlas
 
 ## Prérequis
@@ -48,25 +58,31 @@ reagis/
 
 ## Setup rapide
 
-Chaque app a son propre `package.json` et se lance indépendamment.
+Le back et le web sont gérés par les **workspaces npm** : un seul `npm install` à la
+**racine** installe leurs dépendances (et lie `@reagis/shared`). Le **mobile** reste
+indépendant et garde son propre `npm install`.
 
 ```bash
+# À la racine — installe back + web + shared (workspaces)
+npm install
+
 # Backend
 cd apps/back
 cp .env.example .env   # remplir les variables
-npm install
-npm run dev
+npm run dev            # tsx watch src/server.ts
 
 # Web
 cd apps/web
-npm install
-npm run dev
+npm run dev            # vite
 
-# Mobile
+# Mobile (hors workspace — install isolé)
 cd apps/mobile
 npm install
-npm start
+npm start              # expo start
 ```
+
+> Ne pas lancer `npm install` dans `apps/back` ou `apps/web` : leurs dépendances sont
+> hissées à la racine par les workspaces. L'install se fait à la racine.
 
 ## Variables d'environnement
 
