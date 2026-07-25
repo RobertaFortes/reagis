@@ -1,0 +1,14 @@
+# Normalise les fins de ligne : LF dans le repo, quel que soit l'OS.
+# Évite que Mac (LF) et Windows (CRLF) se marchent dessus dans les diffs.
+* text=auto eol=lf
+
+# Fichiers binaires — ne jamais toucher aux fins de ligne.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.jks binary
+*.p8 binary
+*.p12 binary
+*.keystore binary

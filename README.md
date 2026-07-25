@@ -25,17 +25,26 @@ reagis/
 ## Prérequis
 
 - **Node.js 22** (version utilisée par l'équipe : 22.18.0). Vérifier avec `node -v`.
-- **Watchman** — obligatoire pour le mobile sur macOS :
+- **Watchman** — **macOS uniquement**, obligatoire pour le mobile :
   ```bash
   brew install watchman
   ```
   Sans lui, Metro plante avec `EMFILE: too many open files`.
+  Sur **Windows**, Watchman n'est pas nécessaire (Metro fonctionne sans).
 - **Expo Go** sur le téléphone (App Store / Play Store). Le projet est sur le **SDK 54**,
   qui correspond à la version actuelle d'Expo Go.
 - Le téléphone et l'ordinateur doivent être sur **le même réseau WiFi**.
 
-> ⚠️ Ne jamais lancer `npm install` avec `sudo`. Cela crée des fichiers appartenant à
-> `root` dans le cache npm et casse toutes les installations suivantes.
+> ⚠️ macOS : ne jamais lancer `npm install` avec `sudo`. Cela crée des fichiers appartenant
+> à `root` dans le cache npm et casse toutes les installations suivantes.
+
+### Notes Windows
+
+- Lancer les commandes dans **PowerShell** ou **Git Bash** (pas cmd.exe).
+- Si Metro ne se connecte pas au téléphone, c'est souvent le **pare-feu Windows** qui
+  bloque le port 8081 : autoriser Node.js quand la fenêtre le demande, ou ouvrir le port.
+- Les fins de ligne : le repo laisse Git gérer (`git config core.autocrlf true` côté Windows)
+  pour éviter que chaque `git status` montre tous les fichiers comme modifiés.
 
 ## Setup rapide
 
