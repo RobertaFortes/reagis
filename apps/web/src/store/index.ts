@@ -12,3 +12,7 @@ export const store = configureStore({
     // votes: votesReducer,
   },
 });
+
+// Types inférés du store — base pour les hooks typés des futurs slices.
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;

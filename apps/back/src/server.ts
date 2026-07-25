@@ -1,9 +1,9 @@
-require('dotenv').config();
-const http = require('http');
-const express = require('express');
-const cors = require('cors');
-const mongoose = require('mongoose');
-const { Server } = require('socket.io');
+import 'dotenv/config';
+import http from 'http';
+import express from 'express';
+import cors from 'cors';
+import mongoose from 'mongoose';
+import { Server } from 'socket.io';
 
 const app = express();
 const server = http.createServer(app);
@@ -29,7 +29,7 @@ app.get('/health', (req, res) => res.json({ status: 'ok' }));
 const PORT = process.env.PORT || 4000;
 
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(process.env.MONGO_URI as string)
   .then(() => {
     console.log('MongoDB connecté');
     server.listen(PORT, () => console.log(`Serveur lancé sur le port ${PORT}`));

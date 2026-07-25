@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const voteSchema = new mongoose.Schema(
   {
@@ -41,4 +41,4 @@ voteSchema.index(
   { unique: true, partialFilterExpression: { user: { $exists: true } } }
 );
 
-module.exports = mongoose.model('Vote', voteSchema);
+export default mongoose.model('Vote', voteSchema);

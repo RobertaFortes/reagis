@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const optionSchema = new mongoose.Schema({
   label: { type: String, required: true, trim: true },
@@ -33,4 +33,4 @@ const questionSchema = new mongoose.Schema(
 
 questionSchema.index({ session: 1, order: 1 });
 
-module.exports = mongoose.model('Question', questionSchema);
+export default mongoose.model('Question', questionSchema);
