@@ -1,11 +1,16 @@
 {
+  // Config racine : c'est celle que le TS server de l'IDE trouve en premier
+  // pour n'importe quel fichier de apps/back. Elle doit donc couvrir aussi
+  // scripts/, sinon ces fichiers tombent en mode inféré (sans @types/node,
+  // d'où « Cannot find name 'process' » dans l'éditeur uniquement).
+  // La compilation réelle passe par tsconfig.build.json (npm run build).
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "module": "CommonJS",
-    "moduleResolution": "Node",
-    "outDir": "dist",
-    "rootDir": "src"
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "types": ["node"],
+    "noEmit": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "scripts/**/*"],
   "exclude": ["node_modules", "dist"]
 }

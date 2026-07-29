@@ -4,7 +4,7 @@ import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import { Server } from 'socket.io';
-import { WsEvents } from '@reagis/shared';
+import { registerSocketHandlers } from './sockets';
 
 const app = express();
 const server = http.createServer(app);
@@ -24,14 +24,10 @@ app.use(express.json());
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
-// Sockets — logique complète à activer en semaine 3.
-// Les noms d'événements viennent de @reagis/shared (source unique de vérité,
-// partagée avec le web ; le mobile duplique ces mêmes constantes localement).
-io.on('connection', (socket) => {
-  socket.on(WsEvents.JOIN_SESSION, () => {
-    // TODO(semaine 3) : rejoindre la room de la session
-  });
-});
+// Sockets — une session = une room. Les noms d'événements viennent de
+// @reagis/shared (source unique de vérité, partagée avec le web ; le mobile
+// duplique ces mêmes constantes localement).
+registerSocketHandlers(io);
 
 const PORT = process.env.PORT || 4000;
 
