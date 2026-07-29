@@ -1,0 +1,17 @@
+{
+  // Compilation de production : uniquement src/, avec rootDir=src pour que la
+  // sortie soit dist/server.js (et non dist/src/server.js, que `npm start`
+  // ne trouverait pas). Les scripts de dev tournent via tsx, jamais compilés.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // Voir tsconfig.json : Node16 remplace CommonJS/"Node" (déprécié en TS 7)
+    // et produit la même sortie CommonJS.
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "types": ["node"],
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
