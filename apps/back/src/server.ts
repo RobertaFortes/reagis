@@ -5,6 +5,7 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 import { Server } from 'socket.io';
 import { registerSocketHandlers } from './sockets';
+import authRoutes from './routes/auth.routes';
 
 const app = express();
 const server = http.createServer(app);
@@ -15,9 +16,13 @@ const io = new Server(server, {
 
 app.use(cors({ origin: process.env.CLIENT_URL || '*' }));
 app.use(express.json());
+app.use('/api/auth', authRoutes);
+app.use(cors({ origin: process.env.CLIENT_URL || '*' }));
+app.use(express.json());
+app.use('/api/auth', authRoutes);
+app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 // Routes (à décommenter au fur et à mesure)
-// app.use('/api/auth', require('./routes/auth.routes'));
 // app.use('/api/sessions', require('./routes/session.routes'));
 // app.use('/api/questions', require('./routes/question.routes'));
 // app.use('/api/votes', require('./routes/vote.routes'));
