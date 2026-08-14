@@ -1,3 +1,5 @@
+import Sidebar from "../components/Sidebar";
+
 const CreateSessionPage = () => {
   return (
     <div className="app-layout">
