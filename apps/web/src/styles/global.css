@@ -1,0 +1,41 @@
+:root {
+  --surface-0: #0A0A0A;
+  --surface-1: #1A1A1A;
+  --surface-2: #262626;
+  --outline: #404040;
+
+  --primary: #D85A30;
+  --primary-hover: #C04E27;
+  --on-primary: #FFFFFF;
+
+  --text-high: #E5E2E1;
+  --text-mid: #8A8A8A;
+  --text-low: #555555;
+
+  --success: #4CAF7D;
+
+  --font-display: 'Sora', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  --sp-xs: 8px;
+  --sp-sm: 16px;
+  --sp-md: 24px;
+  --sp-lg: 40px;
+
+  --r-sm: 4px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --r-full: 9999px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--surface-0);
+  color: var(--text-high);
+}
