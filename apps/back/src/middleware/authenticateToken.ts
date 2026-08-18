@@ -1,10 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import type { JwtPayload } from "../types/auth";
 
-interface JwtPayload {
-  userId: string;
-  role: string;
-}
 
 export const authenticateToken = (
   req: Request,
@@ -46,3 +43,4 @@ export const authenticateToken = (
 
  
 };
+

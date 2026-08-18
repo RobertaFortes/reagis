@@ -23,7 +23,7 @@ app.use('/api/auth', authRoutes);
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 // Routes (à décommenter au fur et à mesure)
-// app.use('/api/sessions', require('./routes/session.routes'));
+app.use('/api/sessions', require('./routes/sessionRoutes'));
 // app.use('/api/questions', require('./routes/question.routes'));
 // app.use('/api/votes', require('./routes/vote.routes'));
 
