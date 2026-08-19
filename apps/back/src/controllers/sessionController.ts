@@ -1,6 +1,7 @@
 import Session from '../models/Session.js';
 import { Request, Response } from 'express';
 import { JwtPayload } from "../types/auth";
+import mongoose from "mongoose";
 
 interface CreateSessionBody {
   name: string;

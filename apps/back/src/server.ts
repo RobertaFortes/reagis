@@ -6,6 +6,7 @@ import mongoose from 'mongoose';
 import { Server } from 'socket.io';
 import { registerSocketHandlers } from './sockets';
 import authRoutes from './routes/auth.routes';
+import sessionRoutes from './routes/sessionRoutes';
 
 const app = express();
 const server = http.createServer(app);
@@ -17,17 +18,15 @@ const io = new Server(server, {
 app.use(cors({ origin: process.env.CLIENT_URL || '*' }));
 app.use(express.json());
 app.use('/api/auth', authRoutes);
-app.use(cors({ origin: process.env.CLIENT_URL || '*' }));
-app.use(express.json());
-app.use('/api/auth', authRoutes);
+
+
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 // Routes (à décommenter au fur et à mesure)
-app.use('/api/sessions', require('./routes/sessionRoutes'));
+app.use('/api/sessions', sessionRoutes);
+
 // app.use('/api/questions', require('./routes/question.routes'));
 // app.use('/api/votes', require('./routes/vote.routes'));
-
-app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 // Sockets — une session = une room. Les noms d'événements viennent de
 // @reagis/shared (source unique de vérité, partagée avec le web ; le mobile

@@ -1,4 +1,5 @@
 import express from 'express';
+import { authenticateToken } from '../middleware/authenticateToken';
 
 import {
   createSession,
@@ -9,7 +10,8 @@ import {
 const router = express.Router();
 
 router.post('/', createSession);
-router.get('/', getSessionById);
-router.get('/:id', getSessionByIdUser);
+router.get('/my-sessions', authenticateToken, getSessionByIdUser); //Attention à l'ordre
+router.get('/:id', getSessionById);
+
 
 export default router;
