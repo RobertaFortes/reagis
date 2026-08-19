@@ -7,6 +7,7 @@ import { Server } from 'socket.io';
 import { registerSocketHandlers } from './sockets';
 import authRoutes from './routes/auth.routes';
 import sessionRoutes from './routes/sessionRoutes';
+import questionRoutes from './routes/questionRoutes';
 
 const app = express();
 const server = http.createServer(app);
@@ -24,8 +25,9 @@ app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 // Routes (à décommenter au fur et à mesure)
 app.use('/api/sessions', sessionRoutes);
+app.use('/api/questions', questionRoutes);
 
-// app.use('/api/questions', require('./routes/question.routes'));
+
 // app.use('/api/votes', require('./routes/vote.routes'));
 
 // Sockets — une session = une room. Les noms d'événements viennent de
