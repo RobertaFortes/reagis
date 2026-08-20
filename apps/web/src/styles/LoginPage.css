@@ -1,0 +1,180 @@
+/* ══════════ Tokens Réagis (ui-kit.html) ══════════
+   Si ces variables sont déjà définies globalement dans votre app
+   (ex: index.css), supprimez ce bloc :root pour éviter la duplication. */
+:root {
+  --surface-0: #0A0A0A;
+  --surface-1: #1A1A1A;
+  --surface-2: #262626;
+  --outline: #404040;
+  --primary: #D85A30;
+  --primary-hover: #C04E27;
+  --on-primary: #FFFFFF;
+  --text-high: #E5E2E1;
+  --text-mid: #8A8A8A;
+  --text-low: #555555;
+
+  --font-display: 'Sora', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  --sp-xs: 8px;
+  --sp-sm: 16px;
+  --sp-md: 24px;
+  --sp-lg: 40px;
+
+  --r-sm: 4px;
+  --r-md: 8px;
+  --r-lg: 12px;
+  --r-full: 9999px;
+}
+
+/* ══════════ Page ══════════ */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-xs);
+  padding: var(--sp-md);
+  background: var(--surface-0);
+  font-family: var(--font-body);
+  color: var(--text-high);
+}
+
+.login-page .logo-dot {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--on-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 20px;
+  margin-bottom: var(--sp-xs);
+}
+
+.login-page h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 28px;
+  margin: 0;
+}
+
+.login-page .login-subtitle {
+  color: var(--text-mid);
+  font-size: 14px;
+  margin: 0 0 var(--sp-md);
+}
+
+/* ══════════ Carte ══════════ */
+.login-card {
+  width: 100%;
+  max-width: 405px;
+  background: var(--surface-1);
+  border: 1px solid var(--outline);
+  border-radius: var(--r-lg);
+  padding: var(--sp-md);
+}
+
+.login-card form {
+  display: flex;
+  flex-direction: column;
+  
+  justify-content: center;
+}
+
+.login-card label {
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  color: var(--text-mid);
+  text-transform: uppercase;
+  margin-bottom: var(--sp-xs);
+}
+
+.login-card label:not(:first-child) {
+  margin-top: var(--sp-sm);
+}
+
+.login-card .ipt {
+  background: var(--surface-2);
+  border: 1px solid var(--outline);
+  border-radius: var(--r-md);
+  padding: 12px 14px;
+  color: var(--text-high);
+  font-size: 14px;
+  font-family: var(--font-body);
+  width: 90%;
+}
+
+.login-card .ipt::placeholder {
+  color: var(--text-low);
+}
+
+.login-card .ipt:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.login-card .btn-primary {
+  font-family: var(--font-body);
+  background: var(--primary);
+  color: var(--on-primary);
+  border: none;
+  padding: 12px 24px;
+  border-radius: var(--r-md);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: var(--sp-md);
+  transition: background 0.15s ease;
+}
+
+.login-card .btn-primary:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.login-card .btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.login-card .btn-primary:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.login-error {
+  font-size: 12.5px;
+  color: var(--primary);
+  margin: var(--sp-sm) 0 0;
+}
+
+.login-signup {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-mid);
+  margin: var(--sp-md) 0 0;
+}
+
+.login-signup span {
+  color: var(--primary);
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.login-signup span:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
+
+/* ══════════ Mobile ≤480px ══════════ */
+@media (max-width: 480px) {
+  .login-card {
+    max-width: 100%;
+  }
+}

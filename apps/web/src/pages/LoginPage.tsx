@@ -1,33 +1,169 @@
-const LoginPage = () => {
+import { FormEvent, useState } from "react";
+import "../styles/LoginPage.css";
+import { login, signup, AuthError, AuthUser } from "../api/authApi";
+import { useNavigate } from "react-router-dom";
+
+interface LoginPageProps {
+  // Appelé après une connexion réussie (token + infos user déjà stockés).
+  // Par défaut, redirige simplement vers /dashboard.
+  onLoginSuccess?: (user: AuthUser) => void;
+}
+
+const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
+  const navigate = useNavigate();
+  const [isSignup, setIsSignup] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSwitchMode = () => {
+  setIsSignup((current) => !current);
+  setError(null);
+  };
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError(null);
+    
+    // Validation
+    if (isSignup && !name) {
+      setError("Merci de renseigner votre nom.");
+      return;
+    }
+    
+    if (!email || !password) {
+      setError("Merci de renseigner votre email et votre mot de passe.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      if (isSignup) {
+        // =========================
+        // CREATION DE COMPTE
+        // =========================
+        await signup(email, password, name);
+
+        // Le signup ne renvoie pas de token.
+        // On revient donc au formulaire de connexion.
+        setIsSignup(false);
+        setName("");
+        setPassword("");
+        setError(null);
+
+      } else {
+        // =========================
+        // CONNEXION
+        // =========================
+        const { token, user } = await login(email, password);
+
+        // TODO: si vous stockez le token ailleurs (cookie httpOnly via le
+        // backend, contexte React, store global...), remplacez ces 2 lignes.
+        localStorage.setItem("reagis_token", token);
+        localStorage.setItem("reagis_user", JSON.stringify(user));
+
+        if (onLoginSuccess) {
+          onLoginSuccess(user);
+        } else {
+          navigate("/home");
+        }}
+    } catch (err) {
+      setError(
+        err instanceof AuthError
+          ? err.message
+          : isSignup
+          ? "Création du compte impossible. Réessayez dans un instant."
+          : "Connexion impossible. Réessayez dans un instant."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <main className="login-page">
       <div className="logo-dot">R</div>
 
       <h1>Réagis</h1>
 
-      <p>Application présentateur</p>
+      <p className="login-subtitle">Application présentateur</p>
 
       <section className="login-card">
-        <label>Email</label>
+        <form onSubmit={handleSubmit} noValidate>
+          {/* NOM - uniquement en mode inscription */}
+          {isSignup && (
+            <>
+              <label htmlFor="name">Nom</label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                className="ipt"
+                placeholder="Votre nom"
+                autoComplete="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </>
+          )}
+          <label htmlFor="email">Email</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            className="ipt"
+            placeholder="nom@exemple.com"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-        <input
-          type="email"
-          placeholder="nom@exemple.com"
-        />
+          <label htmlFor="password">Mot de passe</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            className="ipt"
+            placeholder="••••••••"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
-        <label>Mot de passe</label>
+          {error && (
+            <p className="login-error" role="alert">
+              {error}
+            </p>
+          )}
 
-        <input
-          type="password"
-          placeholder="••••••••"
-        />
+          <button type="submit" className="btn-primary" disabled={isSubmitting}>
+            {isSubmitting
+              ? isSignup
+                ? "CRÉATION…"
+                : "CONNEXION…"
+              : isSignup
+              ? "CRÉER UN COMPTE"
+              : "SE CONNECTER"}
+          </button>
+        </form>
 
-        <button className="btn-primary">
-          SE CONNECTER
-        </button>
+       <p className="login-signup">
+          {isSignup ? "Déjà un compte ? " : "Nouveau ? "}
 
-        <p>
-          Nouveau ? <span>Créer un compte</span>
+          <span
+            role="button"
+            tabIndex={0}
+            onClick={handleSwitchMode}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                handleSwitchMode();
+              }
+            }}
+          >
+            {isSignup ? "Se connecter" : "Créer un compte"}
+          </span>
         </p>
       </section>
     </main>
