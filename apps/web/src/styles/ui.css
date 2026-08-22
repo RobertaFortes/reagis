@@ -1,0 +1,360 @@
+/* ========================================
+   PRIMITIVES UI — RÉAGIS
+   Classes partagées par toutes les pages.
+   Même vocabulaire visuel que .login-card (surface-1 + outline + r-lg).
+   ======================================== */
+
+/* ========================================
+   TYPOGRAPHIE
+   ======================================== */
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  color: var(--text-high);
+}
+
+h1 { font-size: 28px; font-weight: 700; }
+h2 { font-size: 20px; font-weight: 700; }
+h3 { font-size: 16px; font-weight: 600; }
+
+/* ========================================
+   PANNEAU — surface de base
+   ======================================== */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-sm);
+
+  background: var(--surface-1);
+  border: 1px solid var(--outline);
+  border-radius: var(--r-lg);
+
+  padding: var(--sp-md);
+}
+
+.panel label {
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  color: var(--text-mid);
+  text-transform: uppercase;
+}
+
+/* ========================================
+   CHAMP DE SAISIE
+   ======================================== */
+
+.input {
+  width: 100%;
+
+  background: var(--surface-2);
+  border: 1px solid var(--outline);
+  border-radius: var(--r-md);
+
+  padding: 12px 14px;
+
+  color: var(--text-high);
+  font-family: var(--font-body);
+  font-size: 14px;
+}
+
+.input::placeholder {
+  color: var(--text-low);
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+/* ========================================
+   BOUTONS
+   ======================================== */
+
+.btn-primary,
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-xs);
+
+  padding: 12px 24px;
+  border-radius: var(--r-md);
+
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+
+  cursor: pointer;
+  white-space: nowrap;
+
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.btn-primary {
+  background: var(--primary);
+  border: 1px solid var(--primary);
+  color: var(--on-primary);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--outline);
+  color: var(--text-high);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ========================================
+   BADGES
+   ======================================== */
+
+.badge-live,
+.badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 4px 12px;
+  border-radius: var(--r-full);
+
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+.badge-live {
+  background: #D85A3014;
+  border: 1px solid #D85A3044;
+  color: var(--primary);
+}
+
+.badge-status {
+  background: var(--surface-2);
+  border: 1px solid var(--outline);
+  color: var(--text-mid);
+}
+
+/* ========================================
+   LIEN DE RETOUR
+   ======================================== */
+
+.back-link {
+  display: inline-block;
+  margin-bottom: var(--sp-sm);
+
+  color: var(--text-mid);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.back-link:hover {
+  color: var(--primary);
+}
+
+/* ========================================
+   KPI
+   ======================================== */
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--sp-md);
+  margin-bottom: var(--sp-lg);
+}
+
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  background: var(--surface-1);
+  border: 1px solid var(--outline);
+  border-radius: var(--r-lg);
+
+  padding: var(--sp-md);
+}
+
+.kpi strong {
+  font-family: var(--font-display);
+  font-size: 28px;
+  color: var(--text-high);
+}
+
+.kpi span {
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: var(--text-mid);
+  text-transform: uppercase;
+}
+
+/* ========================================
+   CRÉATION RAPIDE (accueil)
+   ======================================== */
+
+.quick-create {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-md);
+
+  background: var(--surface-1);
+  border: 1px solid var(--outline);
+  border-radius: var(--r-lg);
+
+  padding: var(--sp-md);
+  margin: var(--sp-md) 0 var(--sp-lg);
+}
+
+.quick-create p {
+  margin-top: 4px;
+  color: var(--text-mid);
+  font-size: 14px;
+}
+
+/* ========================================
+   GRILLES DE SESSIONS
+   ======================================== */
+
+.sessions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--sp-md);
+  margin-top: var(--sp-md);
+}
+
+.session-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-sm);
+
+  background: var(--surface-1);
+  border: 1px solid var(--outline);
+  border-radius: var(--r-lg);
+
+  padding: var(--sp-md);
+
+  transition: border-color 0.15s ease;
+}
+
+.session-card:hover {
+  border-color: var(--primary);
+}
+
+/* ========================================
+   GRILLES À DEUX COLONNES
+   ======================================== */
+
+.create-grid,
+.detail-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--sp-md);
+  align-items: start;
+}
+
+/* ========================================
+   PANNEAU QR
+   ======================================== */
+
+.qr-panel {
+  align-items: center;
+  text-align: center;
+}
+
+.qr-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  aspect-ratio: 1;
+
+  background: var(--surface-2);
+  border: 1px dashed var(--outline);
+  border-radius: var(--r-md);
+
+  color: var(--text-low);
+  font-size: 13px;
+  letter-spacing: 1px;
+}
+
+.qr-panel strong {
+  font-family: var(--font-display);
+  font-size: 24px;
+  color: var(--primary);
+}
+
+.qr-panel span {
+  color: var(--text-mid);
+  font-size: 12px;
+}
+
+/* ========================================
+   TABLEAU
+   ======================================== */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: var(--sp-md);
+}
+
+th {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--outline);
+
+  color: var(--text-mid);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+td {
+  padding: 14px;
+  border-bottom: 1px solid var(--surface-2);
+
+  color: var(--text-high);
+  font-size: 14px;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 768px) {
+  .create-grid,
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .quick-create {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

@@ -1,0 +1,53 @@
+/* ========================================
+   SHELL APPLICATIF — RÉAGIS
+   Structure partagée par toutes les vues internes (post-login).
+   ======================================== */
+
+.app-layout {
+  min-height: 100vh;
+  background: var(--surface-0);
+}
+
+/* La sidebar est en position: fixed (250px), le contenu doit
+   donc être décalé de la même largeur pour ne pas passer dessous. */
+.main-content {
+  margin-left: 250px;
+  min-height: 100vh;
+  padding: var(--sp-lg);
+}
+
+/* ========================================
+   EN-TÊTE DE PAGE
+   Titre à gauche, action principale à droite.
+   ======================================== */
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-md);
+  margin-bottom: var(--sp-lg);
+}
+
+.page-header h1 {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-high);
+}
+
+/* ========================================
+   RESPONSIVE
+   Aligné sur le breakpoint de Sidebar.css (220px).
+   ======================================== */
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 220px;
+    padding: var(--sp-md);
+  }
+
+  .page-header h1 {
+    font-size: 22px;
+  }
+}

@@ -1,50 +1,52 @@
-import Sidebar from '../components/Sidebar';
+import { useNavigate } from "react-router-dom";
 
 const HomePage = () => {
+  const navigate = useNavigate();
+
   return (
-    <div className="app-layout">
-      <Sidebar />
+    <>
+      <h1>Bienvenue</h1>
 
-      <main className="main-content">
-        <h1>Bienvenue</h1>
-
-        <section className="quick-create">
-          <div>
-            <h2>Créer une nouvelle session</h2>
-            <p>Créez votre sondage et lancez-le en direct.</p>
-          </div>
-
-          <button className="btn-primary">
-            + NOUVELLE SESSION
-          </button>
-        </section>
-
-        <h2>Sessions récentes</h2>
-
-        <div className="sessions-grid">
-          <div className="session-card">
-            <h3>Soirée match</h3>
-            <span className="badge-live">
-              ● EN DIRECT
-            </span>
-          </div>
-
-          <div className="session-card">
-            <h3>Quiz du vendredi</h3>
-            <span className="badge-status">
-              TERMINÉE
-            </span>
-          </div>
-
-          <div className="session-card">
-            <h3>Bar du Coin</h3>
-            <span className="badge-status">
-              TERMINÉE
-            </span>
-          </div>
+      <section className="quick-create">
+        <div>
+          <h2>Créer une nouvelle session</h2>
+          <p>Créez votre sondage et lancez-le en direct.</p>
         </div>
-      </main>
-    </div>
+
+        <button
+          type="button"
+          className="btn-primary"
+          onClick={() => navigate("/sessions/new")}
+        >
+          + NOUVELLE SESSION
+        </button>
+      </section>
+
+      <h2>Sessions récentes</h2>
+
+      <div className="sessions-grid">
+        <div className="session-card">
+          <h3>Soirée match</h3>
+          <span className="badge-live">
+            ● EN DIRECT
+          </span>
+        </div>
+
+        <div className="session-card">
+          <h3>Quiz du vendredi</h3>
+          <span className="badge-status">
+            TERMINÉE
+          </span>
+        </div>
+
+        <div className="session-card">
+          <h3>Bar du Coin</h3>
+          <span className="badge-status">
+            TERMINÉE
+          </span>
+        </div>
+      </div>
+    </>
   );
 };
 
