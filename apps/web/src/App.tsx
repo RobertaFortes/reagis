@@ -1,12 +1,12 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AppLayout from "./components/AppLayout";
-import LoginPage from "./pages/LoginPage";
-import HomePage from "./pages/HomePage";
-import SessionPage from "./pages/SessionPage";
-import CreateSessionPage from "./pages/CreateSessionPage";
-import SessionDetailPage from "./pages/SessionDetailPage";
-import JoinPage from "./pages/JoinPage";
-import ParticipantSessionPage from "./pages/ParticipantSessionPage";
+import LoginPage from "./pages/presenter/LoginPage";
+import HomePage from "./pages/presenter/HomePage";
+import SessionPage from "./pages/presenter/SessionPage";
+import CreateSessionPage from "./pages/presenter/CreateSessionPage";
+import SessionDetailPage from "./pages/presenter/SessionDetailPage";
+import JoinPage from "./pages/participant/JoinPage";
+import ParticipantSessionPage from "./pages/participant/ParticipantSessionPage";
 
 function App() {
   return (
