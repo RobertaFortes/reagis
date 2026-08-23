@@ -1,7 +1,9 @@
-import Session from '../models/Session.js';
+import Session from '../models/Session';
 import { Request, Response } from 'express';
-import { JwtPayload } from "../types/auth";
-import mongoose from "mongoose";
+import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
+// import { JwtPayload } from "../types/auth";
+// import mongoose from "mongoose";
 
 interface CreateSessionBody {
   name: string;
@@ -87,5 +89,78 @@ export const getSessionById = async (req, res) => {
     res.status(500).json({
       message: "Erreur lors de la récupération des sessions",
     });
+  }
+};
+
+//Accès participant
+
+export const getSessionByCode = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const sessions = await Session.findOne({
+      code: req.params.code,
+    });
+    
+    if (!sessions) {
+      res.status(404).json({
+        message: "Session introuvable",
+      });
+      return;
+    }
+    
+    res.status(200).json(sessions);
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({message: `Erreur lors de la récupération de la session`});
+  }
+};
+
+export const joinSessionByCode = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const session = await Session.findOne({ code: req.params.code });
+
+    if (!session) {
+      res.status(404).json({ message: 'Session introuvable' });
+      return;
+    }
+
+    if (!process.env.PARTICIPANT_JWT_SECRET) {
+      res.status(500).json({ message: 'Configuration serveur invalide' });
+      return;
+    }
+
+    const { deviceId } = req.body;
+
+    if (!deviceId || typeof deviceId !== 'string') {
+      res.status(400).json({ message: 'deviceId requis' });
+      return;
+    }
+
+    // Déterministe : même device + même session => même token, toujours.
+    // Différente session => token différent (pas de traçage cross-session).
+    const participantToken = crypto
+      .createHash('sha256')
+      .update(`${deviceId}:${session._id.toString()}`)
+      .digest('hex');
+
+    const token = jwt.sign(
+      {
+        sessionId: session._id.toString(),
+        participantToken,
+      },
+      process.env.PARTICIPANT_JWT_SECRET,
+      { expiresIn: '6h' }
+    );
+
+    res.status(200).json({ token, session });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erreur lors de la connexion à la session' });
   }
 };
