@@ -1,4 +1,5 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
+import Button from '../../components/Button';
 
 const SessionsPage = () => {
   const navigate = useNavigate();
@@ -8,19 +9,17 @@ const SessionsPage = () => {
       <header className="page-header">
         <h1>Mes sessions</h1>
 
-        <button
+        <Button
+          title="session"
           type="button"
           className="btn-primary"
-          onClick={() => navigate("/sessions/new")}
+          onClick={() => navigate('/sessions/new')}
         >
           + NOUVELLE SESSION
-        </button>
+        </Button>
       </header>
 
-      <input
-        className="input"
-        placeholder="🔍 Rechercher..."
-      />
+      <input className="input" placeholder="🔍 Rechercher..." />
 
       <table>
         <thead>
@@ -38,9 +37,7 @@ const SessionsPage = () => {
             <td>14/08/2026</td>
             <td>78</td>
             <td>
-              <span className="badge-live">
-                ● EN DIRECT
-              </span>
+              <span className="badge-live">● EN DIRECT</span>
             </td>
           </tr>
 
@@ -49,9 +46,7 @@ const SessionsPage = () => {
             <td>08/08/2026</td>
             <td>42</td>
             <td>
-              <span className="badge-status">
-                TERMINÉE
-              </span>
+              <span className="badge-status">TERMINÉE</span>
             </td>
           </tr>
         </tbody>

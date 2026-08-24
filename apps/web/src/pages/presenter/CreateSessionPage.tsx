@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import Button from '../../components/Button';
 
 const CreateSessionPage = () => {
   return (
@@ -43,13 +44,13 @@ const CreateSessionPage = () => {
             readOnly
           />
 
-          <button type="button" className="btn-secondary">
+          <Button title="option" type="button" className="btn-secondary">
             + Ajouter une option
-          </button>
+          </Button>
 
-          <button type="button" className="btn-primary">
+          <Button title="question" type="submit" className="btn-primary">
             ENREGISTRER LA QUESTION
-          </button>
+          </Button>
         </section>
 
         <section className="panel">
@@ -59,9 +60,9 @@ const CreateSessionPage = () => {
           <div>Question 2</div>
           <div>Question 3</div>
 
-          <button type="button" className="btn-primary">
+          <Button title="session" type="submit" className="btn-primary">
             🚀 LANCER LA SESSION
-          </button>
+          </Button>
         </section>
       </div>
     </>

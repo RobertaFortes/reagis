@@ -1,4 +1,6 @@
 import { useNavigate } from "react-router-dom";
+import Button from '../../components/Button';
+
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -13,13 +15,14 @@ const HomePage = () => {
           <p>Créez votre sondage et lancez-le en direct.</p>
         </div>
 
-        <button
-          type="button"
+        <Button
+          title="sessions"
+          type="submit"
           className="btn-primary"
           onClick={() => navigate("/sessions/new")}
         >
           + NOUVELLE SESSION
-        </button>
+        </Button>
       </section>
 
       <h2>Sessions récentes</h2>

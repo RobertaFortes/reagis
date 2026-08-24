@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import Button from '../../components/Button';
 
 const SessionDetailPage = () => {
   return (
@@ -14,9 +15,9 @@ const SessionDetailPage = () => {
           </span>
         </div>
 
-        <button type="button" className="btn-secondary">
+        <Button title="fin" type="button" className="btn-secondary">
           ■ TERMINER
-        </button>
+        </Button>
       </header>
 
       <div className="kpi-grid">
@@ -46,9 +47,9 @@ const SessionDetailPage = () => {
           <div>Brésil — 22%</div>
           <div>Match nul — 14%</div>
 
-          <button type="button" className="btn-primary">
+          <Button title="suivant" type="button" className="btn-primary">
             QUESTION SUIVANTE →
-          </button>
+          </Button>
         </section>
 
         <section className="panel qr-panel">
