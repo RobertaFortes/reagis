@@ -1,10 +1,10 @@
 import { configureStore } from '@reduxjs/toolkit';
 
 // Slices à créer au fur et à mesure (semaine 1 : structure vide) :
-import sessionReducer from './sessionSlice';
-import questionReducer from './questionSlice';
-import votesReducer from './votesSlice';
-import uiReducer from './uiSlice';
+import sessionReducer from '@/store/sessionSlice';
+import questionReducer from '@/store/questionSlice';
+import votesReducer from '@/store/votesSlice';
+import uiReducer from '@/store/uiSlice';
 
 export const store = configureStore({
   reducer: {

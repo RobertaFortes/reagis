@@ -1,6 +1,6 @@
 import { FormEvent, useState } from "react";
-import "../../styles/login.css";
-import { login, signup, AuthError, AuthUser } from "../../api/authApi";
+import "@/styles/login.css";
+import { login, signup, AuthError, AuthUser } from "@/api/authApi";
 import { useNavigate } from "react-router-dom";
 
 interface LoginPageProps {

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { createSession } from "../../api/sessionApi";
-import { createQuestion, deleteQuestion, type Question } from "../../api/questionApi";
+import { createSession } from "@/api/sessionApi";
+import { createQuestion, deleteQuestion, type Question } from "@/api/questionApi";
 
 function generateCode(): string {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
