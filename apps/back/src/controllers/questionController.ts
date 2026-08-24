@@ -3,6 +3,27 @@ import { JwtPayload } from "../types/auth";
 import mongoose from "mongoose";
 import Question from '../models/Question';
 
+// Récupérer les questions d'une session
+export const getQuestionsBySession = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { sessionId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(sessionId)) {
+      res.status(400).json({ message: 'Identifiant de session invalide' });
+      return;
+    }
+
+    const questions = await Question.find({ session: sessionId }).sort({ order: 1 });
+    res.status(200).json(questions);
+  } catch (error) {
+    console.error('Erreur getQuestionsBySession :', error);
+    res.status(500).json({ message: 'Erreur lors de la récupération des questions' });
+  }
+};
+
 // Créer une question
 export const createQuestion = async (
   req: Request,
