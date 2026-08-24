@@ -2,8 +2,6 @@ import Session from '../models/Session';
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-// import { JwtPayload } from "../types/auth";
-// import mongoose from "mongoose";
 
 interface CreateSessionBody {
   name: string;
@@ -100,7 +98,7 @@ export const getSessionByCode = async (
 ): Promise<void> => {
   try {
     const sessions = await Session.findOne({
-      code: req.params.code,
+      code: req.params.code.toUpperCase(),
     });
     
     if (!sessions) {
@@ -123,7 +121,7 @@ export const joinSessionByCode = async (
   res: Response
 ): Promise<void> => {
   try {
-    const session = await Session.findOne({ code: req.params.code });
+    const session = await Session.findOne({ code: req.params.code.toUpperCase() });
 
     if (!session) {
       res.status(404).json({ message: 'Session introuvable' });

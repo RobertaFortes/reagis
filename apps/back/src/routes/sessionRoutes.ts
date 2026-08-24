@@ -16,6 +16,5 @@ router.get('/my-sessions', authenticateToken, getSessionByIdUser); //Attention Ã
 router.get("/code/:code", getSessionByCode);
 router.post('/code/:code/join', joinSessionByCode);
 router.get('/:id', getSessionById);
-//router.get('/session', authenticateToken, getSessionByIdUser); //Attention Ã  l'ordre
 
 export default router;

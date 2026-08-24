@@ -1,6 +1,7 @@
 // controllers/voteController.ts
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import Vote from '../models/Vote';
+import Question from '../models/Question';
 import { AuthenticatedParticipantRequest } from '../middleware/authenticateParticipant';
 
 export const submitVote = async (
@@ -9,7 +10,19 @@ export const submitVote = async (
 ): Promise<void> => {
   try {
     const { questionId, optionIndex } = req.body;
-    const { participantToken } = req.participant!;
+
+    if (!questionId || optionIndex === undefined || typeof optionIndex !== 'number') {
+      res.status(400).json({ message: 'questionId et optionIndex sont requis' });
+      return;
+    }
+
+    const { participantToken, sessionId } = req.participant!;
+
+    const question = await Question.findById(questionId);
+    if (!question || question.session.toString() !== sessionId) {
+      res.status(403).json({ message: 'Question hors session' });
+      return;
+    }
 
     const vote = await Vote.create({
       question: questionId,
