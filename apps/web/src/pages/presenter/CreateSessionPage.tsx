@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createSession } from "@/api/sessionApi";
 import { createQuestion, deleteQuestion, type Question } from "@/api/questionApi";
+import Button from '../../components/Button';
 
 function generateCode(): string {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -121,14 +122,13 @@ const CreateSessionPage = () => {
           {!sessionId && (
             <>
               {sessionError && <p className="error">{sessionError}</p>}
-              <button
+              <Button
+                title={creatingSession ? "Création…" : "CRÉER LA SESSION"}
                 type="button"
-                className="btn-primary"
+                variant="btn-primary"
                 onClick={handleCreateSession}
                 disabled={creatingSession}
-              >
-                {creatingSession ? "Création…" : "CRÉER LA SESSION"}
-              </button>
+              />
             </>
           )}
 
@@ -153,24 +153,22 @@ const CreateSessionPage = () => {
                 />
               ))}
 
-              <button
+              <Button
+                title="+ Ajouter une option"
                 type="button"
-                className="btn-secondary"
+                variant="btn-secondary"
                 onClick={handleAddOption}
-              >
-                + Ajouter une option
-              </button>
+              />
 
               {questionError && <p className="error">{questionError}</p>}
 
-              <button
+              <Button
+                title={savingQuestion ? "Enregistrement…" : "ENREGISTRER LA QUESTION"}
                 type="button"
-                className="btn-primary"
+                variant="btn-primary"
                 onClick={handleSaveQuestion}
                 disabled={savingQuestion}
-              >
-                {savingQuestion ? "Enregistrement…" : "ENREGISTRER LA QUESTION"}
-              </button>
+              />
             </>
           )}
         </section>
@@ -188,25 +186,23 @@ const CreateSessionPage = () => {
               <span>
                 {q.order}. {q.text}
               </span>
-              <button
+              <Button
+                title="✕"
                 type="button"
-                className="btn-secondary"
+                variant="btn-secondary"
                 onClick={() => handleDeleteQuestion(q._id)}
                 style={{ padding: "0.25rem 0.5rem" }}
-              >
-                ✕
-              </button>
+              />
             </div>
           ))}
 
           {sessionId && savedQuestions.length > 0 && (
-            <button
+            <Button
+              title="🚀 LANCER LA SESSION"
               type="button"
-              className="btn-primary"
+              variant="btn-primary"
               onClick={() => navigate(`/sessions/${sessionId}`)}
-            >
-              LANCER LA SESSION
-            </button>
+            />
           )}
         </section>
       </div>
