@@ -12,7 +12,6 @@ node_modules/
 dist/
 build/
 .next/
-.expo/
 web-build/
 
 # Logs
@@ -33,10 +32,3 @@ Thumbs.db
 # Testing
 coverage/
 
-# React Native / Expo
-.expo/
-*.jks
-*.p8
-*.p12
-*.key
-*.mobileprovision
