@@ -1,10 +1,9 @@
 import { configureStore } from '@reduxjs/toolkit';
-
-// Slices à créer au fur et à mesure (semaine 1 : structure vide) :
 import sessionReducer from '@/store/sessionSlice';
 import questionReducer from '@/store/questionSlice';
 import votesReducer from '@/store/votesSlice';
 import uiReducer from '@/store/uiSlice';
+import { socketMiddleware } from '@/store/socketMiddleware';
 
 export const store = configureStore({
   reducer: {
@@ -13,6 +12,8 @@ export const store = configureStore({
     votes: votesReducer,
     ui: uiReducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(socketMiddleware),
 });
 
 // Types inférés du store — base pour les hooks typés des futurs slices.
