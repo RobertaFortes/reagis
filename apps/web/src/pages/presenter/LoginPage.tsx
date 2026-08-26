@@ -2,7 +2,7 @@ import { FormEvent, useState } from "react";
 import "@/styles/login.css";
 import { login, signup, AuthError, AuthUser } from "@/api/authApi";
 import { useNavigate } from "react-router-dom";
-import Button from '../../components/Button';
+import Button from '@/components/Button';
 
 interface LoginPageProps {
   // Appelé après une connexion réussie (token + infos user déjà stockés).

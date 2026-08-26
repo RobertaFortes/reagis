@@ -15,7 +15,15 @@ export interface Session {
   updatedAt: string;
 }
 
-export class SessionError extends Error {}
+export class SessionError extends Error {
+  code: string;
+
+  constructor(message: string, code: string = "error") {
+    super(message);
+    this.code = code;
+    this.name = "SessionError";
+  }
+}
 
 function getAuthHeaders(): Record<string, string> {
   const token = localStorage.getItem("reagis_token");
@@ -107,4 +115,37 @@ export async function getSessionById(id: string): Promise<Session> {
   }
 
   return body;
+}
+
+// POST /api/sessions/code/:code
+export async function joinSessionByCode(code: string, deviceId: string): Promise<{ token: string; session: Session }> {
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/api/sessions/code/${encodeURIComponent(code)}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ deviceId }),
+    });
+  } catch {
+    throw new SessionError("Impossible de contacter le serveur.");
+  }
+
+  let body: any;
+  try {
+    body = await response.json();
+  } catch {
+    throw new SessionError("Impossible de contacter le serveur.", "error");
+  }
+
+  if (response.status === 404) {
+    throw new SessionError("Session introuvable.", "not-found");
+  }
+
+  if (!response.ok) {
+    throw new SessionError(body.message ?? "Erreur serveur", "error");
+  }
+
+  return body; // { token, session }
 }

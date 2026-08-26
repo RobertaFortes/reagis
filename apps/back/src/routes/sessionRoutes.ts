@@ -5,7 +5,6 @@ import {
   createSession,
   getSessionById,
   getSessionByIdUser,
-  getSessionByCode,
   joinSessionByCode,
 } from '../controllers/sessionController';
 
@@ -13,8 +12,7 @@ const router = express.Router();
 
 router.post('/', createSession);
 router.get('/my-sessions', authenticateToken, getSessionByIdUser); //Attention à l'ordre
-router.get("/code/:code", getSessionByCode);
-router.post('/code/:code/join', joinSessionByCode);
+router.post('/code/:code', joinSessionByCode);
 router.get('/:id', getSessionById);
 
 export default router;
