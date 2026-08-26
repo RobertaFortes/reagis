@@ -1,7 +1,8 @@
-import { FormEvent, useState } from "react";
-import "../../styles/login.css";
-import { login, signup, AuthError, AuthUser } from "../../api/authApi";
-import { useNavigate } from "react-router-dom";
+import { FormEvent, useState } from 'react';
+import '../../styles/login.css';
+import { login, signup, AuthError, AuthUser } from '../../api/authApi';
+import { useNavigate } from 'react-router-dom';
+import Button from '../../components/Button';
 
 interface LoginPageProps {
   // Appelé après une connexion réussie (token + infos user déjà stockés).
@@ -12,29 +13,29 @@ interface LoginPageProps {
 const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
   const navigate = useNavigate();
   const [isSignup, setIsSignup] = useState(false);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSwitchMode = () => {
-  setIsSignup((current) => !current);
-  setError(null);
+    setIsSignup((current) => !current);
+    setError(null);
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
-    
+
     // Validation
     if (isSignup && !name) {
-      setError("Merci de renseigner votre nom.");
+      setError('Merci de renseigner votre nom.');
       return;
     }
-    
+
     if (!email || !password) {
-      setError("Merci de renseigner votre email et votre mot de passe.");
+      setError('Merci de renseigner votre email et votre mot de passe.');
       return;
     }
 
@@ -49,10 +50,9 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
         // Le signup ne renvoie pas de token.
         // On revient donc au formulaire de connexion.
         setIsSignup(false);
-        setName("");
-        setPassword("");
+        setName('');
+        setPassword('');
         setError(null);
-
       } else {
         // =========================
         // CONNEXION
@@ -61,21 +61,22 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
 
         // TODO: si vous stockez le token ailleurs (cookie httpOnly via le
         // backend, contexte React, store global...), remplacez ces 2 lignes.
-        localStorage.setItem("reagis_token", token);
-        localStorage.setItem("reagis_user", JSON.stringify(user));
+        localStorage.setItem('reagis_token', token);
+        localStorage.setItem('reagis_user', JSON.stringify(user));
 
         if (onLoginSuccess) {
           onLoginSuccess(user);
         } else {
-          navigate("/home");
-        }}
+          navigate('/home');
+        }
+      }
     } catch (err) {
       setError(
         err instanceof AuthError
           ? err.message
           : isSignup
-          ? "Création du compte impossible. Réessayez dans un instant."
-          : "Connexion impossible. Réessayez dans un instant."
+            ? 'Création du compte impossible. Réessayez dans un instant.'
+            : 'Connexion impossible. Réessayez dans un instant.'
       );
     } finally {
       setIsSubmitting(false);
@@ -138,31 +139,31 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
             </p>
           )}
 
-          <button type="submit" className="btn-primary" disabled={isSubmitting}>
+          <Button type="submit" title="login" variant="btn-primary">
             {isSubmitting
               ? isSignup
-                ? "CRÉATION…"
-                : "CONNEXION…"
+                ? 'CRÉATION…'
+                : 'CONNEXION…'
               : isSignup
-              ? "CRÉER UN COMPTE"
-              : "SE CONNECTER"}
-          </button>
+                ? 'CRÉER UN COMPTE'
+                : 'SE CONNECTER'}
+          </Button>
         </form>
 
-       <p className="login-signup">
-          {isSignup ? "Déjà un compte ? " : "Nouveau ? "}
+        <p className="login-signup">
+          {isSignup ? 'Déjà un compte ? ' : 'Nouveau ? '}
 
           <span
             role="button"
             tabIndex={0}
             onClick={handleSwitchMode}
             onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
+              if (e.key === 'Enter' || e.key === ' ') {
                 handleSwitchMode();
               }
             }}
           >
-            {isSignup ? "Se connecter" : "Créer un compte"}
+            {isSignup ? 'Se connecter' : 'Créer un compte'}
           </span>
         </p>
       </section>

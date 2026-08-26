@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getMySessions, type Session } from "../../api/sessionApi";
+import Button from '../../components/Button';
 
 const STATUS_LABEL: Record<Session["status"], { text: string; className: string }> = {
   active:   { text: "● EN DIRECT", className: "badge-live" },
@@ -43,13 +44,12 @@ const SessionsPage = () => {
       <header className="page-header">
         <h1>Mes sessions</h1>
 
-        <button
+        <Button
+          title="+ NOUVELLE SESSION"
           type="button"
-          className="btn-primary"
-          onClick={() => navigate("/sessions/new")}
-        >
-          + NOUVELLE SESSION
-        </button>
+          variant="btn-primary"
+          onClick={() => navigate('/sessions/new')}
+        />
       </header>
 
       <input
