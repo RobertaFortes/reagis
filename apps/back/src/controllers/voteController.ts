@@ -30,6 +30,10 @@ export const submitVote = async (
       optionIndex,
     });
 
+    await Question.findByIdAndUpdate(questionId, {
+      $inc: { [`options.${optionIndex}.votes`]: 1 },
+    });
+
     res.status(201).json(vote);
   } catch (error: any) {
     if (error.code === 11000) {
