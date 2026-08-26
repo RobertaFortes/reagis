@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getMySessions, type Session } from "../../api/sessionApi";
+import { getMySessions, type Session } from "@/api/sessionApi";
 import Button from '../../components/Button';
 
 const STATUS_LABEL: Record<Session["status"], { text: string; className: string }> = {
