@@ -15,7 +15,15 @@ export interface Session {
   updatedAt: string;
 }
 
-export class SessionError extends Error {}
+export class SessionError extends Error {
+  code: string;
+
+  constructor(message: string, code: string = "error") {
+    super(message);
+    this.code = code;
+    this.name = "SessionError";
+  }
+}
 
 function getAuthHeaders(): Record<string, string> {
   const token = localStorage.getItem("reagis_token");
@@ -109,34 +117,11 @@ export async function getSessionById(id: string): Promise<Session> {
   return body;
 }
 
-// GET /api/sessions/code/:code
-export async function getSessionByCode(code: string): Promise<Session> {
-  let response: Response;
-  try {
-    response = await fetch(`${API_BASE_URL}/api/sessions/code/${encodeURIComponent(code)}`);
-  } catch {
-    throw new SessionError("Impossible de contacter le serveur.");
-  }
-
-  let body: any;
-  try {
-    body = await response.json();
-  } catch {
-    throw new SessionError("Reponse du serveur invalide.");
-  }
-
-  if (!response.ok) {
-    throw new SessionError(body.message ?? "Erreur serveur");
-  }
-
-  return body;
-}
-
-// POST /api/sessions/code/:code/join
+// POST /api/sessions/code/:code
 export async function joinSessionByCode(code: string, deviceId: string): Promise<{ token: string; session: Session }> {
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}/api/sessions/code/${encodeURIComponent(code)}/join`, {
+    response = await fetch(`${API_BASE_URL}/api/sessions/code/${encodeURIComponent(code)}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -151,15 +136,15 @@ export async function joinSessionByCode(code: string, deviceId: string): Promise
   try {
     body = await response.json();
   } catch {
-    throw new SessionError("Reponse du serveur invalide.");
+    throw new SessionError("Impossible de contacter le serveur.", "error");
   }
 
   if (response.status === 404) {
-    throw new SessionError("Session not found");
+    throw new SessionError("Session introuvable.", "not-found");
   }
 
   if (!response.ok) {
-    throw new SessionError(body.message ?? "Erreur serveur");
+    throw new SessionError(body.message ?? "Erreur serveur", "error");
   }
 
   return body; // { token, session }

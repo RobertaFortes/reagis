@@ -7,17 +7,18 @@
 }
 
 .participant-session-page__eyebrow {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
-  color: #9a9a9a;
+  color: var(--text-mid);
   margin: 0;
 }
 
 .participant-session-page__name {
+  font-family: var(--font-display);
   font-size: 15px;
-  color: #4a4a4a;
+  color: var(--text-high);
   margin: 4px 0 0;
 }
 
@@ -31,13 +32,14 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  border: 2px solid #e2e2e2;
+  background: #D85A3014;
+  border: 1px solid #D85A3044;
 }
 
 .participant-session-page__prompt {
   font-size: 15px;
-  font-weight: 500;
-  color: #3d6bf0;
+  font-weight: 600;
+  color: var(--primary);
   margin: 0 0 24px;
 }
 
@@ -46,52 +48,55 @@
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: #8a8a8a;
+  color: var(--text-mid);
 }
 
 .participant-session-page__spinner {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  border: 2px solid #d8d8d8;
-  border-top-color: #8a8a8a;
+  border: 2px solid var(--outline);
+  border-top-color: var(--primary);
   animation: participant-session-spin 0.8s linear infinite;
 }
 
 @keyframes participant-session-spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
 .participant-session-page__status {
   font-size: 14px;
-  color: #8a8a8a;
+  color: var(--text-mid);
   margin: 0;
 }
 
 .participant-session-page__title {
+  font-family: var(--font-display);
   font-size: 20px;
-  font-weight: 600;
-  color: #1a1a1a;
+  font-weight: 700;
+  color: var(--text-high);
   margin: 0 0 8px;
 }
 
 .participant-session-page__subtitle {
   font-size: 14px;
-  color: #8a8a8a;
+  color: var(--text-mid);
   margin: 0 0 20px;
 }
 
 .participant-session-page__cta {
   padding: 12px 20px;
   font-size: 14px;
-  font-weight: 600;
-  color: #ffffff;
-  background-color: #2a2a2a;
+  font-weight: 700;
+  color: var(--on-primary);
+  background-color: var(--primary);
   border: none;
-  border-radius: 10px;
+  border-radius: var(--r-md);
   cursor: pointer;
+}
+
+.participant-session-page__cta:hover {
+  background-color: var(--primary-hover);
 }
 
 @media (prefers-reduced-motion: reduce) {

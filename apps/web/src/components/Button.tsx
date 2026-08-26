@@ -1,4 +1,4 @@
-import '../styles/ui.css';
+import '@/styles/ui.css';
 
 type ButtonVariant = 'btn-primary' | 'btn-secondary' ;
 

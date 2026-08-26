@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { getSessionById, type Session } from "@/api/sessionApi";
 import { getQuestionsBySession, type Question } from "@/api/questionApi";
-import Button from '../../components/Button';
+import Button from '@/components/Button';
 
 const STATUS_LABEL: Record<Session["status"], { text: string; className: string }> = {
   active:   { text: "● EN DIRECT", className: "badge-live" },

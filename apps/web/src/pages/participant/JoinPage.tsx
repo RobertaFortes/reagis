@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Scanner, IDetectedBarcode } from "@yudiel/react-qr-scanner";
-import { CenteredCard } from "../../components/CenteredCard";
-import "../../styles/JoinPage.css";
+import { CenteredCard } from "@/components/CenteredCard";
+import "@/styles/JoinPage.css";
+import Button from '@/components/Button';
 
 /**
  * Entry point for participants.
@@ -26,7 +27,7 @@ const JoinPage = () => {
     e.preventDefault();
     const normalized = normalizeCode(code);
     if (!normalized) return;
-    navigate(`/session/code/${normalized}`);
+    navigate(`/session/${normalized}`);
   };
 
   const handleScan = (results: IDetectedBarcode[]) => {
@@ -38,14 +39,14 @@ const JoinPage = () => {
       const url = new URL(raw);
       const match = url.pathname.match(/\/session\/([^/]+)/);
       if (match) {
-        navigate(`/session/code/${match[1]}`);
+        navigate(`/session/${match[1]}`);
         return;
       }
       setScanError("QR code non reconnu.");
     } catch {
       // Not a URL — fall back to treating the raw value as a session code
       if (/^[A-Za-z0-9-]+$/.test(raw)) {
-        navigate(`/session/code/${normalizeCode(raw)}`);
+        navigate(`/session/${normalizeCode(raw)}`);
       } else {
         setScanError("QR code non reconnu.");
       }
@@ -78,9 +79,9 @@ const JoinPage = () => {
             autoComplete="off"
             autoCapitalize="characters"
           />
-          <button className="join-page__submit" type="submit" disabled={!code.trim()}>
+          <Button title="Rejoindre" className="join-page__submit" type="submit" disabled={!code.trim()}>
             Rejoindre →
-          </button>
+          </Button>
         </form>
       ) : (
         <div className="join-page__scanner">
@@ -93,8 +94,10 @@ const JoinPage = () => {
         </div>
       )}
 
-      <button
+      <Button
+        title={mode === "manual" ? "ou scanner le QR code" : "ou saisir le code manuellement"}
         type="button"
+        variant = "btn-secondary"
         className="join-page__toggle-mode"
         onClick={() => {
           setScanError(null);
@@ -102,7 +105,7 @@ const JoinPage = () => {
         }}
       >
         {mode === "manual" ? "ou scanner le QR code" : "ou saisir le code manuellement"}
-      </button>
+      </Button>
     </CenteredCard>
   );
 }

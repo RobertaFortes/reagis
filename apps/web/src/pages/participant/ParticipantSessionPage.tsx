@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
-import { CenteredCard } from "../../components/CenteredCard";
-import "../../styles/ParticipantSessionPage.css";
-import { getSessionByCode, joinSessionByCode, Session, SessionError } from "../../api/sessionApi";
+import { CenteredCard } from "@/components/CenteredCard";
+import "@/styles/ParticipantSessionPage.css";
+import { joinSessionByCode, Session, SessionError } from "@/api/sessionApi";
 
 type PageState = "loading" | "not-found" | "error" | "ready";
 
@@ -53,26 +53,19 @@ const ParticipantSessionPage = () => {
 
     let cancelled = false;
     setState("loading");
-
-    getSessionByCode(code)
-      .then((session: Session) => {
-        if (cancelled) return;
-        setSession(session);
-        
-        // 2. Now join the session with deviceId to get the token
-        const deviceId = getOrCreateDeviceId();
-        return joinSessionByCode(code, deviceId);
-      })
-      .then((result: any) => {
+    const deviceId = getOrCreateDeviceId();
+    joinSessionByCode(code, deviceId)
+      .then((result: { token: string; session: Session }) => {
         if (cancelled) return;
         // result should contain { token, session }
+        setSession(result.session);
         setParticipantToken(result.token);
         localStorage.setItem("reagis_participant_token", result.token);
         setState("ready");
       })
       .catch((err: SessionError) => {
         if (cancelled) return;
-        setState(err.message === "not-found" ? "not-found" : "error");
+        setState(err.code === "not-found" ? "not-found" : "error");
       });
 
     return () => {

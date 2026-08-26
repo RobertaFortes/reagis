@@ -14,7 +14,7 @@ function App() {
       <Routes>
         {/* Participant — sans auth, sans sidebar */}
         <Route path="/join" element={<JoinPage />} />
-        <Route path="/session/:code/join" element={<ParticipantSessionPage />} />
+        <Route path="/session/:code" element={<ParticipantSessionPage />} />
 
         {/* Public */}
         <Route path="/" element={<LoginPage />} />

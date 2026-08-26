@@ -91,31 +91,6 @@ export const getSessionById = async (req, res) => {
 };
 
 //Accès participant
-
-export const getSessionByCode = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  try {
-    const sessions = await Session.findOne({
-      code: req.params.code.toUpperCase(),
-    });
-    
-    if (!sessions) {
-      res.status(404).json({
-        message: "Session introuvable",
-      });
-      return;
-    }
-    
-    res.status(200).json(sessions);
-  } catch (error) {
-    console.error(error);
-
-    res.status(500).json({message: `Erreur lors de la récupération de la session`});
-  }
-};
-
 export const joinSessionByCode = async (
   req: Request,
   res: Response
