@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
-import Sidebar from "./Sidebar";
-import "../styles/layout.css";
+import Sidebar from "@/components/Sidebar";
+import "@/styles/layout.css";
 
 /** Shell des vues internes : sidebar fixe + zone de contenu. */
 const AppLayout = () => {

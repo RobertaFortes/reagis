@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import "../styles/Sidebar.css";
+import "@/styles/Sidebar.css";
 
 interface StoredUser {
   name: string;

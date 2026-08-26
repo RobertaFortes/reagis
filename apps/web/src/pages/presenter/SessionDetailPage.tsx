@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { getSessionById, type Session } from "../../api/sessionApi";
-import { getQuestionsBySession, type Question } from "../../api/questionApi";
+import { getSessionById, type Session } from "@/api/sessionApi";
+import { getQuestionsBySession, type Question } from "@/api/questionApi";
+import Button from '../../components/Button';
 
 const STATUS_LABEL: Record<Session["status"], { text: string; className: string }> = {
   active:   { text: "● EN DIRECT", className: "badge-live" },
@@ -48,6 +49,8 @@ const SessionDetailPage = () => {
           <h1>{session.name}</h1>
           <span className={badge.className}>{badge.text}</span>
         </div>
+
+        <Button title="■ TERMINER" type="button" variant="btn-secondary" />
       </header>
 
       <div className="kpi-grid">
@@ -84,6 +87,8 @@ const SessionDetailPage = () => {
                   </div>
                 );
               })}
+
+              <Button title="QUESTION SUIVANTE →" type="button" variant="btn-primary" />
             </>
           ) : (
             <p>Aucune question.</p>

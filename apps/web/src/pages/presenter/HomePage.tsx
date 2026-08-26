@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getMySessions, type Session } from "../../api/sessionApi";
+import { getMySessions, type Session } from "@/api/sessionApi";
+import Button from '../../components/Button';
 
 const STATUS_LABEL: Record<Session["status"], { text: string; className: string }> = {
   active:   { text: "● EN DIRECT", className: "badge-live" },
@@ -31,13 +32,12 @@ const HomePage = () => {
           <p>Créez votre sondage et lancez-le en direct.</p>
         </div>
 
-        <button
+        <Button
+          title="+ NOUVELLE SESSION"
           type="button"
-          className="btn-primary"
+          variant="btn-primary"
           onClick={() => navigate("/sessions/new")}
-        >
-          + NOUVELLE SESSION
-        </button>
+        />
       </section>
 
       <h2>Sessions récentes</h2>

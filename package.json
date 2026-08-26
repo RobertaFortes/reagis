@@ -2,7 +2,7 @@
   "name": "reagis",
   "version": "1.0.0",
   "private": true,
-  "description": "Réagis — monorepo (back / web / shared). Le mobile (Expo) reste isolé.",
+  "description": "Réagis — monorepo (back / web / shared).",
   "workspaces": [
     "apps/back",
     "apps/web",
