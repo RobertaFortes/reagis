@@ -116,6 +116,72 @@ export const getSessionByCode = async (
   }
 };
 
+export const startSession = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const session = await Session.findById(req.params.id);
+
+    if (!session) {
+      res.status(404).json({ message: 'Session introuvable' });
+      return;
+    }
+
+    if (String(session.presenter) !== req.user.userId) {
+      res.status(403).json({ message: 'Non autorisé' });
+      return;
+    }
+
+    if (session.status !== 'draft') {
+      res.status(409).json({ message: 'Seule une session en brouillon peut être démarrée' });
+      return;
+    }
+
+    session.status = 'active';
+    session.startedAt = new Date();
+    await session.save();
+
+    res.status(200).json(session);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erreur lors du démarrage de la session' });
+  }
+};
+
+export const endSession = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const session = await Session.findById(req.params.id);
+
+    if (!session) {
+      res.status(404).json({ message: 'Session introuvable' });
+      return;
+    }
+
+    if (String(session.presenter) !== req.user.userId) {
+      res.status(403).json({ message: 'Non autorisé' });
+      return;
+    }
+
+    if (session.status !== 'active') {
+      res.status(409).json({ message: 'Seule une session active peut être terminée' });
+      return;
+    }
+
+    session.status = 'finished';
+    session.endedAt = new Date();
+    await session.save();
+
+    res.status(200).json(session);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erreur lors de la fermeture de la session' });
+  }
+};
+
 export const joinSessionByCode = async (
   req: Request,
   res: Response

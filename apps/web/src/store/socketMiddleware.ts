@@ -14,6 +14,11 @@ export const wsConnect = (participantToken: string, code: string) => ({
 
 export const wsDisconnect = () => ({ type: 'ws/disconnect' as const });
 
+export const wsPresenterConnect = (sessionId: string) => ({
+  type: 'ws/presenterConnect' as const,
+  payload: { sessionId },
+});
+
 export const wsSubmitVote = (questionId: string, optionIndex: number) => ({
   type: 'ws/submitVote' as const,
   payload: { questionId, optionIndex },
@@ -92,6 +97,44 @@ export const socketMiddleware: Middleware = (store) => {
           emitJoin();
         } else {
           socket.once('connect', emitJoin);
+        }
+        break;
+      }
+
+      case 'ws/presenterConnect': {
+        if (!listenersBound) {
+          bindListeners();
+          listenersBound = true;
+        }
+
+        const { sessionId } = action.payload;
+        const token = localStorage.getItem('reagis_token');
+
+        if (!token) {
+          store.dispatch(setError('Non authentifié'));
+          break;
+        }
+
+        if (!socket.connected) {
+          socket.connect();
+        }
+
+        const emitPresenterJoin = () => {
+          socket.emit(
+            WsEvents.PRESENTER_JOIN,
+            { sessionId, token },
+            (res: any) => {
+              if (!res.ok) {
+                store.dispatch(setError(res.error ?? 'Impossible de rejoindre'));
+              }
+            }
+          );
+        };
+
+        if (socket.connected) {
+          emitPresenterJoin();
+        } else {
+          socket.once('connect', emitPresenterJoin);
         }
         break;
       }
