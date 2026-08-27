@@ -131,7 +131,8 @@ h3 { font-size: 16px; font-weight: 600; }
    ======================================== */
 
 .badge-live,
-.badge-status {
+.badge-draft,
+.badge-finished {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -151,10 +152,16 @@ h3 { font-size: 16px; font-weight: 600; }
   color: var(--primary);
 }
 
-.badge-status {
+.badge-draft {
   background: var(--surface-2);
   border: 1px solid var(--outline);
   color: var(--text-mid);
+}
+
+.badge-finished {
+  background: #4caf7d14;
+  border: 1px solid #4caf7d44;
+  color: var(--success);
 }
 
 /* ========================================
@@ -341,6 +348,50 @@ td {
 
   color: var(--text-high);
   font-size: 14px;
+}
+
+/* ========================================
+   BARRES DE VOTE
+   ======================================== */
+
+.vote-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.vote-bar-label {
+  min-width: 100px;
+  font-size: 14px;
+  color: var(--text-high);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vote-bar-track {
+  flex: 1;
+  height: 24px;
+  background: var(--surface-2);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+}
+
+.vote-bar-fill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: var(--r-sm);
+  transition: width 0.4s ease;
+}
+
+.vote-bar-pct {
+  min-width: 40px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-high);
+  text-align: right;
 }
 
 /* ========================================

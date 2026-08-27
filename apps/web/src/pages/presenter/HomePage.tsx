@@ -5,8 +5,8 @@ import Button from '@/components/Button';
 
 const STATUS_LABEL: Record<Session["status"], { text: string; className: string }> = {
   active:   { text: "● EN DIRECT", className: "badge-live" },
-  draft:    { text: "BROUILLON",   className: "badge-status" },
-  finished: { text: "TERMINÉE",    className: "badge-status" },
+  draft:    { text: "BROUILLON",   className: "badge-draft" },
+  finished: { text: "TERMINÉE",    className: "badge-finished" },
 };
 
 const HomePage = () => {

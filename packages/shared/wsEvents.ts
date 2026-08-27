@@ -4,6 +4,7 @@
 export const WsEvents = {
   // Client → Serveur
   JOIN_SESSION: 'join_session',
+  PRESENTER_JOIN: 'presenter_join',
   SUBMIT_VOTE: 'submit_vote',
   SEND_REACTION: 'send_reaction',
 
