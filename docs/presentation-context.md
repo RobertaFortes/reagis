@@ -90,10 +90,11 @@ Un presentateur cree une session de sondage depuis un dashboard web, genere un Q
 | Risque | Mitigation |
 |--------|------------|
 | Double vote | Index unique MongoDB (niveau DB, pas applicatif) |
-| JWT vole | Expiration 7j (presentateur), 6h (participant) |
+| JWT vole | Expiration 1h (presentateur), 6h (participant) |
 | Injection | Mongoose ODM (pas de queries brutes) |
 | CORS | Restreint a `CLIENT_URL` configure |
 | Mots de passe | bcrypt (salt rounds par defaut) |
+| Routes de creation sans auth | Limitation connue du MVP — a securiser en S4 |
 
 ---
 
@@ -112,16 +113,27 @@ Un presentateur cree une session de sondage depuis un dashboard web, genere un Q
 
 ## 7. WebSocket — evenements temps reel
 
+Les noms d'evenements sont definis dans `packages/shared/wsEvents.ts` (source de verite unique).
+Room pattern : `session:${sessionId}`.
+
+### Implementes (S3)
+
 | Direction | Evenement | Payload | Description |
 |-----------|-----------|---------|-------------|
-| Client→Server | JOIN_SESSION | `{code, participantToken}` | Rejoindre la room de la session |
-| Client→Server | SUBMIT_VOTE | `{questionId, optionIndex}` | Voter pour une option |
-| Client→Server | SEND_REACTION | `{reaction}` | Envoyer un emoji |
-| Server→Clients | VOTE_UPDATE | `{questionId, options[]}` | Compteurs mis a jour |
-| Server→Clients | REACTION_UPDATE | `{sessionId, count}` | Compteur de reactions |
-| Server→Clients | QUESTION_CHANGED | `{sessionId, newQuestionIndex}` | Question suivante |
-| Server→Clients | SESSION_ENDED | `{sessionId}` | Session terminee |
-| Server→Clients | PARTICIPANT_COUNT | `{sessionId, count}` | Nb de participants connectes |
+| Client→Server | `join_session` | `{code, participantToken}` + ack callback | Rejoindre la room — ack: `{ok, session?}` |
+| Client→Server | `presenter_join` | `{sessionId, token}` + ack callback | Presenter rejoint sa room — ack: `{ok}` |
+| Client→Server | `submit_vote` | `{questionId, optionIndex}` + ack callback | Voter pour une option — ack: `{ok}` |
+| Server→Clients | `vote_update` | `{questionId, options: [{label, votes}]}` | Compteurs mis a jour apres chaque vote |
+| Server→Clients | `participant_count` | `{sessionId, count}` | Nb de participants connectes (join + disconnect) |
+
+### Planifies (S4)
+
+| Direction | Evenement | Payload | Description |
+|-----------|-----------|---------|-------------|
+| Client→Server | `send_reaction` | `{emoji}` | Envoyer un emoji (a implementer) |
+| Server→Clients | `reaction_update` | `{sessionId, count}` | Compteur de reactions (a implementer) |
+| Server→Clients | `question_changed` | `{sessionId, newQuestionIndex}` | Question suivante (a implementer) |
+| Server→Clients | `session_ended` | `{sessionId}` | Session terminee (a implementer) |
 
 ---
 
