@@ -112,6 +112,21 @@ Dark theme optimized for low-light environments (bars, conferences).
 - Counters denormalized in Question.options with atomic `$inc` — no race conditions
 - Session status is a state machine: `draft → active → finished`
 
+## API contracts
+
+Full reference: `docs/api-routes.md`.
+
+**Response envelopes** — two formats coexist:
+- Auth routes (`/api/auth/*`): `{ result: true/false, error?, token?, user? }`
+- All other routes: bare document on success, `{ message: string }` on error
+
+**Auth guards status** (known gaps to fix in S4):
+- Protected: `GET /my-sessions`, `PATCH /start`, `PATCH /end`, `POST /votes/vote`
+- Unprotected (should be): `POST /sessions`, `POST /questions`, `DELETE /questions/:id`, `PATCH /reorder`
+
+**WebSocket events implemented** (S3): `join_session`, `presenter_join`, `submit_vote`, `vote_update`, `participant_count`
+**WebSocket events planned** (S4): `send_reaction`, `reaction_update`, `question_changed`, `session_ended`
+
 ## Current sprint (S3 — 24-28/08/2026)
 Real-time P1: Socket.io rooms, WebSocket ↔ Redux middleware, live dashboard graphs.
 See `docs/roadmap-trello.csv` for full 6-sprint plan (delivery: 14-19/09/2026).
