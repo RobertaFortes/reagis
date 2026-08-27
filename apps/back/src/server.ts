@@ -30,8 +30,6 @@ app.use('/api/questions', questionRoutes);
 app.use('/api/votes', voteRoutes);
 
 
-// app.use('/api/votes', require('./routes/vote.routes'));
-
 // Sockets — une session = une room. Les noms d'événements viennent de
 // @reagis/shared (source unique de vérité, partagée avec le web ; le mobile
 // duplique ces mêmes constantes localement).
