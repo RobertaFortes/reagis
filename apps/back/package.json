@@ -10,7 +10,9 @@
     "start": "node dist/server.js",
     "seed:demo": "tsx scripts/seed-demo.ts",
     "ws:demo": "tsx scripts/ws-demo.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
@@ -29,6 +31,7 @@
     "@types/node": "^26.1.2",
     "socket.io-client": "^4.8.3",
     "tsx": "^4.19.2",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "vitest": "^4.1.11"
   }
 }
