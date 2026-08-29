@@ -32,6 +32,9 @@ const sessionSlice = createSlice({
     updateParticipantCount(state, action: PayloadAction<number>) {
       state.participantCount = action.payload;
     },
+    sessionStarted(state) {
+      state.status = 'active';
+    },
     sessionEnded(state) {
       state.status = 'finished';
     },
@@ -41,6 +44,6 @@ const sessionSlice = createSlice({
   },
 });
 
-export const { setSession, updateParticipantCount, sessionEnded, clearSession } =
+export const { setSession, updateParticipantCount, sessionStarted, sessionEnded, clearSession } =
   sessionSlice.actions;
 export default sessionSlice.reducer;

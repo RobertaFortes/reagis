@@ -2,6 +2,8 @@ import Session from '../models/Session';
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import { WsEvents } from '@reagis/shared';
+import { sessionRoom } from '../sockets/rooms';
 
 interface CreateSessionBody {
   name: string;
@@ -116,6 +118,12 @@ export const startSession = async (
     session.startedAt = new Date();
     await session.save();
 
+    const io = req.app.get('io');
+    io.to(sessionRoom(String(session._id))).emit(WsEvents.SESSION_STARTED, {
+      sessionId: session._id,
+      status: 'active',
+    });
+
     res.status(200).json(session);
   } catch (error) {
     console.error(error);
@@ -148,6 +156,12 @@ export const endSession = async (
     session.status = 'finished';
     session.endedAt = new Date();
     await session.save();
+
+    const io = req.app.get('io');
+    io.to(sessionRoom(String(session._id))).emit(WsEvents.SESSION_ENDED, {
+      sessionId: session._id,
+      status: 'finished',
+    });
 
     res.status(200).json(session);
   } catch (error) {

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { Socket } from "socket.io-client";
+import { WsEvents } from "@reagis/shared";
 import { socket as sharedSocket } from "@/socket";
 import { CenteredCard } from "@/components/CenteredCard";
 import "@/styles/ParticipantSessionPage.css";
@@ -85,12 +86,12 @@ const ParticipantSessionPage = () => {
     sharedSocket.connect();
     socketRef.current = sharedSocket;
 
-    sharedSocket.on("session:started", () => {
-      navigate(`/vote/${code}`);
+    sharedSocket.on(WsEvents.SESSION_STARTED, () => {
+      setSession((prev) => (prev ? { ...prev, status: "active" } : prev));
     });
 
-    sharedSocket.on("session:updated", (updated: Partial<Session>) => {
-      setSession((prev) => (prev ? { ...prev, ...updated } : prev));
+    sharedSocket.on(WsEvents.SESSION_ENDED, () => {
+      setSession((prev) => (prev ? { ...prev, status: "finished" } : prev));
     });
 
     sharedSocket.on("connect_error", (error) => {
@@ -98,8 +99,8 @@ const ParticipantSessionPage = () => {
     });
 
     return () => {
-      sharedSocket.off("session:started");
-      sharedSocket.off("session:updated");
+      sharedSocket.off(WsEvents.SESSION_STARTED);
+      sharedSocket.off(WsEvents.SESSION_ENDED);
       sharedSocket.off("connect_error");
       sharedSocket.disconnect();
       socketRef.current = null;
@@ -149,18 +150,26 @@ const ParticipantSessionPage = () => {
         <p className="participant-session-page__name">{session!.name}</p>
       )}
 
-      <div className="participant-session-page__reaction" aria-hidden="true">
-        {session!.reaction || "👍"}
-      </div>
+      {session!.status === "active" ? (
+        <p className="participant-session-page__prompt">
+          La session est en cours !
+        </p>
+      ) : (
+        <>
+          <div className="participant-session-page__reaction" aria-hidden="true">
+            {session!.reaction || "👍"}
+          </div>
 
-      <p className="participant-session-page__prompt">
-        {REACTION_LABELS[session!.reaction] ?? "Réagissez en attendant !"}
-      </p>
+          <p className="participant-session-page__prompt">
+            {REACTION_LABELS[session!.reaction] ?? "Réagissez en attendant !"}
+          </p>
 
-      <div className="participant-session-page__waiting">
-        <span className="participant-session-page__spinner" aria-hidden="true" />
-        En attente du présentateur…
-      </div>
+          <div className="participant-session-page__waiting">
+            <span className="participant-session-page__spinner" aria-hidden="true" />
+            En attente du présentateur…
+          </div>
+        </>
+      )}
     </CenteredCard>
   );
 };
