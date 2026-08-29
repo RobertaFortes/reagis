@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { io, Socket } from "socket.io-client";
+import type { Socket } from "socket.io-client";
+import { socket as sharedSocket } from "@/socket";
 import { CenteredCard } from "@/components/CenteredCard";
 import "@/styles/ParticipantSessionPage.css";
 import { joinSessionByCode, Session, SessionError } from "@/api/sessionApi";
@@ -77,28 +78,30 @@ const ParticipantSessionPage = () => {
   useEffect(() => {
     if (state !== "ready" || !code || !participantToken) return;
 
-    const socket = io("/", {
-      query: {
-        sessionCode: code,
-        token: participantToken, // Send the participant token for auth
-      },
-    });
-    socketRef.current = socket;
+    sharedSocket.io.opts.query = {
+      sessionCode: code,
+      token: participantToken,
+    };
+    sharedSocket.connect();
+    socketRef.current = sharedSocket;
 
-    socket.on("session:started", () => {
+    sharedSocket.on("session:started", () => {
       navigate(`/vote/${code}`);
     });
 
-    socket.on("session:updated", (updated: Partial<Session>) => {
+    sharedSocket.on("session:updated", (updated: Partial<Session>) => {
       setSession((prev) => (prev ? { ...prev, ...updated } : prev));
     });
 
-    socket.on("connect_error", (error) => {
+    sharedSocket.on("connect_error", (error) => {
       console.error("WebSocket connection error:", error);
     });
 
     return () => {
-      socket.disconnect();
+      sharedSocket.off("session:started");
+      sharedSocket.off("session:updated");
+      sharedSocket.off("connect_error");
+      sharedSocket.disconnect();
       socketRef.current = null;
     };
   }, [state, code, participantToken, navigate]);
