@@ -43,6 +43,7 @@ const ParticipantSessionPage = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [participantToken, setParticipantToken] = useState<string | null>(null);
   const socketRef = useRef<Socket | null>(null);
+  const [isBouncing, setIsBouncing] = useState(false); // petit feedback visuel optionnel
 
   // 1. Fetch the session, then join to get the participant token
   useEffect(() => {
@@ -84,7 +85,21 @@ const ParticipantSessionPage = () => {
       },
     });
     socketRef.current = socket;
-
+    
+    socket.on("connect", () => {
+      socket.emit(
+        "join_session", // ou WsEvents.JOIN_SESSION si importé du shared package
+        { code, participantToken },
+        (res: { ok: boolean; error?: string; session?: unknown }) => {
+          if (!res.ok) {
+            console.error("[ws] join_session failed:", res.error);
+            setState("error");
+          }
+          // sinon on est bien dans la room, prêt à recevoir session:started
+        }
+      );
+    });
+    
     socket.on("session:started", () => {
       navigate(`/vote/${code}`);
     });
@@ -110,6 +125,21 @@ const ParticipantSessionPage = () => {
       </CenteredCard>
     );
   }
+  const handleReactionClick = () => {
+    if (!socketRef.current || !session) return;
+
+    // Mise à jour optimiste locale
+    setSession((prev) =>
+      prev ? { ...prev, reactionCount: (prev.reactionCount ?? 0) + 1 } : prev
+    );
+
+    // Feedback visuel (optionnel)
+    setIsBouncing(true);
+    setTimeout(() => setIsBouncing(false), 150);
+
+    // Notifie le serveur
+    socketRef.current.emit("reaction:increment", { sessionCode: code });
+  };
 
   if (state === "not-found") {
     return (
@@ -145,10 +175,16 @@ const ParticipantSessionPage = () => {
       {session!.name && (
         <p className="participant-session-page__name">{session!.name}</p>
       )}
-
-      <div className="participant-session-page__reaction" aria-hidden="true">
+      <button
+        type="button"
+        className={`participant-session-page__reaction${
+          isBouncing ? " participant-session-page__reaction--bounce" : ""
+        }`}
+        onClick={handleReactionClick}
+        aria-label="Envoyer une réaction"
+      >
         {session!.reaction || "👍"}
-      </div>
+      </button>
 
       <p className="participant-session-page__prompt">
         {REACTION_LABELS[session!.reaction] ?? "Réagissez en attendant !"}
