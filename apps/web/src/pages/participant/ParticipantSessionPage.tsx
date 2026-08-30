@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import type { Socket } from 'socket.io-client';
-import { socket as sharedSocket } from '@/socket';
-import { CenteredCard } from '@/components/CenteredCard';
-import '@/styles/ParticipantSessionPage.css';
-import { joinSessionByCode, Session, SessionError } from '@/api/sessionApi';
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { wsConnect, wsDisconnect, wsSendReaction,} from "@/store/socketMiddleware";
+import { CenteredCard } from "@/components/CenteredCard";
+import "@/styles/ParticipantSessionPage.css";
+import { joinSessionByCode, Session, SessionError } from "@/api/sessionApi";
+import Button from '@/components/Button';
+
 
 type PageState = 'loading' | 'not-found' | 'error' | 'ready';
 
@@ -40,10 +42,9 @@ function getOrCreateDeviceId(): string {
 const ParticipantSessionPage = () => {
   const { code } = useParams<{ code: string }>();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [state, setState] = useState<PageState>('loading');
   const [session, setSession] = useState<Session | null>(null);
-  const [participantToken, setParticipantToken] = useState<string | null>(null);
-  const socketRef = useRef<Socket | null>(null);
   const [isBouncing, setIsBouncing] = useState(false); // petit feedback visuel optionnel
 
   // 1. Fetch the session, then join to get the participant token
@@ -61,8 +62,9 @@ const ParticipantSessionPage = () => {
         if (cancelled) return;
         // result should contain { token, session }
         setSession(result.session);
-        setParticipantToken(result.token);
+
         localStorage.setItem('reagis_participant_token', result.token);
+        dispatch(wsConnect(result.token, code));
         setState('ready');
       })
       .catch((err: SessionError) => {
@@ -72,40 +74,10 @@ const ParticipantSessionPage = () => {
 
     return () => {
       cancelled = true;
+      /* * Déconnexion gérée par le middleware. */ 
+      dispatch(wsDisconnect());
     };
-  }, [code]);
-
-  // Open the WebSocket only once the session is confirmed and token is obtained
-  useEffect(() => {
-    if (state !== 'ready' || !code || !participantToken) return;
-
-    sharedSocket.io.opts.query = {
-      sessionCode: code,
-      token: participantToken,
-    };
-    sharedSocket.connect();
-    socketRef.current = sharedSocket;
-
-    sharedSocket.on('session:started', () => {
-      navigate(`/vote/${code}`);
-    });
-
-    sharedSocket.on('session:updated', (updated: Partial<Session>) => {
-      setSession((prev) => (prev ? { ...prev, ...updated } : prev));
-    });
-
-    sharedSocket.on('connect_error', (error) => {
-      console.error('WebSocket connection error:', error);
-    });
-
-    return () => {
-      sharedSocket.off('session:started');
-      sharedSocket.off('session:updated');
-      sharedSocket.off('connect_error');
-      sharedSocket.disconnect();
-      socketRef.current = null;
-    };
-  }, [state, code, participantToken, navigate]);
+  }, [code, dispatch]);
 
   if (state === 'loading') {
     return (
@@ -116,9 +88,10 @@ const ParticipantSessionPage = () => {
       </CenteredCard>
     );
   }
+  /* * Envoi d'une réaction. * Le socketMiddleware se charge du socket.emit(). */
   const handleReactionClick = () => {
-    if (!socketRef.current || !session) return;
-
+    console.log("🔥 CLIC SUR RÉACTION");
+    if (!session) return;
     // Mise à jour optimiste locale
     setSession((prev) =>
       prev ? { ...prev, reactionCount: (prev.reactionCount ?? 0) + 1 } : prev
@@ -128,8 +101,8 @@ const ParticipantSessionPage = () => {
     setIsBouncing(true);
     setTimeout(() => setIsBouncing(false), 150);
 
-    // Notifie le serveur
-    socketRef.current.emit('reaction:increment', { sessionCode: code });
+    /* * Envoi au middleware Redux. */
+    dispatch(wsSendReaction(session!.reaction || "👍"));
   };
 
   if (state === 'not-found') {
@@ -139,12 +112,13 @@ const ParticipantSessionPage = () => {
         <p className="participant-session-page__subtitle">
           Le code « {code} » ne correspond à aucune session active.
         </p>
-        <button
+        <Button
+          title="Rejoindre une autre session"
           className="participant-session-page__cta"
           onClick={() => navigate('/join')}
         >
           Rejoindre une autre session
-        </button>
+        </Button>
       </CenteredCard>
     );
   }
@@ -158,12 +132,13 @@ const ParticipantSessionPage = () => {
         <p className="participant-session-page__subtitle">
           Impossible de charger la session pour le moment.
         </p>
-        <button
+        <Button
+          title="Réessayer"
           className="participant-session-page__cta"
           onClick={() => window.location.reload()}
         >
           Réessayer
-        </button>
+        </Button>
       </CenteredCard>
     );
   }
@@ -176,28 +151,34 @@ const ParticipantSessionPage = () => {
       {session!.name && (
         <p className="participant-session-page__name">{session!.name}</p>
       )}
-      <button
-        type="button"
-        className={`participant-session-page__reaction${
-          isBouncing ? ' participant-session-page__reaction--bounce' : ''
-        }`}
-        onClick={handleReactionClick}
-        aria-label="Envoyer une réaction"
-      >
-        {session!.reaction || '👍'}
-      </button>
 
-      <p className="participant-session-page__prompt">
-        {REACTION_LABELS[session!.reaction] ?? 'Réagissez en attendant !'}
-      </p>
+      {session!.status === "active" ? (
+        // <p className="participant-session-page__prompt">
+        //   La session est en cours !
+        // </p>
+        return <VotePage />;
+      ) : (
+        <>
+          <button
+            type="button"
+            className={`participant-session-page__reaction${
+              isBouncing ? " participant-session-page__reaction--bounce" : ""
+            }`}
+            onClick={handleReactionClick}
+            aria-label="Envoyer une réaction">
+            {session!.reaction || "👍"}
+          </button>
 
-      <div className="participant-session-page__waiting">
-        <span
-          className="participant-session-page__spinner"
-          aria-hidden="true"
-        />
-        En attente du présentateur…
-      </div>
+          <p className="participant-session-page__prompt">
+            {REACTION_LABELS[session!.reaction] ?? "Réagissez en attendant !"}
+          </p>
+
+          <div className="participant-session-page__waiting">
+            <span className="participant-session-page__spinner" aria-hidden="true" />
+            En attente du présentateur…
+          </div>
+        </>
+      )}
     </CenteredCard>
   );
 };

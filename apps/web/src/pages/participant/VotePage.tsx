@@ -1,87 +1,83 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { Socket } from "socket.io-client";
-import { WsEvents } from "@reagis/shared";
-import VotePage from "./VotePage";
-import { getActiveQuestion, ActiveQuestion } from "@/api/sessionApi";
-import { useSubmitVote } from "@/hooks/useSubmitVote";
+import { useAppDispatch, useAppSelector } from "@/store/hooks"; 
+import { wsSubmitVote, } from "@/store/socketMiddleware";
+import { CenteredCard } from "@/components/CenteredCard";
 
-interface VoteUpdatePayload {
-  questionId: string;
-  options: { label: string; votes: number }[];
-}
+interface VoteOption { id: string; label: string; } 
+interface VotePageProps { stepLabel: string; progress: number; questionIndex: number; questionTotal: number; questionText: string; options: VoteOption[]; reactionEmoji: string; reactionCount: number; onSubmit: (optionId: string) => void; submitting: boolean; }
 
-interface VotePageContainerProps {
-  socket: Socket | null;
-  participantToken: string;
-}
+const VotePage = () => { 
+  const { code } = useParams<{ code: string }>(); 
+  const dispatch = useAppDispatch(); 
+  // La question arrive dans Redux via socketMiddleware 
+  const question = useAppSelector((state) => state.question); 
+  const [selectedOption, setSelectedOption] = useState<string | null>(null); 
+  const [submitting, setSubmitting] = useState(false); 
+  
+  if (!question.id) { 
+    return ( <CenteredCard> 
+                <p>En attente de la prochaine question…</p> 
+              </CenteredCard> 
+    );
+  }  
+  const handleSubmit = () => { 
+    if (!selectedOption || submitting) { 
+      return; 
+    } 
+    
+    setSubmitting(true); 
+    dispatch( 
+      wsSubmitVote( 
+        question.id, 
+        Number(selectedOption) 
+      ) 
+    );
+    // Le middleware s'occupe de l'envoi Socket.IO. 
+    // On peut réactiver le bouton après l'envoi. 
+    setTimeout(() => { setSubmitting(false); }, 300); 
+  };
+  
+  return ( <CenteredCard>
+             <div className="vote-page"> 
+                <div className="vote-session"> 
+                  Session {code ?? ""} 
+                </div>
+                <h1>{question.text}</h1>
+                <div className="vote-options"> 
+                  {question.options.map((option, index) => {
+                    const optionId = String(index);
+                    const selected = selectedOption === optionId; 
+                    return ( 
+                      <button 
+                        key={optionId} 
+                        type="button" 
+                        className={`opt-card-kit${selected ? " sel" : ""}`} 
+                        onClick={() => setSelectedOption(optionId)}
+                      > 
+                        <span className="radio-kit" /> 
+                        <span>{option.label}</span> 
+                      </button> 
+                    );
+                  })} 
+                </div>
+                <button 
+                  type="button" 
+                  className="btn-primary" 
+                  disabled={!selectedOption || submitting} 
+                  onClick={handleSubmit}
+                > 
+                  {submitting ? "Vote en cours…" : "Voter"}
+                </button> 
+                <div className="sm-reactions"> 
+                  <button type="button" className="reaction-btn" >
+                    👍 <small> {question.options.reduce( (sum, option) => sum + option.votes, 0 )}
+                       </small> 
+                  </button> 
+                </div> 
+              </div> 
+            </CenteredCard> 
+          ); 
+        };
 
-const VotePageContainer = ({ socket, participantToken }: VotePageContainerProps) => {
-  const { code } = useParams<{ code: string }>();
-  const [question, setQuestion] = useState<ActiveQuestion | null>(null);
-  const [loading, setLoading] = useState(true);
-  const { submitVote, submitting, error, alreadyVoted } = useSubmitVote(socket);
-
-  // Chargement initial — couvre le cas où la question est déjà active à l'arrivée
-  useEffect(() => {
-    let cancelled = false;
-    getActiveQuestion(participantToken)
-      .then((q) => {
-        if (!cancelled) setQuestion(q);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [participantToken]);
-
-  // Transitions en direct — nouvelle question activée pendant que l'écran est ouvert
-  useEffect(() => {
-    if (!socket) return;
-
-    const handleQuestionActive = (payload: ActiveQuestion & { questionId: string }) => {
-      setQuestion({ _id: payload.questionId, text: payload.text, options: payload.options });
-    };
-
-    const handleVoteUpdate = (payload: VoteUpdatePayload) => {
-      setQuestion((prev) =>
-        prev && prev._id === payload.questionId ? { ...prev, options: payload.options } : prev
-      );
-    };
-
-    socket.on(WsEvents.QUESTION_ACTIVE, handleQuestionActive);
-    socket.on(WsEvents.VOTE_UPDATE, handleVoteUpdate);
-
-    return () => {
-      socket.off(WsEvents.QUESTION_ACTIVE, handleQuestionActive);
-      socket.off(WsEvents.VOTE_UPDATE, handleVoteUpdate);
-    };
-  }, [socket]);
-
-  if (loading) {
-    return <p>Chargement de la question…</p>; // à remplacer par un état visuel cohérent avec le reste de l'app
-  }
-
-  if (!question) {
-    return <p>En attente de la prochaine question…</p>;
-  }
-
-  return (
-    <VotePage
-      stepLabel={`Session ${code}`}
-      progress={0} // besoin du total de questions pour calculer un vrai pourcentage — cf. note ci-dessous
-      questionIndex={1}
-      questionTotal={1}
-      questionText={question.text}
-      options={question.options.map((o, i) => ({ id: String(i), label: o.label }))}
-      reactionEmoji="👍"
-      reactionCount={question.options.reduce((sum, o) => sum + o.votes, 0)}
-      onSubmit={(optionId) => submitVote(question._id, Number(optionId))}
-      submitting={submitting}
-    />
-  );
-};
-
-export default VotePageContainer;
+export default VotePage;

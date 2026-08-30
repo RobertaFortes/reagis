@@ -44,10 +44,10 @@ export const registerJoinHandler = (io: Server, socket: SessionSocket) => {
       if (!session) {
         return ack?.({ ok: false, error: 'Session introuvable' });
       }
-      // On ne rejoint que les sessions ouvertes : une session en draft n'est pas
-      // encore diffusée, une session finished est close.
-      if (session.status !== SessionStatus.ACTIVE) {
-        return ack?.({ ok: false, error: 'Session non active' });
+      // On rejoint les sessions en draft (en attente) ou active.
+      // Seules les sessions terminées sont fermées aux nouveaux participants.
+      if (session.status === SessionStatus.FINISHED) {
+        return ack?.({ ok: false, error: 'Session terminée' });
       }
 
       const sessionId = String(session._id);

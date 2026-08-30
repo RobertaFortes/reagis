@@ -9,6 +9,7 @@ export const WsEvents = {
   SEND_REACTION: 'send_reaction',
 
   // Serveur → Clients
+  SESSION_STARTED: 'session_started',
   VOTE_UPDATE: 'vote_update',
   REACTION_UPDATE: 'reaction_update',
   QUESTION_CHANGED: 'question_changed',
