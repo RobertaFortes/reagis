@@ -38,12 +38,18 @@ const sessionSlice = createSlice({
     sessionEnded(state) {
       state.status = 'finished';
     },
+    sessionPaused(state) {
+      state.status = 'paused';
+    },
+    sessionResumed(state) {
+      state.status = 'active';
+    },
     clearSession() {
       return initialState;
     },
   },
 });
 
-export const { setSession, updateParticipantCount, sessionStarted, sessionEnded, clearSession } =
+export const { setSession, updateParticipantCount, sessionStarted, sessionEnded, sessionPaused, sessionResumed, clearSession } =
   sessionSlice.actions;
 export default sessionSlice.reducer;

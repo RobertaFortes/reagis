@@ -1,4 +1,5 @@
 import Session from '../models/Session';
+import Question from '../models/Question';
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
@@ -114,7 +115,15 @@ export const startSession = async (
       return;
     }
 
+    // Active la première question
+    const firstQuestion = await Question.findOne({ session: session._id }).sort({ order: 1 });
+    if (firstQuestion) {
+      firstQuestion.status = 'active';
+      await firstQuestion.save();
+    }
+
     session.status = 'active';
+    session.currentQuestionIndex = 0;
     session.startedAt = new Date();
     await session.save();
 
@@ -148,8 +157,8 @@ export const endSession = async (
       return;
     }
 
-    if (session.status !== 'active') {
-      res.status(409).json({ message: 'Seule une session active peut être terminée' });
+    if (session.status !== 'active' && session.status !== 'paused') {
+      res.status(409).json({ message: 'Seule une session active ou en pause peut être terminée' });
       return;
     }
 
@@ -167,6 +176,191 @@ export const endSession = async (
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Erreur lors de la fermeture de la session' });
+  }
+};
+
+// Helper partagé par next/previous : déplace le pointeur et broadcast.
+const navigateQuestion = async (
+  req: Request,
+  res: Response,
+  direction: 'next' | 'previous'
+): Promise<void> => {
+  try {
+    const session = await Session.findById(req.params.id);
+
+    if (!session) {
+      res.status(404).json({ message: 'Session introuvable' });
+      return;
+    }
+
+    if (String(session.presenter) !== req.user.userId) {
+      res.status(403).json({ message: 'Non autorisé' });
+      return;
+    }
+
+    if (session.status !== 'active') {
+      res.status(409).json({ message: 'La session doit être active' });
+      return;
+    }
+
+    const questions = await Question.find({ session: session._id }).sort({ order: 1 });
+
+    const targetIndex = direction === 'next'
+      ? session.currentQuestionIndex + 1
+      : session.currentQuestionIndex - 1;
+
+    if (targetIndex < 0 || targetIndex >= questions.length) {
+      res.status(409).json({
+        message: direction === 'next'
+          ? 'Dernière question atteinte'
+          : 'Première question atteinte',
+      });
+      return;
+    }
+
+    const targetQ = questions[targetIndex];
+
+    // Active la question cible si elle est encore pending (première visite)
+    if (targetQ.status === 'pending') {
+      targetQ.status = 'active';
+      await targetQ.save();
+    }
+
+    session.currentQuestionIndex = targetIndex;
+    await session.save();
+
+    const io = req.app.get('io');
+    io.to(sessionRoom(String(session._id))).emit(WsEvents.QUESTION_CHANGED, {
+      id: targetQ._id,
+      text: targetQ.text,
+      options: targetQ.options.map((o) => ({ label: o.label, votes: o.votes })),
+      status: targetQ.status,
+    });
+
+    res.status(200).json(session);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erreur lors du changement de question' });
+  }
+};
+
+export const nextQuestion = async (req: Request, res: Response): Promise<void> => {
+  return navigateQuestion(req, res, 'next');
+};
+
+export const previousQuestion = async (req: Request, res: Response): Promise<void> => {
+  return navigateQuestion(req, res, 'previous');
+};
+
+export const pauseSession = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const session = await Session.findById(req.params.id);
+
+    if (!session) {
+      res.status(404).json({ message: 'Session introuvable' });
+      return;
+    }
+
+    if (String(session.presenter) !== req.user.userId) {
+      res.status(403).json({ message: 'Non autorisé' });
+      return;
+    }
+
+    if (session.status !== 'active') {
+      res.status(409).json({ message: 'Seule une session active peut être mise en pause' });
+      return;
+    }
+
+    session.status = 'paused';
+    await session.save();
+
+    const io = req.app.get('io');
+    io.to(sessionRoom(String(session._id))).emit(WsEvents.SESSION_PAUSED, {
+      sessionId: session._id,
+      status: 'paused',
+    });
+
+    res.status(200).json(session);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erreur lors de la mise en pause de la session' });
+  }
+};
+
+export const resumeSession = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const session = await Session.findById(req.params.id);
+
+    if (!session) {
+      res.status(404).json({ message: 'Session introuvable' });
+      return;
+    }
+
+    if (String(session.presenter) !== req.user.userId) {
+      res.status(403).json({ message: 'Non autorisé' });
+      return;
+    }
+
+    if (session.status !== 'paused') {
+      res.status(409).json({ message: 'Seule une session en pause peut être reprise' });
+      return;
+    }
+
+    session.status = 'active';
+    await session.save();
+
+    const io = req.app.get('io');
+    io.to(sessionRoom(String(session._id))).emit(WsEvents.SESSION_RESUMED, {
+      sessionId: session._id,
+      status: 'active',
+    });
+
+    res.status(200).json(session);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erreur lors de la reprise de la session' });
+  }
+};
+
+export const updateSession = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const session = await Session.findById(req.params.id);
+
+    if (!session) {
+      res.status(404).json({ message: 'Session introuvable' });
+      return;
+    }
+
+    if (String(session.presenter) !== req.user.userId) {
+      res.status(403).json({ message: 'Non autorisé' });
+      return;
+    }
+
+    if (session.status !== 'draft') {
+      res.status(409).json({ message: 'Seule une session en brouillon peut être modifiée' });
+      return;
+    }
+
+    const { name, reaction } = req.body;
+
+    if (name !== undefined) session.name = name;
+    if (reaction !== undefined) session.reaction = reaction;
+
+    await session.save();
+
+    res.status(200).json(session);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erreur lors de la mise à jour de la session' });
   }
 };
 

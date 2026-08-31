@@ -7,7 +7,12 @@ import {
   getSessionByIdUser,
   joinSessionByCode,
   startSession,
+  nextQuestion,
+  previousQuestion,
+  pauseSession,
+  resumeSession,
   endSession,
+  updateSession,
 } from '../controllers/sessionController';
 
 const router = express.Router();
@@ -15,7 +20,12 @@ const router = express.Router();
 router.post('/', createSession);
 router.get('/my-sessions', authenticateToken, getSessionByIdUser); //Attention à l'ordre
 
+router.patch('/:id', authenticateToken, updateSession);
 router.patch('/:id/start', authenticateToken, startSession);
+router.patch('/:id/next-question', authenticateToken, nextQuestion);
+router.patch('/:id/previous-question', authenticateToken, previousQuestion);
+router.patch('/:id/pause', authenticateToken, pauseSession);
+router.patch('/:id/resume', authenticateToken, resumeSession);
 router.patch('/:id/end', authenticateToken, endSession);
 
 router.post('/code/:code', joinSessionByCode);

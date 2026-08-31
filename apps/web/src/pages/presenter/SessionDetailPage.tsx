@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { getSessionById, startSession, endSession, type Session } from "@/api/sessionApi";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { getSessionById, startSession, nextQuestion, previousQuestion, pauseSession, resumeSession, endSession, type Session } from "@/api/sessionApi";
 import { getQuestionsBySession, type Question } from "@/api/questionApi";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { wsPresenterConnect, wsDisconnect } from "@/store/socketMiddleware";
@@ -11,11 +11,13 @@ import Button from "@/components/Button";
 const STATUS_LABEL: Record<Session["status"], { text: string; className: string }> = {
   active:   { text: "● EN DIRECT", className: "badge-live" },
   draft:    { text: "BROUILLON",   className: "badge-draft" },
+  paused:   { text: "⏸ EN PAUSE",  className: "badge-draft" },
   finished: { text: "TERMINÉE",    className: "badge-finished" },
 };
 
 const SessionDetailPage = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
   const [session, setSession] = useState<Session | null>(null);
@@ -27,6 +29,46 @@ const SessionDetailPage = () => {
     if (!id) return;
     try {
       const updated = await startSession(id);
+      setSession(updated);
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
+  const handleNextQuestion = async () => {
+    if (!id) return;
+    try {
+      const updated = await nextQuestion(id);
+      setSession(updated);
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
+  const handlePreviousQuestion = async () => {
+    if (!id) return;
+    try {
+      const updated = await previousQuestion(id);
+      setSession(updated);
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
+  const handlePause = async () => {
+    if (!id) return;
+    try {
+      const updated = await pauseSession(id);
+      setSession(updated);
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
+  const handleResume = async () => {
+    if (!id) return;
+    try {
+      const updated = await resumeSession(id);
       setSession(updated);
     } catch (err: any) {
       setError(err.message);
@@ -63,7 +105,7 @@ const SessionDetailPage = () => {
 
   // Connect WebSocket when session is loaded and active
   useEffect(() => {
-    if (!session || session.status !== "active") return;
+    if (!session || (session.status !== "active" && session.status !== "paused")) return;
 
     dispatch(wsPresenterConnect(session._id));
 
@@ -90,8 +132,7 @@ const SessionDetailPage = () => {
   }, [questions, session?.currentQuestionIndex, dispatch]);
 
   if (loading) return <p>Chargement…</p>;
-  if (error) return <p className="error">{error}</p>;
-  if (!session) return <p>Session introuvable.</p>;
+  if (!session) return <p className="error">{error || "Session introuvable."}</p>;
 
   const badge = STATUS_LABEL[session.status];
   const currentQuestion = questions[session.currentQuestionIndex];
@@ -108,6 +149,8 @@ const SessionDetailPage = () => {
     <>
       <Link to="/sessions" className="back-link">← Mes sessions</Link>
 
+      {error && <p className="error" style={{ marginBottom: 8 }}>{error}</p>}
+
       <header className="page-header">
         <div>
           <h1>{session.name}</h1>
@@ -115,10 +158,22 @@ const SessionDetailPage = () => {
         </div>
 
         {session.status === "draft" && (
-          <Button title="▶ DÉMARRER" type="button" variant="btn-primary" onClick={handleStart} />
+          <div style={{ display: "flex", gap: 8 }}>
+            <Button title="✏ MODIFIER" type="button" variant="btn-secondary" onClick={() => navigate(`/sessions/${id}/edit`)} />
+            <Button title="▶ DÉMARRER" type="button" variant="btn-primary" onClick={handleStart} />
+          </div>
         )}
         {session.status === "active" && (
-          <Button title="■ TERMINER" type="button" variant="btn-secondary" onClick={handleEnd} />
+          <div style={{ display: "flex", gap: 8 }}>
+            <Button title="⏸ PAUSE" type="button" variant="btn-secondary" onClick={handlePause} />
+            <Button title="■ TERMINER" type="button" variant="btn-secondary" onClick={handleEnd} />
+          </div>
+        )}
+        {session.status === "paused" && (
+          <div style={{ display: "flex", gap: 8 }}>
+            <Button title="▶ REPRENDRE" type="button" variant="btn-primary" onClick={handleResume} />
+            <Button title="■ TERMINER" type="button" variant="btn-secondary" onClick={handleEnd} />
+          </div>
         )}
       </header>
 
@@ -167,9 +222,20 @@ const SessionDetailPage = () => {
                 marginTop: 8
               }}>
                 <span style={{ fontSize: 12, color: "var(--text-mid)" }}>
-                  {totalVotes} votes · temps réel
+                  {questions.length === 1
+                    ? `${totalVotes} votes · question unique`
+                    : `${totalVotes} votes · question ${session.currentQuestionIndex + 1}/${questions.length}`}
                 </span>
-                <Button title="QUESTION SUIVANTE →" type="button" variant="btn-primary" />
+                {questions.length > 1 && (
+                  <div style={{ display: "flex", gap: 8 }}>
+                    {session.currentQuestionIndex > 0 && (
+                      <Button title="← PRÉCÉDENTE" type="button" variant="btn-secondary" onClick={handlePreviousQuestion} />
+                    )}
+                    {session.currentQuestionIndex < questions.length - 1 && (
+                      <Button title="SUIVANTE →" type="button" variant="btn-primary" onClick={handleNextQuestion} />
+                    )}
+                  </div>
+                )}
               </div>
             </>
           ) : (

@@ -65,6 +65,46 @@ export const createQuestion = async (
   }
 };
 
+// Modifier une question (session en draft uniquement)
+export const updateQuestion = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      res.status(400).json({ message: 'Identifiant de question invalide' });
+      return;
+    }
+
+    const question = await Question.findById(id).populate('session', 'status');
+
+    if (!question) {
+      res.status(404).json({ message: 'Question introuvable' });
+      return;
+    }
+
+    const session = question.session as any;
+    if (session.status !== 'draft') {
+      res.status(409).json({ message: 'Seule une question d\'une session en brouillon peut être modifiée' });
+      return;
+    }
+
+    const { text, options } = req.body;
+
+    if (text !== undefined) question.text = text;
+    if (options !== undefined) question.options = options;
+
+    await question.save();
+
+    res.status(200).json(question);
+  } catch (error) {
+    console.error('Erreur updateQuestion :', error);
+    res.status(500).json({ message: 'Erreur lors de la mise à jour de la question' });
+  }
+};
+
 // Supprimer une question
 export const deleteQuestion = async (
   req: Request,

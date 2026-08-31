@@ -84,6 +84,36 @@ export async function createQuestion(data: {
   return body;
 }
 
+// PATCH /api/questions/:id
+export async function updateQuestion(
+  id: string,
+  data: { text?: string; options?: { label: string }[] }
+): Promise<Question> {
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/api/questions/${id}`, {
+      method: "PATCH",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+  } catch {
+    throw new QuestionError("Impossible de contacter le serveur.");
+  }
+
+  let body: any;
+  try {
+    body = await response.json();
+  } catch {
+    throw new QuestionError("Reponse du serveur invalide.");
+  }
+
+  if (!response.ok) {
+    throw new QuestionError(body.message ?? "Erreur serveur");
+  }
+
+  return body;
+}
+
 // DELETE /api/questions/:id
 export async function deleteQuestion(id: string): Promise<void> {
   let response: Response;

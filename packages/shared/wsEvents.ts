@@ -10,6 +10,8 @@ export const WsEvents = {
 
   // Serveur → Clients
   SESSION_STARTED: 'session_started',
+  SESSION_PAUSED: 'session_paused',
+  SESSION_RESUMED: 'session_resumed',
   VOTE_UPDATE: 'vote_update',
   REACTION_UPDATE: 'reaction_update',
   QUESTION_CHANGED: 'question_changed',
