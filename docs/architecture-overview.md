@@ -79,17 +79,22 @@ Le package `shared` ne dépend de personne. Il définit les contrats (noms d'év
 ## Machine à états d'une session
 
 ```
-  ┌─────────┐     ▶ DÉMARRER      ┌─────────┐     ■ TERMINER      ┌──────────┐
-  │  DRAFT  │ ──────────────────►  │ ACTIVE  │ ──────────────────►  │ FINISHED │
-  └─────────┘                      └─────────┘                      └──────────┘
-       │                                │                                │
-  Créer session               WebSocket actif                   Session figée
-  Ajouter questions           Votes ouverts                     Résultats finaux
-  Modifier / supprimer        Réactions actives                 Lecture seule
+  ┌───────┐  ▶ DÉMARRER  ┌────────┐  ⏸ PAUSE   ┌────────┐
+  │ DRAFT │ ───────────► │ ACTIVE │ ──────────► │ PAUSED │
+  └───────┘              └────────┘             └────────┘
+                              │  ◄──────────────    │
+                              │   ▶ REPRENDRE       │
+                              │                     │
+                              │  ■ TERMINER         │  ■ TERMINER
+                              ▼                     ▼
+                          ┌──────────┐          ┌──────────┐
+                          │ FINISHED │          │ FINISHED │
+                          └──────────┘          └──────────┘
 ```
 
 - **Draft** : le présentateur prépare (CRUD questions, modifier le nom). Pas de WebSocket.
-- **Active** : les participants votent en temps réel. WebSocket connecté pour tous.
+- **Active** : les participants votent en temps réel. WebSocket connecté pour tous. Le présentateur navigue librement entre les questions.
+- **Paused** : votes bloqués côté serveur. Le WebSocket reste connecté. Le présentateur peut reprendre ou terminer.
 - **Finished** : tout est fermé. Les données sont conservées pour consultation.
 
 ---

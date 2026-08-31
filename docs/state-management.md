@@ -33,7 +33,7 @@ Stocke les données de la session. **Utilisé par les deux côtés** (présentat
 | `id` | `string \| null` | ID de la session |
 | `name` | `string` | Nom de la session |
 | `code` | `string` | Code d'accès (RG-XXXX) |
-| `status` | `string` | `draft`, `active` ou `finished` |
+| `status` | `string` | `draft`, `active`, `paused` ou `finished` |
 | `currentQuestionIndex` | `number` | Index de la question en cours |
 | `reaction` | `string \| null` | Emoji configuré pour les réactions |
 | `reactionCount` | `number` | Total de réactions reçues |
@@ -47,6 +47,8 @@ Stocke les données de la session. **Utilisé par les deux côtés** (présentat
 | `updateParticipantCount` | Middleware (événement `PARTICIPANT_COUNT`) | Met à jour le compteur |
 | `updateReactionCount` | Middleware (événement `REACTION_UPDATE`) | Met à jour les réactions |
 | `sessionStarted` | Middleware (événement `SESSION_STARTED`) | `status = 'active'` |
+| `sessionPaused` | Middleware (événement `SESSION_PAUSED`) | `status = 'paused'` |
+| `sessionResumed` | Middleware (événement `SESSION_RESUMED`) | `status = 'active'` |
 | `sessionEnded` | Middleware (événement `SESSION_ENDED`) | `status = 'finished'` |
 | `clearSession` | Composant (au démontage) | Reset à l'état initial |
 
@@ -138,6 +140,8 @@ Composant                     Middleware                    Serveur
 | `PARTICIPANT_COUNT` | `updateParticipantCount()` | `session` |
 | `REACTION_UPDATE` | `updateReactionCount()` | `session` |
 | `SESSION_STARTED` | `sessionStarted()` | `session` |
+| `SESSION_PAUSED` | `sessionPaused()` | `session` |
+| `SESSION_RESUMED` | `sessionResumed()` | `session` |
 | `SESSION_ENDED` | `sessionEnded()` | `session` |
 | `connect` | `setConnected(true)` | `ui` |
 | `disconnect` | `setConnected(false)` | `ui` |

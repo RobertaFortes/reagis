@@ -110,7 +110,7 @@ Dark theme optimized for low-light environments (bars, conferences).
 ## Database design decisions
 - Vote documents have partial unique indexes on `{question, participantToken}` and `{question, user}` — the DB itself prevents duplicate votes even under concurrent load
 - Counters denormalized in Question.options with atomic `$inc` — no race conditions
-- Session status is a state machine: `draft → active → finished`
+- Session status is a state machine: `draft → active ↔ paused → finished`
 
 ## API contracts
 
@@ -124,8 +124,7 @@ Full reference: `docs/api-routes.md`.
 - Protected: `GET /my-sessions`, `PATCH /start`, `PATCH /end`, `POST /votes/vote`
 - Unprotected (should be): `POST /sessions`, `POST /questions`, `DELETE /questions/:id`, `PATCH /reorder`
 
-**WebSocket events implemented** (S3): `join_session`, `presenter_join`, `submit_vote`, `vote_update`, `participant_count`
-**WebSocket events planned** (S4): `send_reaction`, `reaction_update`, `question_changed`, `session_ended`
+**WebSocket events implemented**: `join_session`, `presenter_join`, `submit_vote`, `send_reaction`, `vote_update`, `reaction_update`, `question_changed`, `session_started`, `session_paused`, `session_resumed`, `session_ended`, `participant_count`
 
 ## Current sprint (S3 — 24-28/08/2026)
 Real-time P1: Socket.io rooms, WebSocket ↔ Redux middleware, live dashboard graphs.

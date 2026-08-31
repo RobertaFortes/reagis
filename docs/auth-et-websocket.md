@@ -168,17 +168,20 @@ Les noms d'événements sont définis dans le package partagé `@reagis/shared` 
 | `join_session` | Participant | `{ code, participantToken }` | Rejoindre une session |
 | `presenter_join` | Présentateur | `{ sessionId, token }` | Rejoindre en tant que présentateur |
 | `submit_vote` | Participant | `{ questionId, optionIndex }` | Voter |
-| `send_reaction` | Participant | `{ emoji }` | Envoyer une réaction (à implémenter) |
+| `send_reaction` | Participant | `{ emoji }` | Envoyer une réaction |
 
 #### Serveur → Clients (broadcast dans la room)
 
 | Événement | Payload | Rôle |
 |---|---|---|
+| `session_started` | `{ sessionId, status }` | La session a démarré |
+| `session_paused` | `{ sessionId, status }` | La session est en pause (votes bloqués) |
+| `session_resumed` | `{ sessionId, status }` | La session a repris |
+| `session_ended` | `{ sessionId, status }` | La session est terminée |
 | `vote_update` | `{ questionId, options: [{ label, votes }] }` | Résultats mis à jour après un vote |
 | `participant_count` | `{ sessionId, count }` | Nombre de participants connectés |
-| `question_changed` | question complète | Le présentateur a changé de question |
-| `session_ended` | `{}` | La session est terminée |
-| `reaction_update` | `{ emoji, count }` | Compteur de réactions (à implémenter) |
+| `question_changed` | `{ id, text, options, status }` | Le présentateur a changé de question |
+| `reaction_update` | `{ sessionId, reactionCount }` | Compteur de réactions mis à jour |
 
 ### Cycle de vie d'une connexion participant
 
