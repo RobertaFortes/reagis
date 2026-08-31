@@ -65,9 +65,6 @@ export const socketMiddleware: Middleware = (store) => {
       store.dispatch(sessionEnded());
     });
     
-    socket.on(WsEvents.SESSION_ENDED, () => {
-      store.dispatch(sessionEnded());
-    });
   }
 
   let listenersBound = false;
