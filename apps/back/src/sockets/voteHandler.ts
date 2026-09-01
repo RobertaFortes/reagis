@@ -1,6 +1,7 @@
 import type { Server } from 'socket.io';
 import mongoose from 'mongoose';
 import { WsEvents } from '@reagis/shared';
+import Session from '../models/Session';
 import Question from '../models/Question';
 import Vote from '../models/Vote';
 import { sessionRoom } from './rooms';
@@ -35,6 +36,11 @@ export const registerVoteHandler = (io: Server, socket: SessionSocket) => {
     }
 
     try {
+      const session = await Session.findById(sessionId);
+      if (!session || session.status === 'paused') {
+        return ack?.({ ok: false, error: 'Session en pause' });
+      }
+
       const question = await Question.findById(questionId);
 
       if (!question || String(question.session) !== sessionId) {

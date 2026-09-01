@@ -109,9 +109,77 @@ Démarrer une session (draft → active).
 | Erreur 404 | `{ message: 'Session introuvable' }` |
 | Erreur 409 | `{ message: 'Seule une session en brouillon peut être démarrée' }` |
 
+### PATCH `/api/sessions/:id`
+
+Modifier une session en brouillon (nom, reaction).
+
+| | Détail |
+|---|---|
+| Auth | JWT presenter |
+| Params | `id` — ObjectId |
+| Body | `{ name?: string, reaction?: '👍'\|'❤️'\|'🔥'\|'👏' }` |
+| Succès 200 | Document `Session` mis à jour |
+| Erreur 403 | `{ message: 'Non autorisé' }` |
+| Erreur 404 | `{ message: 'Session introuvable' }` |
+| Erreur 409 | `{ message: 'Seule une session en brouillon peut être modifiée' }` |
+
+### PATCH `/api/sessions/:id/next-question`
+
+Avancer à la question suivante.
+
+| | Détail |
+|---|---|
+| Auth | JWT presenter |
+| Params | `id` — ObjectId |
+| Succès 200 | Document `Session` mis à jour (`currentQuestionIndex` incrémenté) |
+| Erreur 403 | `{ message: 'Non autorisé' }` |
+| Erreur 404 | `{ message: 'Session introuvable' }` |
+| Erreur 409 | `{ message: 'Dernière question atteinte' }` ou `{ message: 'La session doit être active' }` |
+
+> La question cible passe à `active` si elle était `pending` (première visite). Les questions déjà visitées restent `active` — le participant qui n'a pas voté peut encore voter (protégé par l'index unique MongoDB).
+
+### PATCH `/api/sessions/:id/previous-question`
+
+Revenir à la question précédente.
+
+| | Détail |
+|---|---|
+| Auth | JWT presenter |
+| Params | `id` — ObjectId |
+| Succès 200 | Document `Session` mis à jour (`currentQuestionIndex` décrémenté) |
+| Erreur 403 | `{ message: 'Non autorisé' }` |
+| Erreur 404 | `{ message: 'Session introuvable' }` |
+| Erreur 409 | `{ message: 'Première question atteinte' }` ou `{ message: 'La session doit être active' }` |
+
+### PATCH `/api/sessions/:id/pause`
+
+Mettre une session en pause (active → paused). Les votes sont bloqués côté serveur.
+
+| | Détail |
+|---|---|
+| Auth | JWT presenter |
+| Params | `id` — ObjectId |
+| Succès 200 | Document `Session` mis à jour (`status: 'paused'`) |
+| Erreur 403 | `{ message: 'Non autorisé' }` |
+| Erreur 404 | `{ message: 'Session introuvable' }` |
+| Erreur 409 | `{ message: 'Seule une session active peut être mise en pause' }` |
+
+### PATCH `/api/sessions/:id/resume`
+
+Reprendre une session en pause (paused → active).
+
+| | Détail |
+|---|---|
+| Auth | JWT presenter |
+| Params | `id` — ObjectId |
+| Succès 200 | Document `Session` mis à jour (`status: 'active'`) |
+| Erreur 403 | `{ message: 'Non autorisé' }` |
+| Erreur 404 | `{ message: 'Session introuvable' }` |
+| Erreur 409 | `{ message: 'Seule une session en pause peut être reprise' }` |
+
 ### PATCH `/api/sessions/:id/end`
 
-Terminer une session (active → finished).
+Terminer une session (active ou paused → finished).
 
 | | Détail |
 |---|---|
@@ -120,7 +188,7 @@ Terminer une session (active → finished).
 | Succès 200 | Document `Session` mis à jour (`status: 'finished'`, `endedAt` défini) |
 | Erreur 403 | `{ message: 'Non autorisé' }` |
 | Erreur 404 | `{ message: 'Session introuvable' }` |
-| Erreur 409 | `{ message: 'Seule une session active peut être terminée' }` |
+| Erreur 409 | `{ message: 'Seule une session active ou en pause peut être terminée' }` |
 
 ### POST `/api/sessions/code/:code`
 
@@ -162,6 +230,20 @@ Créer une question liée à une session.
 | Body | `{ session: string (ObjectId), text: string, order: number, options?: Array<{ label: string }> }` |
 | Succès 201 | Document `Question` |
 | Erreur 400 | `{ message: 'Identifiant de session invalide' }` ou `{ message: 'Le texte et l'ordre de la question sont obligatoires' }` |
+
+### PATCH `/api/questions/:id`
+
+Modifier une question (texte et/ou options). Uniquement si la session est en brouillon.
+
+| | Détail |
+|---|---|
+| Auth | Aucune |
+| Params | `id` — ObjectId |
+| Body | `{ text?: string, options?: Array<{ label: string }> }` |
+| Succès 200 | Document `Question` mis à jour |
+| Erreur 400 | `{ message: 'Identifiant de question invalide' }` |
+| Erreur 404 | `{ message: 'Question introuvable' }` |
+| Erreur 409 | `{ message: 'Seule une question d'une session en brouillon peut être modifiée' }` |
 
 ### DELETE `/api/questions/:id`
 
@@ -213,12 +295,21 @@ Soumettre un vote sur une question.
 ## Machine à états — Session
 
 ```
-draft ──[PATCH /:id/start]──► active ──[PATCH /:id/end]──► finished
+draft ──[start]──► active ◄──[resume]── paused
+                     │                    ▲
+                     ├──[pause]───────────┘
+                     │
+                     ├──[end]──► finished
+                     │
+                   paused ──[end]──► finished
 ```
 
 Les transitions sont protégées côté backend :
 - `start` : uniquement depuis `draft` (sinon 409)
-- `end` : uniquement depuis `active` (sinon 409)
+- `pause` : uniquement depuis `active` (sinon 409)
+- `resume` : uniquement depuis `paused` (sinon 409)
+- `end` : depuis `active` ou `paused` (sinon 409)
+- `next-question` / `previous-question` : uniquement depuis `active` (sinon 409)
 - Seul le présentateur propriétaire peut déclencher une transition (sinon 403)
 
 ---
@@ -229,3 +320,13 @@ Les transitions sont protégées côté backend :
 |---|---|
 | `PATCH /api/questions/reorder/:sessionId` | Aucun appel — fonctionnalité de drag-and-drop non implémentée |
 | `POST /api/votes/vote` | Non utilisé en REST — les votes passent par WebSocket |
+
+## Événements WebSocket liés aux transitions
+
+| Transition | Événement broadcast | Données |
+|---|---|---|
+| `start` | `SESSION_STARTED` | `{ sessionId, status: 'active' }` |
+| `pause` | `SESSION_PAUSED` | `{ sessionId, status: 'paused' }` |
+| `resume` | `SESSION_RESUMED` | `{ sessionId, status: 'active' }` |
+| `end` | `SESSION_ENDED` | `{ sessionId, status: 'finished' }` |
+| `next-question` / `previous-question` | `QUESTION_CHANGED` | `{ id, text, options, status }` |

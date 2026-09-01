@@ -5,7 +5,7 @@ export interface Session {
   name: string;
   code: string;
   presenter: string;
-  status: "draft" | "active" | "finished";
+  status: "draft" | "active" | "paused" | "finished";
   reaction: "👍" | "❤️" | "🔥" | "👏";
   reactionCount: number;
   currentQuestionIndex: number;
@@ -125,6 +125,140 @@ export async function endSession(id: string): Promise<Session> {
     response = await fetch(`${API_BASE_URL}/api/sessions/${id}/end`, {
       method: "PATCH",
       headers: getAuthHeaders(),
+    });
+  } catch {
+    throw new SessionError("Impossible de contacter le serveur.");
+  }
+
+  let body: any;
+  try {
+    body = await response.json();
+  } catch {
+    throw new SessionError("Reponse du serveur invalide.");
+  }
+
+  if (!response.ok) {
+    throw new SessionError(body.message ?? "Erreur serveur");
+  }
+
+  return body;
+}
+
+// PATCH /api/sessions/:id/next-question
+export async function nextQuestion(id: string): Promise<Session> {
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/api/sessions/${id}/next-question`, {
+      method: "PATCH",
+      headers: getAuthHeaders(),
+    });
+  } catch {
+    throw new SessionError("Impossible de contacter le serveur.");
+  }
+
+  let body: any;
+  try {
+    body = await response.json();
+  } catch {
+    throw new SessionError("Reponse du serveur invalide.");
+  }
+
+  if (!response.ok) {
+    throw new SessionError(body.message ?? "Erreur serveur");
+  }
+
+  return body;
+}
+
+// PATCH /api/sessions/:id/previous-question
+export async function previousQuestion(id: string): Promise<Session> {
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/api/sessions/${id}/previous-question`, {
+      method: "PATCH",
+      headers: getAuthHeaders(),
+    });
+  } catch {
+    throw new SessionError("Impossible de contacter le serveur.");
+  }
+
+  let body: any;
+  try {
+    body = await response.json();
+  } catch {
+    throw new SessionError("Reponse du serveur invalide.");
+  }
+
+  if (!response.ok) {
+    throw new SessionError(body.message ?? "Erreur serveur");
+  }
+
+  return body;
+}
+
+// PATCH /api/sessions/:id/pause
+export async function pauseSession(id: string): Promise<Session> {
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/api/sessions/${id}/pause`, {
+      method: "PATCH",
+      headers: getAuthHeaders(),
+    });
+  } catch {
+    throw new SessionError("Impossible de contacter le serveur.");
+  }
+
+  let body: any;
+  try {
+    body = await response.json();
+  } catch {
+    throw new SessionError("Reponse du serveur invalide.");
+  }
+
+  if (!response.ok) {
+    throw new SessionError(body.message ?? "Erreur serveur");
+  }
+
+  return body;
+}
+
+// PATCH /api/sessions/:id/resume
+export async function resumeSession(id: string): Promise<Session> {
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/api/sessions/${id}/resume`, {
+      method: "PATCH",
+      headers: getAuthHeaders(),
+    });
+  } catch {
+    throw new SessionError("Impossible de contacter le serveur.");
+  }
+
+  let body: any;
+  try {
+    body = await response.json();
+  } catch {
+    throw new SessionError("Reponse du serveur invalide.");
+  }
+
+  if (!response.ok) {
+    throw new SessionError(body.message ?? "Erreur serveur");
+  }
+
+  return body;
+}
+
+// PATCH /api/sessions/:id
+export async function updateSession(
+  id: string,
+  data: { name?: string; reaction?: Session["reaction"] }
+): Promise<Session> {
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/api/sessions/${id}`, {
+      method: "PATCH",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
     });
   } catch {
     throw new SessionError("Impossible de contacter le serveur.");

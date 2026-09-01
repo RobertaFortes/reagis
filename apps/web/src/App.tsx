@@ -5,6 +5,7 @@ import HomePage from "@/pages/presenter/HomePage";
 import SessionPage from "@/pages/presenter/SessionPage";
 import CreateSessionPage from "@/pages/presenter/CreateSessionPage";
 import SessionDetailPage from "@/pages/presenter/SessionDetailPage";
+import EditSessionPage from "@/pages/presenter/EditSessionPage";
 import JoinPage from "@/pages/participant/JoinPage";
 import ParticipantSessionPage from "@/pages/participant/ParticipantSessionPage";
 
@@ -25,6 +26,7 @@ function App() {
           <Route path="/sessions" element={<SessionPage />} />
           <Route path="/sessions/new" element={<CreateSessionPage />} />
           <Route path="/sessions/:id" element={<SessionDetailPage />} />
+          <Route path="/sessions/:id/edit" element={<EditSessionPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

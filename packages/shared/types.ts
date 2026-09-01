@@ -25,7 +25,7 @@ export interface Session {
   name: string;
   code: string;
   presenter: string;
-  status: 'draft' | 'active' | 'finished';
+  status: 'draft' | 'active' | 'paused' | 'finished';
   reaction: '👍' | '❤️' | '🔥' | '👏';
   reactionCount: number;
   currentQuestionIndex: number;

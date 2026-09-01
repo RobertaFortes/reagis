@@ -20,7 +20,7 @@ const sessionSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['draft', 'active', 'finished'], // machine à états
+      enum: ['draft', 'active', 'paused', 'finished'], // machine à états
       default: 'draft',
     },
     reaction: {
