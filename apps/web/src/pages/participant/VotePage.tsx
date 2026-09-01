@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "@/store/hooks"; 
 import { wsSubmitVote, } from "@/store/socketMiddleware";
 import { CenteredCard } from "@/components/CenteredCard";
+import { BarReactionCount } from '@/components/BarReactionCount';
 
 interface VoteOption { id: string; label: string; } 
 interface VotePageProps { stepLabel: string; progress: number; questionIndex: number; questionTotal: number; questionText: string; options: VoteOption[]; reactionEmoji: string; reactionCount: number; onSubmit: (optionId: string) => void; submitting: boolean; }
@@ -16,9 +17,14 @@ const VotePage = () => {
   const [submitting, setSubmitting] = useState(false); 
   
   if (!question.id) { 
-    return ( <CenteredCard> 
+    return ( <>
+              <CenteredCard> 
                 <p>En attente de la prochaine question…</p> 
               </CenteredCard> 
+              <div className="React-session">
+                <BarReactionCount />
+              </div>  
+             </>
     );
   }  
   const handleSubmit = () => { 
@@ -38,7 +44,8 @@ const VotePage = () => {
     setTimeout(() => { setSubmitting(false); }, 300); 
   };
   
-  return ( <CenteredCard>
+  return ( <>
+            <CenteredCard>
              <div className="vote-page"> 
                 <div className="vote-session"> 
                   Session {code ?? ""} 
@@ -68,15 +75,14 @@ const VotePage = () => {
                   onClick={handleSubmit}
                 > 
                   {submitting ? "Vote en cours…" : "Voter"}
-                </button> 
-                <div className="sm-reactions"> 
-                  <button type="button" className="reaction-btn" >
-                    👍 <small> {question.options.reduce( (sum, option) => sum + option.votes, 0 )}
-                       </small> 
-                  </button> 
-                </div> 
+                </button>  
+                 
               </div> 
-            </CenteredCard> 
+             </CenteredCard> 
+             <div className="React-session">
+                <BarReactionCount />
+             </div> 
+            </>
           ); 
         };
 
