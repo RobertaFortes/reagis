@@ -1,7 +1,7 @@
 import type { Middleware } from '@reduxjs/toolkit';
 import { WsEvents } from '@reagis/shared';
 import { socket } from '@/socket';
-import { setSession, updateParticipantCount, sessionStarted, sessionEnded, updateReactionCount } from './sessionSlice';
+import { setSession, updateParticipantCount, sessionStarted, sessionEnded, updateReactionCount, sessionPaused, sessionResumed } from './sessionSlice';
 import { updateVotes, setQuestion } from './questionSlice';
 import { setConnected, setError } from './uiSlice';
 
@@ -63,6 +63,14 @@ export const socketMiddleware: Middleware = (store) => {
 
     socket.on(WsEvents.SESSION_STARTED, () => {
       store.dispatch(sessionStarted());
+    });
+
+    socket.on(WsEvents.SESSION_PAUSED, () => {
+      store.dispatch(sessionPaused());
+    });
+
+    socket.on(WsEvents.SESSION_RESUMED, () => {
+      store.dispatch(sessionResumed());
     });
 
     socket.on(WsEvents.SESSION_ENDED, () => {

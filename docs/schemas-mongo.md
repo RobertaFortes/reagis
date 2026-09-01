@@ -25,7 +25,7 @@ Le champ `role` prépare l'évolution future (compte participant).
 
 ## Session
 
-Machine à états (`draft` → `active` → `finished`), code d'accès unique,
+Machine à états (`draft` → `active` ↔ `paused` → `finished`), code d'accès unique,
 réaction configurable par le présentateur.
 
 | Champ | Type | Requis | Contraintes | Default |
@@ -33,7 +33,7 @@ réaction configurable par le présentateur.
 | `name` | String | oui | trim | — |
 | `code` | String | oui | unique, uppercase | — |
 | `presenter` | ObjectId | oui | ref: User | — |
-| `status` | String | non | enum: `draft`, `active`, `finished` | `draft` |
+| `status` | String | non | enum: `draft`, `active`, `paused`, `finished` | `draft` |
 | `reaction` | String | non | enum: `👍`, `❤️`, `🔥`, `👏` | `👍` |
 | `reactionCount` | Number | non | — | `0` |
 | `currentQuestionIndex` | Number | non | — | `0` |
@@ -45,10 +45,17 @@ réaction configurable par le présentateur.
 ### Machine à états
 
 ```
-draft ──[start]──► active ──[end]──► finished
+draft ──[start]──► active ◄──[resume]── paused
+                     │                    ▲
+                     ├──[pause]───────────┘
+                     │
+                     ├──[end]──► finished
+                     │
+                   paused ──[end]──► finished
 ```
 
 Les transitions sont contrôlées par le backend (409 si état invalide, 403 si pas propriétaire).
+Les votes sont bloqués côté serveur quand la session est en `paused`.
 
 ---
 
