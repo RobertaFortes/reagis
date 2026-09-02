@@ -1,0 +1,128 @@
+/* VotePage.css
+ * Basé sur les design tokens du UI Kit Réagis (:root défini globalement,
+ * voir ui-kit.html — aucune valeur codée en dur ici en dehors des tokens).
+ */
+
+.vote-page {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--sp-sm);
+  width: 100%;
+}
+
+/* ==========================
+   ÉTAT D'ATTENTE
+   ========================== */
+
+.vote-page__status {
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text-mid);
+}
+
+/* ==========================
+   EN-TÊTE QUESTION
+   ========================== */
+
+.vote-page__eyebrow {
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-mid);
+  margin: 0 0 var(--sp-xs);
+}
+
+.vote-page__title {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--text-high);
+  margin: 0 0 var(--sp-sm);
+}
+
+/* ==========================
+   OPTIONS EN COLONNE
+   ========================== */
+
+.vote-page__options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-xs);
+  width: 100%;
+  margin-bottom: var(--sp-sm);
+}
+
+.vote-page__option {
+  width: 100%;
+  min-height: 48px; /* cible tactile ≥48px */
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--outline);
+  border-radius: var(--r-lg);
+  padding: 14px 16px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text-high);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.vote-page__option:hover {
+  border-color: var(--primary);
+}
+
+.vote-page__option--selected {
+  border-color: var(--primary);
+  background: #D85A3014; /* primary à 8% — cf. .opt-card-kit.sel du kit */
+}
+
+/* Radio custom, identique à .radio-kit du UI Kit */
+.vote-page__radio {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--outline);
+  border-radius: 50%;
+  transition: border-color 0.15s ease;
+}
+
+.vote-page__option--selected .vote-page__radio {
+  border-color: var(--primary);
+  background: radial-gradient(circle, var(--primary) 38%, transparent 44%);
+}
+
+/* ==========================
+   BOUTON DE VALIDATION
+   ========================== */
+
+.vote-page__submit {
+  width: 100%;
+  font-family: var(--font-body);
+  background: var(--primary);
+  color: var(--on-primary);
+  border: none;
+  padding: 12px 24px;
+  border-radius: var(--r-md);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.vote-page__submit:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.vote-page__submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
