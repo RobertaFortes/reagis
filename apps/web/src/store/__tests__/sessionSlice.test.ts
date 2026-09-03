@@ -18,6 +18,7 @@ const emptyState: SessionState = {
   reaction: null,
   reactionCount: 0,
   participantCount: 0,
+  floatingReactions: [],
 };
 
 const sampleSession: Omit<SessionState, 'participantCount'> = {
@@ -29,6 +30,7 @@ const sampleSession: Omit<SessionState, 'participantCount'> = {
   totalQuestions: 5,
   reaction: null,
   reactionCount: 0,
+  floatingReactions: [],
 };
 
 describe('sessionSlice', () => {

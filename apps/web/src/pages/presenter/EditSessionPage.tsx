@@ -16,7 +16,9 @@ const EditSessionPage = () => {
 
   const [session, setSession] = useState<Session | null>(null);
   const [sessionName, setSessionName] = useState("");
+  const [selectedReaction, setSelectedReaction] = useState<string>("👍");
   const [nameChanged, setNameChanged] = useState(false);
+  const [reactionChanged, setReactionChanged] = useState(false);
   const [savingName, setSavingName] = useState(false);
 
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -47,6 +49,7 @@ const EditSessionPage = () => {
         }
         setSession(s);
         setSessionName(s.name);
+        setSelectedReaction(s.reaction);
         setQuestions(q);
       })
       .catch((err) => setError(err.message))
@@ -54,14 +57,19 @@ const EditSessionPage = () => {
   }, [id, navigate]);
 
   // --- Session name ---
-  const handleUpdateName = async () => {
+  const handleSaveSessionDetails = async () => {
     if (!id || !sessionName.trim()) return;
 
     setSavingName(true);
     try {
-      const updated = await updateSession(id, { name: sessionName.trim() });
+      const payload: Record<string, string> = {};
+      if (nameChanged) payload.name = sessionName.trim();
+      if (reactionChanged) payload.reaction = selectedReaction;
+
+      const updated = await updateSession(id, payload);
       setSession(updated);
       setNameChanged(false);
+      setReactionChanged(false);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -187,12 +195,29 @@ const EditSessionPage = () => {
             }}
           />
 
-          {nameChanged && (
+          <label>Réaction des participants</label>
+          <div className="emoji-picker">
+            {["👍", "❤️", "🔥", "👏"].map((emoji) => (
+              <button
+                key={emoji}
+                type="button"
+                className={`emoji-picker__btn${selectedReaction === emoji ? " emoji-picker__btn--active" : ""}`}
+                onClick={() => {
+                  setSelectedReaction(emoji);
+                  setReactionChanged(emoji !== session.reaction);
+                }}
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
+
+          {(nameChanged || reactionChanged) && (
             <Button
-              title={savingName ? "Enregistrement…" : "ENREGISTRER LE NOM"}
+              title={savingName ? "Enregistrement…" : "ENREGISTRER"}
               type="button"
               variant="btn-primary"
-              onClick={handleUpdateName}
+              onClick={handleSaveSessionDetails}
               disabled={savingName}
             />
           )}

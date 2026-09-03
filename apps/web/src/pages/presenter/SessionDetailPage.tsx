@@ -7,6 +7,7 @@ import { wsPresenterConnect, wsDisconnect } from "@/store/socketMiddleware";
 import { setQuestion } from "@/store/questionSlice";
 import VoteBar from "@/components/VoteBar";
 import Button from "@/components/Button";
+import FloatingReactions from "@/components/FloatingReactions";
 
 const STATUS_LABEL: Record<Session["status"], { text: string; className: string }> = {
   active:   { text: "● EN DIRECT", className: "badge-live" },
@@ -150,6 +151,7 @@ const SessionDetailPage = () => {
 
   return (
     <>
+      <FloatingReactions />
       <Link to="/sessions" className="back-link">← Mes sessions</Link>
 
       {error && <p className="error" style={{ marginBottom: 8 }}>{error}</p>}

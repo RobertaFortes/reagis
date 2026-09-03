@@ -1,5 +1,11 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
+export interface FloatingReaction {
+  id: string;
+  emoji: string;
+  left: number; // 0-100 horizontal position %
+}
+
 export interface SessionState {
   id: string | null;
   name: string;
@@ -10,6 +16,7 @@ export interface SessionState {
   reaction: string | null;
   reactionCount: number;
   participantCount: number;
+  floatingReactions: FloatingReaction[];
 }
 
 const initialState: SessionState = {
@@ -22,6 +29,7 @@ const initialState: SessionState = {
   reaction: null,
   reactionCount: 0,
   participantCount: 0,
+  floatingReactions: [],
 };
 
 const sessionSlice = createSlice({
@@ -56,10 +64,15 @@ const sessionSlice = createSlice({
     updateReactionCount(state, action: PayloadAction<number>) {
       state.reactionCount = action.payload;
     },
-    
+    addFloatingReaction(state, action: PayloadAction<FloatingReaction>) {
+      state.floatingReactions.push(action.payload);
+    },
+    removeFloatingReaction(state, action: PayloadAction<string>) {
+      state.floatingReactions = state.floatingReactions.filter(r => r.id !== action.payload);
+    },
   },
 });
 
-export const { setSession, updateParticipantCount, sessionStarted, sessionEnded, sessionPaused, sessionResumed, updateQuestionIndex, clearSession, updateReactionCount } =
+export const { setSession, updateParticipantCount, sessionStarted, sessionEnded, sessionPaused, sessionResumed, updateQuestionIndex, clearSession, updateReactionCount, addFloatingReaction, removeFloatingReaction } =
   sessionSlice.actions;
 export default sessionSlice.reducer;
