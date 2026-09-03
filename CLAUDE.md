@@ -55,7 +55,7 @@ npm -w @reagis/web run dev
 
 **Key data flow**: Presenters create sessions with questions via REST API. Participants join via session code. Votes submitted through Socket.io, stored in MongoDB, and broadcast to the session room in real-time.
 
-**Auth**: Presenters use email/password → JWT (7d). Participants are anonymous — device-based SHA256 token per session → participant JWT (6h).
+**Auth**: Presenters use email/password → JWT (1d). Participants are anonymous — device-based SHA256 token per session → participant JWT (6h).
 
 **WebSocket events** are defined in `packages/shared/wsEvents.ts` (source of truth). Room pattern: `session:${sessionId}`. Vote counts are denormalized on `Question.options[].votes` via atomic `$inc`, with separate Vote documents for history.
 

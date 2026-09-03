@@ -103,9 +103,10 @@ const SessionDetailPage = () => {
       .finally(() => setLoading(false));
   }, [id]);
 
-  // Connect WebSocket when session is loaded and active
+  // Connect WebSocket dès que la session existe (sauf terminée)
+  // En draft, permet de voir les participants qui attendent avant de démarrer.
   useEffect(() => {
-    if (!session || (session.status !== "active" && session.status !== "paused")) return;
+    if (!session || session.status === "finished") return;
 
     dispatch(wsPresenterConnect(session._id));
 
@@ -127,6 +128,8 @@ const SessionDetailPage = () => {
         text: current.text,
         options: current.options.map((o) => ({ label: o.label, votes: o.votes })),
         status: current.status,
+        order: session.currentQuestionIndex + 1,
+        total: questions.length,
       })
     );
   }, [questions, session?.currentQuestionIndex, dispatch]);

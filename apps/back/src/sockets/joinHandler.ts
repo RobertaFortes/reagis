@@ -1,6 +1,7 @@
 import type { Server, Socket } from 'socket.io';
 import { WsEvents, SessionStatus } from '@reagis/shared';
 import Session from '../models/Session';
+import Question from '../models/Question';
 import { sessionRoom } from './rooms';
 
 type JoinPayload = {
@@ -8,7 +9,7 @@ type JoinPayload = {
   participantToken?: string;
 };
 
-type Ack = (res: { ok: boolean; error?: string; session?: unknown }) => void;
+type Ack = (res: { ok: boolean; error?: string; session?: unknown; question?: unknown }) => void;
 
 // On garde les infos du participant sur le socket lui-même : à la déconnexion
 // on n'a plus le payload, mais on a besoin de savoir quelle room décrémenter.
@@ -19,14 +20,25 @@ export type SessionSocket = Socket & {
   };
 };
 
-// Nombre de sockets actuellement dans la room (undefined = room vide).
-export const participantCount = (io: Server, sessionId: string) =>
-  io.sockets.adapter.rooms.get(sessionRoom(sessionId))?.size ?? 0;
+// Nombre de participants (exclut le presenter) dans la room.
+export const participantCount = async (io: Server, sessionId: string) => {
+  const room = sessionRoom(sessionId);
+  const socketIds = io.sockets.adapter.rooms.get(room);
+  if (!socketIds) return 0;
 
-export const broadcastParticipantCount = (io: Server, sessionId: string) => {
+  let count = 0;
+  for (const sid of socketIds) {
+    const s = io.sockets.sockets.get(sid);
+    if (s?.data.participantToken) count++;
+  }
+  return count;
+};
+
+export const broadcastParticipantCount = async (io: Server, sessionId: string) => {
+  const count = await participantCount(io, sessionId);
   io.to(sessionRoom(sessionId)).emit(WsEvents.PARTICIPANT_COUNT, {
     sessionId,
-    count: participantCount(io, sessionId),
+    count,
   });
 };
 
@@ -56,6 +68,23 @@ export const registerJoinHandler = (io: Server, socket: SessionSocket) => {
       socket.data.participantToken = payload.participantToken;
       await socket.join(sessionRoom(sessionId));
 
+      // Si la session est active, envoyer aussi la question courante
+      let currentQuestion = null;
+      if (session.status === SessionStatus.ACTIVE || session.status === SessionStatus.PAUSED) {
+        const questions = await Question.find({ session: session._id }).sort({ order: 1 });
+        const q = questions[session.currentQuestionIndex];
+        if (q) {
+          currentQuestion = {
+            id: q._id,
+            text: q.text,
+            options: q.options.map((o: any) => ({ label: o.label, votes: o.votes })),
+            status: q.status,
+          };
+        }
+      }
+
+      const totalQuestions = await Question.countDocuments({ session: session._id });
+
       ack?.({
         ok: true,
         session: {
@@ -64,9 +93,11 @@ export const registerJoinHandler = (io: Server, socket: SessionSocket) => {
           code: session.code,
           status: session.status,
           currentQuestionIndex: session.currentQuestionIndex,
+          totalQuestions,
           reaction: session.reaction,
           reactionCount: session.reactionCount,
         },
+        question: currentQuestion,
       });
 
       broadcastParticipantCount(io, sessionId);

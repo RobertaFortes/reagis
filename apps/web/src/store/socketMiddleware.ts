@@ -1,7 +1,7 @@
 import type { Middleware } from '@reduxjs/toolkit';
 import { WsEvents } from '@reagis/shared';
 import { socket } from '@/socket';
-import { setSession, updateParticipantCount, sessionStarted, sessionEnded, updateReactionCount, sessionPaused, sessionResumed } from './sessionSlice';
+import { setSession, updateParticipantCount, sessionStarted, sessionEnded, updateReactionCount, sessionPaused, sessionResumed, updateQuestionIndex } from './sessionSlice';
 import { updateVotes, setQuestion } from './questionSlice';
 import { setConnected, setError } from './uiSlice';
 
@@ -30,11 +30,54 @@ export const wsSendReaction = (emoji: string) => ({
 });
 
 export const socketMiddleware: Middleware = (store) => {
+  // Credentials du dernier join — permet de re-rejoindre la room après reconnexion.
+  let lastJoin:
+    | { role: 'participant'; participantToken: string; code: string }
+    | { role: 'presenter'; sessionId: string; token: string }
+    | null = null;
+
+  function rejoin() {
+    if (!lastJoin) return;
+
+    if (lastJoin.role === 'participant') {
+      const { participantToken, code } = lastJoin;
+      socket.emit(
+        WsEvents.JOIN_SESSION,
+        { code, participantToken },
+        (res: any) => {
+          if (res.ok) {
+            store.dispatch(setSession(res.session));
+            if (res.question) {
+              store.dispatch(setQuestion(res.question));
+            }
+          } else {
+            store.dispatch(setError(res.error ?? 'Impossible de rejoindre'));
+          }
+        }
+      );
+    } else {
+      const { sessionId, token } = lastJoin;
+      socket.emit(
+        WsEvents.PRESENTER_JOIN,
+        { sessionId, token },
+        (res: any) => {
+          if (res.ok) {
+            store.dispatch(updateParticipantCount(res.participantCount ?? 0));
+          } else {
+            store.dispatch(setError(res.error ?? 'Impossible de rejoindre'));
+          }
+        }
+      );
+    }
+  }
+
   // Bind WS listeners once — they dispatch into Redux.
   function bindListeners() {
     socket.on('connect', () => {
       store.dispatch(setConnected(true));
       store.dispatch(setError(null));
+      // Premier connect ou reconnexion : (re-)rejoindre la room
+      rejoin();
     });
 
     socket.on('disconnect', () => {
@@ -51,6 +94,12 @@ export const socketMiddleware: Middleware = (store) => {
 
     socket.on(WsEvents.QUESTION_CHANGED, (data: any) => {
       store.dispatch(setQuestion(data));
+      if (data.currentQuestionIndex !== undefined) {
+        store.dispatch(updateQuestionIndex({
+          currentQuestionIndex: data.currentQuestionIndex,
+          totalQuestions: data.totalQuestions,
+        }));
+      }
     });
 
     socket.on(WsEvents.PARTICIPANT_COUNT, (data: any) => {
@@ -76,7 +125,7 @@ export const socketMiddleware: Middleware = (store) => {
     socket.on(WsEvents.SESSION_ENDED, () => {
       store.dispatch(sessionEnded());
     });
-    
+
   }
 
   let listenersBound = false;
@@ -90,30 +139,12 @@ export const socketMiddleware: Middleware = (store) => {
         }
 
         const { participantToken, code } = action.payload;
+        lastJoin = { role: 'participant', participantToken, code };
 
         if (!socket.connected) {
           socket.connect();
-        }
-
-        // Wait for the connection before emitting join.
-        const emitJoin = () => {
-          socket.emit(
-            WsEvents.JOIN_SESSION,
-            { code, participantToken },
-            (res: any) => {
-              if (res.ok) {
-                store.dispatch(setSession(res.session));
-              } else {
-                store.dispatch(setError(res.error ?? 'Impossible de rejoindre'));
-              }
-            }
-          );
-        };
-
-        if (socket.connected) {
-          emitJoin();
         } else {
-          socket.once('connect', emitJoin);
+          rejoin();
         }
         break;
       }
@@ -132,31 +163,18 @@ export const socketMiddleware: Middleware = (store) => {
           break;
         }
 
+        lastJoin = { role: 'presenter', sessionId, token };
+
         if (!socket.connected) {
           socket.connect();
-        }
-
-        const emitPresenterJoin = () => {
-          socket.emit(
-            WsEvents.PRESENTER_JOIN,
-            { sessionId, token },
-            (res: any) => {
-              if (!res.ok) {
-                store.dispatch(setError(res.error ?? 'Impossible de rejoindre'));
-              }
-            }
-          );
-        };
-
-        if (socket.connected) {
-          emitPresenterJoin();
         } else {
-          socket.once('connect', emitPresenterJoin);
+          rejoin();
         }
         break;
       }
 
       case 'ws/disconnect': {
+        lastJoin = null;
         socket.disconnect();
         break;
       }
