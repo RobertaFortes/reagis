@@ -187,7 +187,7 @@ const ParticipantSessionPage = () => {
     <CenteredCard className="participant-session-page">
 
       <p className="participant-session-page__eyebrow">
-        SESSION · {session.name && (
+        SESSION {session.name && (
         <p className="participant-session-page__name">
           {session.name}
         </p>
