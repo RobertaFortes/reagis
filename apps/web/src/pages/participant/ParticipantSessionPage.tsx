@@ -187,14 +187,14 @@ const ParticipantSessionPage = () => {
     <CenteredCard className="participant-session-page">
 
       <p className="participant-session-page__eyebrow">
-        SESSION · {session.code}
-      </p>
-
-      {session.name && (
+        SESSION · {session.name && (
         <p className="participant-session-page__name">
           {session.name}
         </p>
       )}
+      </p>
+
+      
 
       {session.status === "active" ? (
 
@@ -205,8 +205,9 @@ const ParticipantSessionPage = () => {
          */
         <VotePage />
 
+      // ) : session.status === "finished" ? (
+      //   //<ResultatPage />
       ) : (
-
         /*
          * SESSION EN ATTENTE
          */

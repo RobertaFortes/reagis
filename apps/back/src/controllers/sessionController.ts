@@ -132,6 +132,15 @@ export const startSession = async (
       sessionId: session._id,
       status: 'active',
     });
+    
+    if (firstQuestion) {
+      io.to(sessionRoom(String(session._id))).emit(WsEvents.QUESTION_CHANGED, {
+        id: firstQuestion._id,
+        text: firstQuestion.text,
+        options: firstQuestion.options.map((o) => ({ label: o.label, votes: o.votes })),
+        status: firstQuestion.status,
+      });
+    }
 
     res.status(200).json(session);
   } catch (error) {
@@ -320,7 +329,21 @@ export const resumeSession = async (
       sessionId: session._id,
       status: 'active',
     });
+    
+    // Re-synchronise la question courante : sans ça, les participants
+    // restent sans question après une reprise (le front n'a plus rien
+    // depuis la mise en pause).
+    const questions = await Question.find({ session: session._id }).sort({ order: 1 });
+    const currentQ = questions[session.currentQuestionIndex];
 
+    if (currentQ) {
+      io.to(sessionRoom(String(session._id))).emit(WsEvents.QUESTION_CHANGED, {
+        id: currentQ._id,
+        text: currentQ.text,
+        options: currentQ.options.map((o) => ({ label: o.label, votes: o.votes })),
+        status: currentQ.status,
+      });
+    }
     res.status(200).json(session);
   } catch (error) {
     console.error(error);

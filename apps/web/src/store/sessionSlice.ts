@@ -47,9 +47,14 @@ const sessionSlice = createSlice({
     clearSession() {
       return initialState;
     },
+    updateReactionCount(state, action: PayloadAction<number>) {
+      state.reactionCount = action.payload;
+    },
+    
   },
 });
 
-export const { setSession, updateParticipantCount, sessionStarted, sessionEnded, sessionPaused, sessionResumed, clearSession } =
-  sessionSlice.actions;
+export const { setSession, updateParticipantCount, sessionStarted, sessionEnded, sessionPaused, sessionResumed, clearSession, 
+updateReactionCount } =  sessionSlice.actions;
+
 export default sessionSlice.reducer;

@@ -1,24 +1,34 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+//import { useParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "@/store/hooks"; 
 import { wsSubmitVote, } from "@/store/socketMiddleware";
+
 import { CenteredCard } from "@/components/CenteredCard";
+import { BarReactionCount } from '@/components/BarReactionCount';
+import Button from "@/components/Button";
+import "@/styles/VotePage.css";
 
 interface VoteOption { id: string; label: string; } 
 interface VotePageProps { stepLabel: string; progress: number; questionIndex: number; questionTotal: number; questionText: string; options: VoteOption[]; reactionEmoji: string; reactionCount: number; onSubmit: (optionId: string) => void; submitting: boolean; }
 
 const VotePage = () => { 
-  const { code } = useParams<{ code: string }>(); 
-  const dispatch = useAppDispatch(); 
-  // La question arrive dans Redux via socketMiddleware 
-  const question = useAppSelector((state) => state.question); 
-  const [selectedOption, setSelectedOption] = useState<string | null>(null); 
-  const [submitting, setSubmitting] = useState(false); 
-  
+const dispatch = useAppDispatch(); 
+// La question arrive dans Redux via socketMiddleware 
+const question = useAppSelector((state) => state.question); 
+const [selectedOption, setSelectedOption] = useState<string | null>(null); 
+const [submitting, setSubmitting] = useState(false); 
+ 
   if (!question.id) { 
-    return ( <CenteredCard> 
-                <p>En attente de la prochaine question…</p> 
+    return ( <>
+              <CenteredCard className="vote-page">
+                <p className="vote-page__status"> 
+                  En attente de la prochaine question…
+                </p> 
               </CenteredCard> 
+              <div className="React-session">
+                <BarReactionCount />
+              </div>  
+             </>
     );
   }  
   const handleSubmit = () => { 
@@ -38,45 +48,48 @@ const VotePage = () => {
     setTimeout(() => { setSubmitting(false); }, 300); 
   };
   
-  return ( <CenteredCard>
-             <div className="vote-page"> 
-                <div className="vote-session"> 
-                  Session {code ?? ""} 
-                </div>
-                <h1>{question.text}</h1>
-                <div className="vote-options"> 
+ 
+
+  return ( <>
+            <CenteredCard className="vote-page"> 
+                <p className="vote-page__eyebrow"> 
+                  question {question.order}/{question.total}
+                </p>
+                <h1 className="vote-page__title">{question.text}</h1>
+                <div className="vote-page__options"> 
                   {question.options.map((option, index) => {
                     const optionId = String(index);
-                    const selected = selectedOption === optionId; 
-                    return ( 
-                      <button 
-                        key={optionId} 
-                        type="button" 
-                        className={`opt-card-kit${selected ? " sel" : ""}`} 
+                    const selected = selectedOption === optionId;
+
+                    return (
+                      <button
+                        key={optionId}
+                        type="button"
+                        className={`vote-page__option${
+                          selected ? " vote-page__option--selected" : ""
+                        }`}
                         onClick={() => setSelectedOption(optionId)}
-                      > 
-                        <span className="radio-kit" /> 
-                        <span>{option.label}</span> 
-                      </button> 
+                      >
+                        <span className="vote-page__radio" aria-hidden="true" />
+                        <span>{option.label}</span>
+                      </button>
                     );
-                  })} 
+                  })}
                 </div>
-                <button 
+                <Button 
                   type="button" 
+                  title="voter"
                   className="btn-primary" 
                   disabled={!selectedOption || submitting} 
                   onClick={handleSubmit}
                 > 
                   {submitting ? "Vote en cours…" : "Voter"}
-                </button> 
-                <div className="sm-reactions"> 
-                  <button type="button" className="reaction-btn" >
-                    👍 <small> {question.options.reduce( (sum, option) => sum + option.votes, 0 )}
-                       </small> 
-                  </button> 
-                </div> 
-              </div> 
-            </CenteredCard> 
+                </Button>  
+             </CenteredCard> 
+             <div className="React-session">
+                <BarReactionCount />
+             </div> 
+            </>
           ); 
         };
 

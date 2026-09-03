@@ -1,0 +1,13 @@
+.reaction-display {
+  font-size: 20px;
+  line-height: 1;
+  margin: 28px 0 0px;
+  width: 76px;
+  height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #D85A3014;
+  border: 1px solid #D85A3044;
+}

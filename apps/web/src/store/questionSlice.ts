@@ -10,6 +10,8 @@ export interface QuestionState {
   text: string;
   options: Option[];
   status: string;
+  order: number;
+  total: number;
 }
 
 const initialState: QuestionState = {
@@ -17,6 +19,8 @@ const initialState: QuestionState = {
   text: '',
   options: [],
   status: '',
+  order: 0,
+  total: 0,
 };
 
 const questionSlice = createSlice({
