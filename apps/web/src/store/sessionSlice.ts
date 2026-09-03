@@ -6,6 +6,7 @@ export interface SessionState {
   code: string;
   status: string;
   currentQuestionIndex: number;
+  totalQuestions: number;
   reaction: string | null;
   reactionCount: number;
   participantCount: number;
@@ -17,6 +18,7 @@ const initialState: SessionState = {
   code: '',
   status: '',
   currentQuestionIndex: 0,
+  totalQuestions: 0,
   reaction: null,
   reactionCount: 0,
   participantCount: 0,
@@ -44,6 +46,10 @@ const sessionSlice = createSlice({
     sessionResumed(state) {
       state.status = 'active';
     },
+    updateQuestionIndex(state, action: PayloadAction<{ currentQuestionIndex: number; totalQuestions: number }>) {
+      state.currentQuestionIndex = action.payload.currentQuestionIndex;
+      state.totalQuestions = action.payload.totalQuestions;
+    },
     clearSession() {
       return initialState;
     },
@@ -54,7 +60,6 @@ const sessionSlice = createSlice({
   },
 });
 
-export const { setSession, updateParticipantCount, sessionStarted, sessionEnded, sessionPaused, sessionResumed, clearSession, 
-updateReactionCount } =  sessionSlice.actions;
-
+export const { setSession, updateParticipantCount, sessionStarted, sessionEnded, sessionPaused, sessionResumed, updateQuestionIndex, clearSession, updateReactionCount } =
+  sessionSlice.actions;
 export default sessionSlice.reducer;

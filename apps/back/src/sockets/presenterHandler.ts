@@ -12,7 +12,7 @@ type PresenterJoinPayload = {
   token?: string;
 };
 
-type Ack = (res: { ok: boolean; error?: string }) => void;
+type Ack = (res: { ok: boolean; error?: string; participantCount?: number }) => void;
 
 export const registerPresenterHandler = (io: Server, socket: SessionSocket) => {
   socket.on(WsEvents.PRESENTER_JOIN, async (payload: PresenterJoinPayload = {}, ack?: Ack) => {
@@ -37,8 +37,11 @@ export const registerPresenterHandler = (io: Server, socket: SessionSocket) => {
       socket.data.sessionId = sessionId;
       await socket.join(sessionRoom(sessionId));
 
+      const count = await participantCount(io, sessionId);
+
       ack?.({
         ok: true,
+        participantCount: count,
       });
     } catch (err: any) {
       if (err?.name === 'JsonWebTokenError' || err?.name === 'TokenExpiredError') {

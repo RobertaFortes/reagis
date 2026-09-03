@@ -14,6 +14,7 @@ const emptyState: SessionState = {
   code: '',
   status: '',
   currentQuestionIndex: 0,
+  totalQuestions: 0,
   reaction: null,
   reactionCount: 0,
   participantCount: 0,
@@ -25,6 +26,7 @@ const sampleSession: Omit<SessionState, 'participantCount'> = {
   code: 'RG-ABCD',
   status: 'active',
   currentQuestionIndex: 2,
+  totalQuestions: 5,
   reaction: null,
   reactionCount: 0,
 };

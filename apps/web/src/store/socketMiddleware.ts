@@ -1,7 +1,7 @@
 import type { Middleware } from '@reduxjs/toolkit';
 import { WsEvents } from '@reagis/shared';
 import { socket } from '@/socket';
-import { setSession, updateParticipantCount, sessionStarted, sessionEnded, updateReactionCount, sessionPaused, sessionResumed } from './sessionSlice';
+import { setSession, updateParticipantCount, sessionStarted, sessionEnded, updateReactionCount, sessionPaused, sessionResumed, updateQuestionIndex } from './sessionSlice';
 import { updateVotes, setQuestion } from './questionSlice';
 import { setConnected, setError } from './uiSlice';
 
@@ -51,6 +51,12 @@ export const socketMiddleware: Middleware = (store) => {
 
     socket.on(WsEvents.QUESTION_CHANGED, (data: any) => {
       store.dispatch(setQuestion(data));
+      if (data.currentQuestionIndex !== undefined) {
+        store.dispatch(updateQuestionIndex({
+          currentQuestionIndex: data.currentQuestionIndex,
+          totalQuestions: data.totalQuestions,
+        }));
+      }
     });
 
     socket.on(WsEvents.PARTICIPANT_COUNT, (data: any) => {
@@ -103,6 +109,9 @@ export const socketMiddleware: Middleware = (store) => {
             (res: any) => {
               if (res.ok) {
                 store.dispatch(setSession(res.session));
+                if (res.question) {
+                  store.dispatch(setQuestion(res.question));
+                }
               } else {
                 store.dispatch(setError(res.error ?? 'Impossible de rejoindre'));
               }
@@ -141,7 +150,9 @@ export const socketMiddleware: Middleware = (store) => {
             WsEvents.PRESENTER_JOIN,
             { sessionId, token },
             (res: any) => {
-              if (!res.ok) {
+              if (res.ok) {
+                store.dispatch(updateParticipantCount(res.participantCount ?? 0));
+              } else {
                 store.dispatch(setError(res.error ?? 'Impossible de rejoindre'));
               }
             }

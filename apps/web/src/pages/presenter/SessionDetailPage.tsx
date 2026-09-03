@@ -127,6 +127,8 @@ const SessionDetailPage = () => {
         text: current.text,
         options: current.options.map((o) => ({ label: o.label, votes: o.votes })),
         status: current.status,
+        order: session.currentQuestionIndex + 1,
+        total: questions.length,
       })
     );
   }, [questions, session?.currentQuestionIndex, dispatch]);

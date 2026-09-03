@@ -128,16 +128,19 @@ export const startSession = async (
     await session.save();
 
     const io = req.app.get('io');
-    io.to(sessionRoom(String(session._id))).emit(WsEvents.SESSION_STARTED, {
+    const room = sessionRoom(String(session._id));
+
+    io.to(room).emit(WsEvents.SESSION_STARTED, {
       sessionId: session._id,
       status: 'active',
     });
-    
+
+    // Envoie la première question aux participants déjà connectés
     if (firstQuestion) {
-      io.to(sessionRoom(String(session._id))).emit(WsEvents.QUESTION_CHANGED, {
+      io.to(room).emit(WsEvents.QUESTION_CHANGED, {
         id: firstQuestion._id,
         text: firstQuestion.text,
-        options: firstQuestion.options.map((o) => ({ label: o.label, votes: o.votes })),
+        options: firstQuestion.options.map((o: any) => ({ label: o.label, votes: o.votes })),
         status: firstQuestion.status,
       });
     }
@@ -242,8 +245,10 @@ const navigateQuestion = async (
     io.to(sessionRoom(String(session._id))).emit(WsEvents.QUESTION_CHANGED, {
       id: targetQ._id,
       text: targetQ.text,
-      options: targetQ.options.map((o) => ({ label: o.label, votes: o.votes })),
+      options: targetQ.options.map((o: any) => ({ label: o.label, votes: o.votes })),
       status: targetQ.status,
+      currentQuestionIndex: targetIndex,
+      totalQuestions: questions.length,
     });
 
     res.status(200).json(session);

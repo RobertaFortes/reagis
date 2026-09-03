@@ -3,6 +3,7 @@
 export const SessionStatus = {
   DRAFT: 'draft',
   ACTIVE: 'active',
+  PAUSED: 'paused',
   FINISHED: 'finished',
 } as const;
 
