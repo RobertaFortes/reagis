@@ -31,6 +31,7 @@ const JoinPage = () => {
   };
 
   const handleScan = (results: IDetectedBarcode[]) => {
+    console.log("QR détecté :", results);
     const raw = results[0]?.rawValue;
     if (!raw) return;
 
