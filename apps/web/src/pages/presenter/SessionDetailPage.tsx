@@ -7,6 +7,7 @@ import { wsPresenterConnect, wsDisconnect } from "@/store/socketMiddleware";
 import { setQuestion } from "@/store/questionSlice";
 import VoteBar from "@/components/VoteBar";
 import Button from "@/components/Button";
+import { QRCodeSVG } from "qrcode.react";
 import FloatingReactions from "@/components/FloatingReactions";
 
 const STATUS_LABEL: Record<Session["status"], { text: string; className: string }> = {
@@ -248,8 +249,10 @@ const SessionDetailPage = () => {
           )}
         </section>
 
-        <section className="panel qr-panel">
-          <div className="qr-placeholder">QR CODE</div>
+        <section className="qr-placeholder">
+            <QRCodeSVG  value={`${window.location.origin}/session/${session.code}`}
+              size={190} level="H"
+            />
           <strong>{session.code}</strong>
           <span>Scannez pour rejoindre</span>
         </section>
