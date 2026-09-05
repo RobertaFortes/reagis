@@ -7,8 +7,9 @@ export default defineConfig({
   server: { port: 5173 },
   resolve: {
     alias: {
-    "@": new URL("./src", import.meta.url).pathname,
-  },
+      "@": new URL("./src", import.meta.url).pathname,
+      "@reagis/shared": new URL("../../packages/shared/index.ts", import.meta.url).pathname,
+    },
   },
   test: {
     environment: 'jsdom',

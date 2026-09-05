@@ -1,7 +1,7 @@
-export { WsEvents } from './wsEvents';
-export type { WsEvent } from './wsEvents';
-export { SessionStatus } from './sessionStatus';
-export type { SessionStatusValue } from './sessionStatus';
+export { WsEvents } from './wsEvents.js';
+export type { WsEvent } from './wsEvents.js';
+export { SessionStatus } from './sessionStatus.js';
+export type { SessionStatusValue } from './sessionStatus.js';
 export type {
   QuestionOption,
   Question,
@@ -23,4 +23,4 @@ export type {
   WsReactionUpdatePayload,
   WsQuestionChangedPayload,
   WsSessionEndedPayload,
-} from './types';
+} from './types.js';
