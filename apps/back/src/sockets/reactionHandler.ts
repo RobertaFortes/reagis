@@ -25,6 +25,7 @@ if (!session) return;
 io.to(sessionRoom(sessionId)).emit(WsEvents.REACTION_UPDATE, {
 sessionId,
 reactionCount: session.reactionCount,
+emoji: payload.emoji || session.reaction || '👍',
 });
 } catch (err) {
 console.error('[ws] send_reaction', err);

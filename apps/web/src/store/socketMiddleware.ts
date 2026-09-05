@@ -1,7 +1,7 @@
 import type { Middleware } from '@reduxjs/toolkit';
 import { WsEvents } from '@reagis/shared';
 import { socket } from '@/socket';
-import { setSession, updateParticipantCount, sessionStarted, sessionEnded, updateReactionCount, sessionPaused, sessionResumed, updateQuestionIndex } from './sessionSlice';
+import { setSession, updateParticipantCount, sessionStarted, sessionEnded, updateReactionCount, sessionPaused, sessionResumed, updateQuestionIndex, addFloatingReaction, removeFloatingReaction } from './sessionSlice';
 import { updateVotes, setQuestion } from './questionSlice';
 import { setConnected, setError } from './uiSlice';
 
@@ -108,6 +108,10 @@ export const socketMiddleware: Middleware = (store) => {
 
     socket.on(WsEvents.REACTION_UPDATE, (data: any) => {
       store.dispatch(updateReactionCount(data.reactionCount));
+      const id = `r_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+      const left = 10 + Math.random() * 80;
+      store.dispatch(addFloatingReaction({ id, emoji: data.emoji || '👍', left }));
+      setTimeout(() => store.dispatch(removeFloatingReaction(id)), 3000);
     });
 
     socket.on(WsEvents.SESSION_STARTED, () => {
