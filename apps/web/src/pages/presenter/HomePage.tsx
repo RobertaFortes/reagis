@@ -23,6 +23,9 @@ const HomePage = () => {
       .finally(() => setLoading(false));
   }, []);
 
+  const activeSessions = sessions.filter((s) => s.status === "active" || s.status === "paused");
+  const otherSessions = sessions.filter((s) => s.status !== "active" && s.status !== "paused");
+
   return (
     <>
       <h1>Bienvenue</h1>
@@ -41,16 +44,38 @@ const HomePage = () => {
         />
       </section>
 
-      <h2>Sessions récentes</h2>
-
       {loading && <p>Chargement…</p>}
       {error && <p className="error">{error}</p>}
 
+      {!loading && activeSessions.length > 0 && (
+        <>
+          <h2>Sessions en cours</h2>
+          <div className="sessions-grid">
+            {activeSessions.map((session) => {
+              const badge = STATUS_LABEL[session.status];
+              return (
+                <div
+                  key={session._id}
+                  className="session-card session-card--active"
+                  onClick={() => navigate(`/sessions/${session._id}`)}
+                  style={{ cursor: "pointer" }}
+                >
+                  <h3>{session.name}</h3>
+                  <span className={badge.className}>{badge.text}</span>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+
+      <h2>Sessions récentes</h2>
+
       <div className="sessions-grid">
-        {!loading && sessions.length === 0 && !error && (
+        {!loading && otherSessions.length === 0 && activeSessions.length === 0 && !error && (
           <p>Aucune session pour le moment.</p>
         )}
-        {sessions.map((session) => {
+        {otherSessions.map((session) => {
           const badge = STATUS_LABEL[session.status];
           return (
             <div

@@ -16,9 +16,11 @@ import {
   Session,
   SessionError,
 } from "@/api/sessionApi";
+import { getQuestionsBySession, type Question } from "@/api/questionApi";
 
 import Button from "@/components/Button";
 import FloatingReactions from "@/components/FloatingReactions";
+import SessionResults from "@/components/SessionResults";
 import VotePage from "./VotePage";
 
 type PageState = "loading" | "not-found" | "error" | "ready";
@@ -55,6 +57,7 @@ const ParticipantSessionPage = () => {
 
   const [state, setState] = useState<PageState>("loading");
   const [isBouncing, setIsBouncing] = useState(false);
+  const [resultQuestions, setResultQuestions] = useState<Question[]>([]);
 
   /**
    * Rejoint la session puis ouvre la connexion WebSocket.
@@ -100,6 +103,15 @@ const ParticipantSessionPage = () => {
       dispatch(wsDisconnect());
     };
   }, [code, dispatch]);
+
+  // Fetch questions when session ends to show results
+  useEffect(() => {
+    if (session.status !== "finished" || !session.id) return;
+
+    getQuestionsBySession(session.id)
+      .then(setResultQuestions)
+      .catch(() => {});
+  }, [session.status, session.id]);
 
   /**
    * Réaction du participant pendant l'attente.
@@ -201,15 +213,15 @@ const ParticipantSessionPage = () => {
 
       {session.status === "active" ? (
 
-        /*
-         * SESSION ACTIVE
-         *
-         * VotePage prend maintenant la main.
-         */
         <VotePage />
 
-      // ) : session.status === "finished" ? (
-      //   //<ResultatPage />
+      ) : session.status === "finished" ? (
+        <SessionResults
+          sessionName={session.name}
+          questions={resultQuestions}
+          compact
+        />
+
       ) : (
         /*
          * SESSION EN ATTENTE

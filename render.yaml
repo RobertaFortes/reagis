@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: reagis-api
+    runtime: node
+    buildCommand: npm install && npm run build -w @reagis/shared && mkdir -p node_modules/@reagis && ln -sf ../../../packages/shared node_modules/@reagis/shared && npm run build -w @reagis/back
+    startCommand: npm run start -w @reagis/back
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: PARTICIPANT_JWT_SECRET
+        generateValue: true
+      - key: CLIENT_URL
+        sync: false

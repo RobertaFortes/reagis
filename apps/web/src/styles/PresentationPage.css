@@ -1,0 +1,280 @@
+/* ========================================
+   MODE PRÉSENTATION — vue projection
+   Full-screen, read-only, optimisée pour
+   être projetée sur un écran/TV.
+   ======================================== */
+
+.presentation-page {
+  min-height: 100vh;
+  background: var(--surface-0);
+  color: var(--text-high);
+  display: flex;
+  flex-direction: column;
+  padding: var(--sp-lg) var(--sp-lg) 120px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ---- Header ---- */
+
+.presentation-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--sp-lg);
+}
+
+.presentation-header__left {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+}
+
+.presentation-header__title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-high);
+}
+
+.presentation-header .badge-live {
+  animation: pulse-live 2s ease-in-out infinite;
+}
+
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.presentation-fullscreen-btn {
+  background: var(--surface-2);
+  border: 1px solid var(--outline);
+  border-radius: var(--r-md);
+  color: var(--text-mid);
+  font-size: 20px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.presentation-fullscreen-btn:hover {
+  border-color: var(--primary);
+  color: var(--text-high);
+}
+
+/* ---- Header right buttons ---- */
+
+.presentation-header__right {
+  display: flex;
+  gap: 8px;
+}
+
+/* ---- Controls bar ---- */
+
+.presentation-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px var(--sp-sm);
+  background: var(--surface-1);
+  border: 1px solid var(--outline);
+  border-radius: var(--r-lg);
+  margin-bottom: var(--sp-md);
+}
+
+.presentation-controls__spacer {
+  flex: 1;
+}
+
+.presentation-controls__btn {
+  padding: 8px 16px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-high);
+  background: var(--surface-2);
+  border: 1px solid var(--outline);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.presentation-controls__btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.presentation-controls__btn--primary {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--on-primary);
+}
+
+.presentation-controls__btn--primary:hover {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+  color: var(--on-primary);
+}
+
+.presentation-controls__btn--danger {
+  color: var(--text-mid);
+}
+
+.presentation-controls__btn--danger:hover {
+  border-color: #e74c3c;
+  color: #e74c3c;
+}
+
+/* ---- Main content (centered) ---- */
+
+.presentation-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.presentation-question {
+  font-family: var(--font-display);
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--text-high);
+  margin-bottom: var(--sp-lg);
+  text-align: center;
+}
+
+/* Override vote bars for projection */
+.presentation-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-sm);
+}
+
+.presentation-options .vote-bar-row {
+  margin-bottom: 0;
+}
+
+.presentation-options .vote-bar-label {
+  font-size: 22px;
+  width: 200px;
+  min-width: 200px;
+  flex-shrink: 0;
+}
+
+.presentation-options .vote-bar-track {
+  height: 40px;
+  border-radius: var(--r-md);
+}
+
+.presentation-options .vote-bar-fill {
+  border-radius: var(--r-md);
+  transition: width 0.6s ease;
+}
+
+.presentation-options .vote-bar-pct {
+  font-size: 22px;
+  min-width: 60px;
+}
+
+/* ---- Meta (vote count + question counter) ---- */
+
+.presentation-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--sp-md);
+  padding-top: var(--sp-sm);
+  border-top: 1px solid var(--outline);
+}
+
+.presentation-meta__votes {
+  font-family: var(--font-display);
+  font-size: 20px;
+  color: var(--text-high);
+}
+
+.presentation-meta__counter {
+  font-size: 16px;
+  color: var(--text-mid);
+}
+
+/* ---- Waiting state (no question yet) ---- */
+
+.presentation-waiting {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-md);
+  text-align: center;
+}
+
+.presentation-waiting__text {
+  font-family: var(--font-display);
+  font-size: 32px;
+  color: var(--text-mid);
+}
+
+/* ---- QR corner (fixed bottom-right) ---- */
+
+.presentation-qr {
+  position: fixed;
+  bottom: var(--sp-md);
+  right: var(--sp-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+
+  background: var(--surface-1);
+  border: 1px solid var(--outline);
+  border-radius: var(--r-lg);
+  padding: var(--sp-sm);
+}
+
+.presentation-qr strong {
+  font-family: var(--font-display);
+  font-size: 16px;
+  color: var(--primary);
+}
+
+.presentation-qr span {
+  font-size: 11px;
+  color: var(--text-mid);
+}
+
+/* ---- Participants counter ---- */
+
+.presentation-participants {
+  position: fixed;
+  bottom: var(--sp-md);
+  left: var(--sp-md);
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  background: var(--surface-1);
+  border: 1px solid var(--outline);
+  border-radius: var(--r-lg);
+  padding: 12px var(--sp-sm);
+
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--text-high);
+}
+
+.presentation-participants span {
+  font-size: 12px;
+  color: var(--text-mid);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
