@@ -2,7 +2,7 @@ services:
   - type: web
     name: reagis-api
     runtime: node
-    buildCommand: npm install && npm run build -w @reagis/shared && npm run build -w @reagis/back
+    buildCommand: npm install && npm run build -w @reagis/shared && mkdir -p node_modules/@reagis && ln -sf ../../../packages/shared node_modules/@reagis/shared && npm run build -w @reagis/back
     startCommand: npm run start -w @reagis/back
     envVars:
       - key: NODE_ENV
