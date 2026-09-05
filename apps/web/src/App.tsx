@@ -6,6 +6,7 @@ import SessionPage from "@/pages/presenter/SessionPage";
 import CreateSessionPage from "@/pages/presenter/CreateSessionPage";
 import SessionDetailPage from "@/pages/presenter/SessionDetailPage";
 import EditSessionPage from "@/pages/presenter/EditSessionPage";
+import PresentationPage from "@/pages/presenter/PresentationPage";
 import JoinPage from "@/pages/participant/JoinPage";
 import ParticipantSessionPage from "@/pages/participant/ParticipantSessionPage";
 
@@ -16,6 +17,7 @@ function App() {
         {/* Participant — sans auth, sans sidebar */}
         <Route path="/join" element={<JoinPage />} />
         <Route path="/session/:code" element={<ParticipantSessionPage />} />
+        <Route path="/sessions/:id/present" element={<PresentationPage />} />
 
         {/* Public */}
         <Route path="/" element={<LoginPage />} />

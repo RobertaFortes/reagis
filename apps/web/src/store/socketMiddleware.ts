@@ -93,7 +93,14 @@ export const socketMiddleware: Middleware = (store) => {
     });
 
     socket.on(WsEvents.QUESTION_CHANGED, (data: any) => {
-      store.dispatch(setQuestion(data));
+      store.dispatch(setQuestion({
+        id: data.id,
+        text: data.text,
+        options: data.options,
+        status: data.status,
+        order: data.currentQuestionIndex !== undefined ? data.currentQuestionIndex + 1 : 0,
+        total: data.totalQuestions ?? 0,
+      }));
       if (data.currentQuestionIndex !== undefined) {
         store.dispatch(updateQuestionIndex({
           currentQuestionIndex: data.currentQuestionIndex,

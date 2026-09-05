@@ -165,6 +165,31 @@ h3 { font-size: 16px; font-weight: 600; }
 }
 
 /* ========================================
+   ICÔNE PRÉSENTER (mode projection)
+   ======================================== */
+
+.present-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  font-size: 20px;
+
+  background: var(--surface-2);
+  border: 1px solid var(--outline);
+  border-radius: var(--r-md);
+  color: var(--text-mid);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.present-icon-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* ========================================
    LIEN DE RETOUR
    ======================================== */
 
@@ -250,6 +275,7 @@ h3 { font-size: 16px; font-weight: 600; }
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: var(--sp-md);
   margin-top: var(--sp-md);
+  margin-bottom: var(--sp-lg);
 }
 
 .session-card {
@@ -268,6 +294,24 @@ h3 { font-size: 16px; font-weight: 600; }
 }
 
 .session-card:hover {
+  border-color: var(--primary);
+}
+
+.session-card--active {
+  border-color: #D85A3044;
+  background: #D85A300A;
+}
+
+.session-card--active:hover {
+  border-color: var(--primary);
+}
+
+.session-card--active {
+  border-color: #D85A3044;
+  background: #D85A300A;
+}
+
+.session-card--active:hover {
   border-color: var(--primary);
 }
 

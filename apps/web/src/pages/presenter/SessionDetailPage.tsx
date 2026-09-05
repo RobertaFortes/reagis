@@ -9,6 +9,7 @@ import VoteBar from "@/components/VoteBar";
 import Button from "@/components/Button";
 import { QRCodeSVG } from "qrcode.react";
 import FloatingReactions from "@/components/FloatingReactions";
+import SessionResults from "@/components/SessionResults";
 
 const STATUS_LABEL: Record<Session["status"], { text: string; className: string }> = {
   active:   { text: "● EN DIRECT", className: "badge-live" },
@@ -91,6 +92,23 @@ const SessionDetailPage = () => {
   const liveOptions = useAppSelector((s) => s.question.options);
   const liveQuestionId = useAppSelector((s) => s.question.id);
   const participantCount = useAppSelector((s) => s.session.participantCount);
+  const liveQuestionIndex = useAppSelector((s) => s.session.currentQuestionIndex);
+  const liveStatus = useAppSelector((s) => s.session.status);
+
+  // Sync local session state with Redux updates (e.g. from other tabs)
+  useEffect(() => {
+    if (!session || liveQuestionIndex === undefined) return;
+    if (session.currentQuestionIndex !== liveQuestionIndex) {
+      setSession((s) => s ? { ...s, currentQuestionIndex: liveQuestionIndex } : s);
+    }
+  }, [liveQuestionIndex]);
+
+  useEffect(() => {
+    if (!session || !liveStatus) return;
+    if (session.status !== liveStatus) {
+      setSession((s) => s ? { ...s, status: liveStatus as Session["status"] } : s);
+    }
+  }, [liveStatus]);
 
   // Load session + questions via REST
   useEffect(() => {
@@ -143,12 +161,15 @@ const SessionDetailPage = () => {
   const currentQuestion = questions[session.currentQuestionIndex];
 
   // Use live options from Redux if they match the current question, else REST data
-  const options =
-    currentQuestion && liveQuestionId === currentQuestion._id
-      ? liveOptions
-      : currentQuestion?.options ?? [];
+  const questionIdMatch = currentQuestion && liveQuestionId && liveQuestionId === currentQuestion._id;
+  const options = questionIdMatch
+    ? liveOptions
+    : currentQuestion?.options ?? [];
 
   const totalVotes = options.reduce((sum, o) => sum + o.votes, 0);
+
+  // Debug — remove after validating
+  console.log('[dash] liveQuestionId:', liveQuestionId, 'currentQ._id:', currentQuestion?._id, 'match:', questionIdMatch, 'liveVotes:', liveOptions.reduce((s, o) => s + o.votes, 0));
 
   return (
     <>
@@ -159,7 +180,18 @@ const SessionDetailPage = () => {
 
       <header className="page-header">
         <div>
-          <h1>{session.name}</h1>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <h1>{session.name}</h1>
+            {(session.status === "active" || session.status === "paused") && (
+              <button
+                className="present-icon-btn"
+                onClick={() => window.open(`/sessions/${id}/present`, '_blank')}
+                title="Ouvrir le mode présentation"
+              >
+                ⛶
+              </button>
+            )}
+          </div>
           <span className={badge.className}>{badge.text}</span>
         </div>
 
@@ -183,80 +215,86 @@ const SessionDetailPage = () => {
         )}
       </header>
 
-      <div className="kpi-grid">
-        <div className="kpi">
-          <strong>{participantCount}</strong>
-          <span>Participants</span>
-        </div>
+      {session.status === "finished" ? (
+        <SessionResults sessionName={session.name} questions={questions} />
+      ) : (
+        <>
+          <div className="kpi-grid">
+            <div className="kpi">
+              <strong>{participantCount}</strong>
+              <span>Participants</span>
+            </div>
 
-        <div className="kpi">
-          <strong>{totalVotes}</strong>
-          <span>Votes</span>
-        </div>
+            <div className="kpi">
+              <strong>{totalVotes}</strong>
+              <span>Votes</span>
+            </div>
 
-        <div className="kpi">
-          <strong>{questions.length}</strong>
-          <span>Questions</span>
-        </div>
-      </div>
+            <div className="kpi">
+              <strong>{questions.length}</strong>
+              <span>Questions</span>
+            </div>
+          </div>
 
-      <div className="detail-grid">
-        <section className="panel">
-          <h2>Question en cours</h2>
+          <div className="detail-grid">
+            <section className="panel">
+              <h2>Question en cours</h2>
 
-          {currentQuestion ? (
-            <>
-              <h3>{currentQuestion.text}</h3>
+              {currentQuestion ? (
+                <>
+                  <h3>{currentQuestion.text}</h3>
 
-              <div style={{ marginTop: 16 }}>
-                {options.map((opt) => (
-                  <VoteBar
-                    key={opt.label}
-                    label={opt.label}
-                    votes={opt.votes}
-                    total={totalVotes}
-                  />
-                ))}
-              </div>
+                  <div style={{ marginTop: 16 }}>
+                    {options.map((opt) => (
+                      <VoteBar
+                        key={opt.label}
+                        label={opt.label}
+                        votes={opt.votes}
+                        total={totalVotes}
+                      />
+                    ))}
+                  </div>
 
-              <div style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                borderTop: "1px solid var(--outline)",
-                paddingTop: 16,
-                marginTop: 8
-              }}>
-                <span style={{ fontSize: 12, color: "var(--text-mid)" }}>
-                  {questions.length === 1
-                    ? `${totalVotes} votes · question unique`
-                    : `${totalVotes} votes · question ${session.currentQuestionIndex + 1}/${questions.length}`}
-                </span>
-                {questions.length > 1 && (
-                  <div style={{ display: "flex", gap: 8 }}>
-                    {session.currentQuestionIndex > 0 && (
-                      <Button title="← PRÉCÉDENTE" type="button" variant="btn-secondary" onClick={handlePreviousQuestion} />
-                    )}
-                    {session.currentQuestionIndex < questions.length - 1 && (
-                      <Button title="SUIVANTE →" type="button" variant="btn-primary" onClick={handleNextQuestion} />
+                  <div style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    borderTop: "1px solid var(--outline)",
+                    paddingTop: 16,
+                    marginTop: 8
+                  }}>
+                    <span style={{ fontSize: 12, color: "var(--text-mid)" }}>
+                      {questions.length === 1
+                        ? `${totalVotes} votes · question unique`
+                        : `${totalVotes} votes · question ${session.currentQuestionIndex + 1}/${questions.length}`}
+                    </span>
+                    {questions.length > 1 && (session.status === "active" || session.status === "paused") && (
+                      <div style={{ display: "flex", gap: 8 }}>
+                        {session.currentQuestionIndex > 0 && (
+                          <Button title="← PRÉCÉDENTE" type="button" variant="btn-secondary" onClick={handlePreviousQuestion} />
+                        )}
+                        {session.currentQuestionIndex < questions.length - 1 && (
+                          <Button title="SUIVANTE →" type="button" variant="btn-primary" onClick={handleNextQuestion} />
+                        )}
+                      </div>
                     )}
                   </div>
-                )}
-              </div>
-            </>
-          ) : (
-            <p>Aucune question.</p>
-          )}
-        </section>
+                </>
+              ) : (
+                <p>Aucune question.</p>
+              )}
+            </section>
 
-        <section className="qr-placeholder">
-            <QRCodeSVG  value={`${window.location.origin}/session/${session.code}`}
-              size={190} level="H"
-            />
-          <strong>{session.code}</strong>
-          <span>Scannez pour rejoindre</span>
-        </section>
-      </div>
+            <section className="qr-placeholder">
+                <QRCodeSVG  value={`${window.location.origin}/session/${session.code}`}
+                  size={190} level="H"
+                />
+              <strong>{session.code}</strong>
+              <span>Scannez pour rejoindre</span>
+            </section>
+          </div>
+        </>
+      )}
     </>
   );
 };
