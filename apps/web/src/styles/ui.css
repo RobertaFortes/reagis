@@ -357,13 +357,13 @@ h3 { font-size: 16px; font-weight: 600; }
   box-sizing: border-box;
 }
 
-.qr-panel strong {
+.qr-placeholder strong {
   font-family: var(--font-display);
   font-size: 24px;
   color: var(--primary);
 }
 
-.qr-panel span {
+.qr-placeholder span {
   color: var(--text-mid);
   font-size: 12px;
 }
