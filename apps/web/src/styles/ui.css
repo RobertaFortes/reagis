@@ -399,6 +399,48 @@ td {
 }
 
 /* ========================================
+   EMOJI PICKER (réaction session)
+   ======================================== */
+
+.emoji-picker {
+  display: flex;
+  gap: var(--sp-sm);
+  margin-bottom: var(--sp-sm);
+}
+
+.emoji-picker__btn {
+  width: 48px;
+  height: 48px;
+  font-size: 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--surface-2);
+  border: 2px solid transparent;
+  border-radius: var(--r-md);
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.1s ease;
+}
+
+.emoji-picker__btn:hover {
+  border-color: var(--outline);
+  transform: scale(1.1);
+}
+
+.emoji-picker__btn--active {
+  border-color: var(--primary);
+  background: #D85A3014;
+}
+
+.emoji-picker__btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+  transform: none;
+}
+
+/* ========================================
    RESPONSIVE
    ======================================== */
 

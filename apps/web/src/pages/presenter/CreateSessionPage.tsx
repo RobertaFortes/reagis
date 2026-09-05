@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { createSession } from "@/api/sessionApi";
+import { createSession, type Session } from "@/api/sessionApi";
 import { createQuestion, deleteQuestion, type Question } from "@/api/questionApi";
 import Button from '@/components/Button';
 
@@ -18,6 +18,7 @@ const CreateSessionPage = () => {
 
   // Session state
   const [sessionName, setSessionName] = useState("");
+  const [selectedReaction, setSelectedReaction] = useState<Session["reaction"]>("👍");
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sessionError, setSessionError] = useState("");
   const [creatingSession, setCreatingSession] = useState(false);
@@ -42,6 +43,7 @@ const CreateSessionPage = () => {
       const session = await createSession({
         name: sessionName.trim(),
         code: generateCode(),
+        reaction: selectedReaction,
       });
       setSessionId(session._id);
     } catch (err: any) {
@@ -118,6 +120,21 @@ const CreateSessionPage = () => {
             onChange={(e) => setSessionName(e.target.value)}
             disabled={!!sessionId}
           />
+
+          <label>Réaction des participants</label>
+          <div className="emoji-picker">
+            {(["👍", "❤️", "🔥", "👏"] as const).map((emoji) => (
+              <button
+                key={emoji}
+                type="button"
+                className={`emoji-picker__btn${selectedReaction === emoji ? " emoji-picker__btn--active" : ""}`}
+                onClick={() => setSelectedReaction(emoji)}
+                disabled={!!sessionId}
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
 
           {!sessionId && (
             <>

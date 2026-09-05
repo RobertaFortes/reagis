@@ -126,6 +126,7 @@ export interface WsParticipantCountPayload {
 export interface WsReactionUpdatePayload {
   sessionId: string;
   count: number;
+  emoji: string;
 }
 
 export interface WsQuestionChangedPayload {

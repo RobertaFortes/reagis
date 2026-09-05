@@ -18,6 +18,7 @@ import {
 } from "@/api/sessionApi";
 
 import Button from "@/components/Button";
+import FloatingReactions from "@/components/FloatingReactions";
 import VotePage from "./VotePage";
 
 type PageState = "loading" | "not-found" | "error" | "ready";
@@ -184,10 +185,12 @@ const ParticipantSessionPage = () => {
    */
 
   return (
+    <>
+    <FloatingReactions />
     <CenteredCard className="participant-session-page">
 
       <p className="participant-session-page__eyebrow">
-        SESSION · {session.name && (
+        SESSION {session.name && (
         <p className="participant-session-page__name">
           {session.name}
         </p>
@@ -242,6 +245,7 @@ const ParticipantSessionPage = () => {
       )}
 
     </CenteredCard>
+    </>
   );
 };
 
