@@ -249,11 +249,11 @@ const SessionDetailPage = () => {
           )}
         </section>
 
-        <section className="qr-placeholder">
+        <section className="qr-placeholder qr-panel">
             <QRCodeSVG  value={`${window.location.origin}/session/${session.code}`}
               size={190} level="H"
             />
-          <strong>{session.code}</strong>
+          <strong> {session.code}</strong>
           <span>Scannez pour rejoindre</span>
         </section>
       </div>

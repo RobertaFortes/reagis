@@ -4,6 +4,7 @@ import { Scanner, IDetectedBarcode } from "@yudiel/react-qr-scanner";
 import { CenteredCard } from "@/components/CenteredCard";
 import "@/styles/JoinPage.css";
 import Button from '@/components/Button';
+import LogoScan from '@/components/LogoScan';
 
 /**
  * Entry point for participants.
@@ -96,7 +97,7 @@ const JoinPage = () => {
       )}
 
       <Button
-        title={mode === "manual" ? "ou scanner le QR code" : "ou saisir le code manuellement"}
+        title={mode === "manual" ? (<> <LogoScan/>Scanner un QR code </> ) : "ou saisir le code manuellement"}
         type="button"
         variant = "btn-secondary"
         className="join-page__toggle-mode"
@@ -105,7 +106,7 @@ const JoinPage = () => {
           setMode((m) => (m === "manual" ? "scan" : "manual"));
         }}
       >
-        {mode === "manual" ? "ou scanner le QR code" : "ou saisir le code manuellement"}
+        {/* {mode === "manual" ? (<> <LogoScan/>Scanner un QR code </> ) : "ou saisir le code manuellement"} */}
       </Button>
     </CenteredCard>
   );
