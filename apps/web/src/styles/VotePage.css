@@ -1,16 +1,12 @@
 /* VotePage.css
- * Basé sur les design tokens du UI Kit Réagis
+ * Basé sur les design tokens du UI Kit Réagis.
  */
 
 .vote-page {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-
-  /* La carte ne doit pas forcer une hauteur d'écran */
-  min-height: 0;
-  height: auto;
-
+  gap: var(--sp-xs);
   width: 100%;
   gap: var(--sp-xs);
   box-sizing: border-box;
@@ -47,14 +43,11 @@
   margin: 0 0 var(--sp-xs);
 
   font-family: var(--font-display);
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 600;
   line-height: 1.3;
-
   color: var(--text-high);
-
-  /* Meilleure lisibilité */
-  letter-spacing: 0.1px;
+  margin: 0 0 var(--sp-xs);
 }
 
 /* ==========================
@@ -67,12 +60,11 @@
   gap: 6px;
 
   width: 100%;
-  margin: 0 0 var(--sp-xs);
+  margin: 0 0 var(--sp-sm);
 }
 
 .vote-page__option {
   width: 100%;
-
   min-height: 44px;
 
   display: flex;
@@ -108,7 +100,7 @@
 
 .vote-page__option--selected {
   border-color: var(--primary);
-  background: #D85A3014;
+  background: var(--surface-2);
 }
 
 /* ==========================
@@ -117,7 +109,6 @@
 
 .vote-page__radio {
   flex-shrink: 0;
-
   width: 16px;
   height: 16px;
 
@@ -129,12 +120,11 @@
 
 .vote-page__option--selected .vote-page__radio {
   border-color: var(--primary);
-  background:
-    radial-gradient(
-      circle,
-      var(--primary) 38%,
-      transparent 44%
-    );
+  background: radial-gradient(
+    circle,
+    var(--primary) 38%,
+    transparent 44%
+  );
 }
 
 /* ==========================
@@ -150,7 +140,6 @@
 
   border: none;
   padding: 10px 24px;
-
   border-radius: var(--r-md);
 
   font-size: 14px;
@@ -170,17 +159,4 @@
 .vote-page__submit:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-}
-
-/* ==========================
-   CONTENEUR REACTION
-   ========================== */
-
-.React-session {
-   width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-sizing: border-box;
-  flex-shrink: 0;
 }

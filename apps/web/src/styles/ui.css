@@ -301,7 +301,7 @@ h3 { font-size: 16px; font-weight: 600; }
   width: 100%;
   aspect-ratio: 1;
 
-  background: var(--surface-2);
+  background: var(--surface-1);
   border: 1px dashed var(--outline);
   border-radius: var(--r-md);
 
