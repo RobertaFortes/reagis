@@ -1,5 +1,5 @@
 /* VotePage.css
- * Basé sur les design tokens du UI Kit Réagis
+ * Basé sur les design tokens du UI Kit Réagis.
  */
 
 .vote-page {
@@ -50,7 +50,6 @@
   font-size: 22px;
   font-weight: 700;
   line-height: 1.3;
-
   color: var(--text-high);
 }
 
@@ -110,7 +109,7 @@
 
 .vote-page__option--selected {
   border-color: var(--primary);
-  background: #D85A3014;
+  background: var(--surface-2);
 }
 
 .vote-page__option:disabled {
@@ -133,7 +132,6 @@
 
 .vote-page__radio {
   flex-shrink: 0;
-
   width: 16px;
   height: 16px;
 
@@ -145,12 +143,11 @@
 
 .vote-page__option--selected .vote-page__radio {
   border-color: var(--primary);
-  background:
-    radial-gradient(
-      circle,
-      var(--primary) 38%,
-      transparent 44%
-    );
+  background: radial-gradient(
+    circle,
+    var(--primary) 38%,
+    transparent 44%
+  );
 }
 
 /* ==========================
@@ -166,7 +163,6 @@
 
   border: none;
   padding: 10px 24px;
-
   border-radius: var(--r-md);
 
   font-size: 14px;
