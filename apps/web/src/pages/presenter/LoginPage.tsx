@@ -18,6 +18,7 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSwitchMode = () => {
     setIsSignup((current) => !current);
@@ -82,7 +83,7 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
       setIsSubmitting(false);
     }
   };
-
+  
   return (
     <main className="login-page">
       <div className="logo-dot">R</div>
@@ -122,17 +123,26 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
           />
 
           <label htmlFor="password">Mot de passe</label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            className="ipt"
-            placeholder="••••••••"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-
+          <div className="pwd-wrapper">
+            <input
+              id="password"
+              name="password"
+              type={showPassword ? 'text' : 'password'}
+              className="ipt"
+              placeholder="••••••••"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            <button
+              type="button"
+              className="toggle-pwd"
+              onClick={() => setShowPassword((prev) => !prev)}
+              aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+            >
+              {showPassword ? '🐵' : '🙈'}
+            </button>
+          </div>
           {error && (
             <p className="login-error" role="alert">
               {error}
@@ -148,6 +158,7 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
                 ? 'CRÉER UN COMPTE'
                 : 'SE CONNECTER'}
           </Button>
+          
         </form>
 
         <p className="login-signup">

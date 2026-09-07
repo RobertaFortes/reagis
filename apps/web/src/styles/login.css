@@ -44,6 +44,7 @@
 
 /* ══════════ Carte ══════════ */
 .login-card {
+  position: relative;
   width: 100%;
   max-width: 405px;
   background: var(--surface-1);
@@ -79,7 +80,18 @@
   color: var(--text-high);
   font-size: 14px;
   font-family: var(--font-body);
-  width: 90%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Wrapper du champ password */
+.login-card .pwd-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.login-card .pwd-wrapper .ipt {
+  padding-right: 40px; /* place pour l'icône */
 }
 
 .login-card .ipt::placeholder {
@@ -90,6 +102,19 @@
   outline: none;
   border-color: var(--primary);
 }
+.toggle-pwd {
+   position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0;
+  line-height: 1;
+}
+
 
 .login-card .btn-primary {
   font-family: var(--font-body);
