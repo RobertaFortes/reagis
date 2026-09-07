@@ -1,0 +1,62 @@
+.vertical-chart {
+  padding: var(--sp-sm) 0;
+}
+
+.vertical-chart__bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: var(--sp-sm);
+  height: 160px;
+}
+
+.vertical-chart__column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+}
+
+.vertical-chart__count {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-high);
+  flex-shrink: 0;
+}
+
+.vertical-chart__bar-track {
+  flex: 1;
+  width: 100%;
+  max-width: 48px;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.vertical-chart__bar-fill {
+  width: 100%;
+  border-radius: var(--r-sm) var(--r-sm) 0 0;
+  transition: height 0.4s ease;
+  min-height: 4px;
+}
+
+.vertical-chart__label {
+  font-size: 12px;
+  color: var(--text-mid);
+  text-align: center;
+  max-width: 72px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vertical-chart__bar-fill {
+    transition: none;
+  }
+}

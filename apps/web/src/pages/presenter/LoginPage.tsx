@@ -86,9 +86,7 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
   
   return (
     <main className="login-page">
-      <div className="logo-dot">R</div>
-
-      <h1>Réagis</h1>
+      <img src="/logo.png" alt="Réagis" className="login-logo" />
 
       <p className="login-subtitle">Application présentateur</p>
 

@@ -6,26 +6,11 @@
   gap: 8px;
 }
 
-.join-page__logo {
-  margin-bottom: 8px;
-}
-
-.join-page__logo-circle {
+.join-page__logo-img {
   width: 56px;
   height: 56px;
-  border-radius: 50%;
-  border: 2px solid var(--outline);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.join-page__logo-circle::after {
-  content: "";
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: var(--primary);
+  object-fit: contain;
+  margin-bottom: 8px;
 }
 
 .join-page__title {
