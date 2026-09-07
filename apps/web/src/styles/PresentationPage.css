@@ -30,6 +30,12 @@
   gap: var(--sp-sm);
 }
 
+.presentation-header__logo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
 .presentation-header__title {
   font-family: var(--font-display);
   font-size: 24px;

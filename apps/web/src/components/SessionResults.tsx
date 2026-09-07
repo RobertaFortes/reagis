@@ -1,16 +1,7 @@
 import VoteBar from "@/components/VoteBar";
+import SlideResults from "@/components/SlideResults";
+import type { QuestionResult } from "@/types/results";
 import "@/styles/SessionResults.css";
-
-interface Option {
-  label: string;
-  votes: number;
-}
-
-interface QuestionResult {
-  _id: string;
-  text: string;
-  options: Option[];
-}
 
 interface SessionResultsProps {
   sessionName: string;
@@ -19,6 +10,10 @@ interface SessionResultsProps {
 }
 
 const SessionResults = ({ sessionName, questions, compact = false }: SessionResultsProps) => {
+  if (compact) {
+    return <SlideResults sessionName={sessionName} questions={questions} />;
+  }
+
   const totalVotes = questions.reduce(
     (sum, q) => sum + q.options.reduce((s, o) => s + o.votes, 0),
     0

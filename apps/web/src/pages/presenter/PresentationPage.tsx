@@ -147,6 +147,7 @@ const PresentationPage = () => {
 
       <header className="presentation-header">
         <div className="presentation-header__left">
+          <img src="/logo-icon.png" alt="Réagis" className="presentation-header__logo" />
           <h1 className="presentation-header__title">{session.name}</h1>
           <span className={badge.className}>{badge.text}</span>
         </div>

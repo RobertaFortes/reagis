@@ -14,26 +14,10 @@
   color: var(--text-high);
 }
 
-.login-page .logo-dot {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: var(--primary);
-  color: var(--on-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 20px;
+.login-logo {
+  height: 80px;
+  object-fit: contain;
   margin-bottom: var(--sp-xs);
-}
-
-.login-page h1 {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 28px;
-  margin: 0;
 }
 
 .login-page .login-subtitle {

@@ -56,9 +56,7 @@ const JoinPage = () => {
 
   return (
     <CenteredCard className="join-page">
-      <div className="join-page__logo" aria-hidden="true">
-        <div className="join-page__logo-circle" />
-      </div>
+      <img src="/logo-icon.png" alt="Réagis" className="join-page__logo-img" />
 
       <h1 className="join-page__title">Rejoindre une session</h1>
       <p className="join-page__subtitle">
