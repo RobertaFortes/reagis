@@ -410,12 +410,12 @@ td {
 }
 
 .vote-bar-label {
-  min-width: 100px;
+  width: 140px;
+  min-width: 140px;
+  flex-shrink: 0;
   font-size: 14px;
   color: var(--text-high);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  word-break: break-word;
 }
 
 .vote-bar-track {
