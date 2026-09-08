@@ -1,7 +1,7 @@
 import { FormEvent, useState } from "react";
 import "@/styles/login.css";
 import { login, signup, AuthError, AuthUser } from "@/api/authApi";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Button from '@/components/Button';
 
 interface LoginPageProps {
@@ -12,7 +12,8 @@ interface LoginPageProps {
 
 const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
   const navigate = useNavigate();
-  const [isSignup, setIsSignup] = useState(false);
+  const [searchParams] = useSearchParams();
+  const [isSignup, setIsSignup] = useState(searchParams.get("signup") === "1");
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

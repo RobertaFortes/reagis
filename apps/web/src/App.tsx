@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
+import LandingPage from "@/pages/LandingPage";
 import LoginPage from "@/pages/presenter/LoginPage";
 import HomePage from "@/pages/presenter/HomePage";
 import SessionPage from "@/pages/presenter/SessionPage";
@@ -20,7 +21,8 @@ function App() {
         <Route path="/sessions/:id/present" element={<PresentationPage />} />
 
         {/* Public */}
-        <Route path="/" element={<LoginPage />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage />} />
 
         {/* Créateur — avec auth et sidebar */}
         <Route element={<AppLayout />}>
