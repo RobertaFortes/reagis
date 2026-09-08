@@ -196,9 +196,22 @@ const SessionDetailPage = () => {
         </div>
 
         {session.status === "draft" && (
-          <div style={{ display: "flex", gap: 8 }}>
-            <Button title="✏ MODIFIER" type="button" variant="btn-secondary" onClick={() => navigate(`/sessions/${id}/edit`)} />
-            <Button title="▶ DÉMARRER" type="button" variant="btn-primary" onClick={handleStart} />
+           <div style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-end" }}>
+            <div style={{ display: "flex", gap: 8 }}>
+              <Button title="✏ MODIFIER" type="button" variant="btn-secondary" onClick={() => navigate(`/sessions/${id}/edit`)} />
+              <Button
+                title="▶ DÉMARRER"
+                type="button"
+                variant="btn-primary"
+                onClick={handleStart}
+                disabled={questions.length === 0}
+              />
+            </div>
+            {questions.length === 0 && (
+              <span style={{ fontSize: 12, color: "var(--text-mid)" }}>
+                Ajoutez au moins une question pour démarrer
+              </span>
+            )}
           </div>
         )}
         {session.status === "active" && (
