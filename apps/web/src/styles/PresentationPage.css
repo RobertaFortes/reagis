@@ -147,9 +147,23 @@
   margin: 0 auto;
 }
 
+.presentation-main--fade-in {
+  animation: fadeIn 0.3s ease forwards;
+}
+
+.presentation-main--fade-out {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .presentation-question {
   font-family: var(--font-display);
-  font-size: 40px;
+  font-size: 24px;
   font-weight: 700;
   color: var(--text-high);
   margin-bottom: var(--sp-lg);
@@ -168,8 +182,8 @@
 }
 
 .presentation-options .vote-bar-label {
-  font-size: 22px;
-  width: 200px;
+  font-size: 18px;
+  width: 270px;
   min-width: 200px;
   flex-shrink: 0;
 }
@@ -202,7 +216,7 @@
 
 .presentation-meta__votes {
   font-family: var(--font-display);
-  font-size: 20px;
+  font-size: 16px;
   color: var(--text-high);
 }
 

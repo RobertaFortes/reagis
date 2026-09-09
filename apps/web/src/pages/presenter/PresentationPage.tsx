@@ -76,6 +76,22 @@ const PresentationPage = () => {
     } catch {}
   };
 
+  // Sync question index from Redux → local session state
+  const liveSessionIndex = useAppSelector((s) => s.session.currentQuestionIndex);
+  const [transitioning, setTransitioning] = useState(false);
+
+  useEffect(() => {
+    if (!session || liveSessionIndex === undefined) return;
+    if (session.currentQuestionIndex !== liveSessionIndex) {
+      setTransitioning(true);
+      const timer = setTimeout(() => {
+        setSessionState((s) => s ? { ...s, currentQuestionIndex: liveSessionIndex } : s);
+        setTransitioning(false);
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [liveSessionIndex]);
+
   // Re-fetch questions when session ends (via WS from other tab)
   useEffect(() => {
     if (liveStatus === "finished" && id) {
@@ -195,7 +211,7 @@ const PresentationPage = () => {
           <SessionResults sessionName={session.name} questions={questions} />
         </div>
       ) : currentQuestion ? (
-        <div className="presentation-main">
+        <div className={`presentation-main ${transitioning ? "presentation-main--fade-out" : "presentation-main--fade-in"}`}>
           <h2 className="presentation-question">{questionText}</h2>
 
           <div className="presentation-options">

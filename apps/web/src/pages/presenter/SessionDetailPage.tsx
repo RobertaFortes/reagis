@@ -277,9 +277,7 @@ const SessionDetailPage = () => {
                     marginTop: 8
                   }}>
                     <span style={{ fontSize: 12, color: "var(--text-mid)" }}>
-                      {questions.length === 1
-                        ? `${totalVotes} votes · question unique`
-                        : `${totalVotes} votes · question ${session.currentQuestionIndex + 1}/${questions.length}`}
+                      {`${totalVotes} vote${totalVotes !== 1 ? "s" : ""} · question ${questions.length === 1 ? "unique" : `${session.currentQuestionIndex + 1}/${questions.length}`}`}
                     </span>
                     {questions.length > 1 && (session.status === "active" || session.status === "paused") && (
                       <div style={{ display: "flex", gap: 8 }}>
