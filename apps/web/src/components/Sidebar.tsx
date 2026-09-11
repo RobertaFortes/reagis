@@ -23,7 +23,7 @@ const Sidebar = () => {
 
       {/* Logo + présentateur */}
       <div className="sidebar-header">
-        <img src="/logo-icon.png" alt="Réagis" className="sidebar-logo" />
+        <img src="/logo-icon.webp" alt="Réagis" className="sidebar-logo" />
 
         <div className="sidebar-brand">
           <h1>Réagis</h1>

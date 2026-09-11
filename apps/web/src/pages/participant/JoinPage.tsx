@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Scanner, IDetectedBarcode } from "@yudiel/react-qr-scanner";
+const Scanner = lazy(() =>  import("@yudiel/react-qr-scanner").then(m => ({ default: m.Scanner })));
+import type { IDetectedBarcode } from "@yudiel/react-qr-scanner";
+//import { Scanner, IDetectedBarcode } from "@yudiel/react-qr-scanner";
 import { CenteredCard } from "@/components/CenteredCard";
 import "@/styles/JoinPage.css";
 import Button from '@/components/Button';
@@ -57,7 +59,7 @@ const JoinPage = () => {
 
   return (
     <CenteredCard className="join-page">
-      <img src="/logo-icon.png" alt="Réagis" className="join-page__logo-img" />
+      <img src="/logo-icon.webp" alt="Réagis" className="join-page__logo-img" />
 
       <h1 className="join-page__title">Rejoindre une session</h1>
       <p className="join-page__subtitle">
@@ -83,15 +85,16 @@ const JoinPage = () => {
             Rejoindre →
           </Button>
         </form>
-      ) : (
-        <div className="join-page__scanner">
-          <Scanner
-            onScan={handleScan}
-            onError={() => setScanError("Impossible d'accéder à la caméra.")}
-            constraints={{ facingMode: "environment" }}
-          />
-          {scanError && <p className="join-page__scan-error">{scanError}</p>}
-        </div>
+      ) : (<Suspense fallback={<div>Chargement du scanner…</div>}>
+            <div className="join-page__scanner">
+              <Scanner
+                onScan={handleScan}
+                onError={() => setScanError("Impossible d'accéder à la caméra.")}
+                constraints={{ facingMode: "environment" }}
+              />
+              {scanError && <p className="join-page__scan-error">{scanError}</p>}
+            </div>
+           </Suspense>
       )}
 
       <Button

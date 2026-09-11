@@ -8,7 +8,7 @@ const LandingPage = () => {
   return (
     <main className="landing">
       <section className="landing-hero">
-        <img src="/logo.png" alt="Reagis" className="landing-logo" />
+        <img src="/logo.webp" alt="Reagis" className="landing-logo" />
 
         <h1 className="landing-title">
           Faites <span className="landing-accent">réagir</span> votre public

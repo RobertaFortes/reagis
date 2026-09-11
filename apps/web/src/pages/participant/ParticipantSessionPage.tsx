@@ -201,7 +201,7 @@ const ParticipantSessionPage = () => {
     <FloatingReactions />
     <CenteredCard className="participant-session-page">
 
-      <img src="/logo-icon.png" alt="Réagis" className="participant-session-page__logo" />
+      <img src="/logo-icon.webp" alt="Réagis" className="participant-session-page__logo" />
 
       <p className="participant-session-page__eyebrow">
         SESSION {session.name && (
