@@ -1,7 +1,7 @@
 import { FormEvent, useState } from "react";
 import "@/styles/login.css";
 import { login, signup, AuthError, AuthUser } from "@/api/authApi";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Button from '@/components/Button';
 
 interface LoginPageProps {
@@ -87,7 +87,9 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
   
   return (
     <main className="login-page">
-      <img src="/logo.webp" alt="Réagis" className="login-logo" />
+      <Link to="/" className="login-logo-link">
+        <img src="/logo.webp" alt="Réagis" className="login-logo" />
+      </Link>
 
       <p className="login-subtitle">Application présentateur</p>
 

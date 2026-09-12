@@ -46,7 +46,7 @@ Le package `shared` ne dépend de personne. Il définit les contrats (noms d'év
 | | Présentateur | Participant |
 |---|---|---|
 | **Appareil** | Desktop (écran de projection) | Mobile (smartphone personnel) |
-| **Auth** | Email + mot de passe → JWT (7j) | Anonyme → SHA256(deviceId:sessionId) → JWT (6h) |
+| **Auth** | Email + mot de passe → JWT (1d) | Anonyme → SHA256(deviceId:sessionId) → JWT (6h) |
 | **Routes web** | `/sessions/*` | `/join`, `/session/:code` |
 | **Layout** | Sidebar + contenu (AppLayout) | Carte centrée, sans navigation |
 | **Rôle** | Crée, lance, contrôle la session | Rejoint, vote, réagit |
@@ -56,23 +56,30 @@ Le package `shared` ne dépend de personne. Il définit les contrats (noms d'év
 
 ## Carte des routes frontend
 
-### Présentateur (auth requise, avec sidebar)
+### Public (sans auth, sans sidebar)
 
 | Route | Page | Description |
 |---|---|---|
-| `/` | `LoginPage` | Connexion / inscription |
+| `/` | `LandingPage` | Page d'accueil / vitrine du produit |
+| `/login` | `LoginPage` | Connexion / inscription présentateur |
+
+### Présentateur (auth requise, avec sidebar via AppLayout)
+
+| Route | Page | Description |
+|---|---|---|
 | `/home` | `HomePage` | Tableau de bord |
 | `/sessions` | `SessionPage` | Liste de toutes les sessions |
 | `/sessions/new` | `CreateSessionPage` | Créer une session + ajouter des questions |
 | `/sessions/:id` | `SessionDetailPage` | Voir / lancer / contrôler une session |
 | `/sessions/:id/edit` | `EditSessionPage` | Modifier une session en brouillon |
+| `/sessions/:id/present` | `PresentationPage` | Vue projection live (plein écran, sans sidebar) |
 
 ### Participant (sans auth, sans sidebar)
 
 | Route | Page | Description |
 |---|---|---|
 | `/join` | `JoinPage` | Saisir un code de session |
-| `/session/:code` | `ParticipantSessionPage` | Attente → vote → résultats |
+| `/session/:code` | `ParticipantSessionPage` | Attente → vote → résultats (contient `VotePage` en sous-composant) |
 
 ---
 
