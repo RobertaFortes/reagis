@@ -4,6 +4,13 @@
 > Mis à jour à chaque session de travail. Entrées les plus récentes en premier.
 
 ---
+## 2026-09-10 — Audit SEO LandingPage 
+état actuel est 99 Performance / 91 Accessibilité / 100 Bonnes pratiques / 83 SEO
+1. apps/web/index.html — Ajouter une meta description
+2. apps/web/public/robots.txt — création de apps/web/public/robots.txt
+3. apps/web/public/sitemap.xml — Création de apps/web/public/sitemap.xml
+4. apps/web/public/logo.png et logo-icon.png — Performance Convertis les logo en WebP.
+5. Faire du lazy loading des routes pour éviter de charger toutes les pages ou les composants non nécessaire
 
 ## 2026-08-27 — Audit contrat front/back et documentation API
 
