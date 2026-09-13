@@ -80,8 +80,9 @@ apps/back/src/
   middleware/      # Auth JWT (presenter + participant)
 
 apps/web/src/
-  pages/presenter/ # Login, Home, Sessions, CreateSession, SessionDetail
-  pages/participant/ # Join, ParticipantSession (in progress)
+  pages/LandingPage  # Landing page (public)
+  pages/presenter/ # Login, Home, Sessions, CreateSession, SessionDetail, EditSession, Presentation
+  pages/participant/ # Join, ParticipantSession, VotePage (sub-component)
   components/      # Button, Sidebar, Badge, KpiCard, VoteBar, AppLayout
   api/             # Fetch layer (authApi, sessionApi, questionApi)
   store/           # Redux slices (scaffolded, empty — to wire with WebSocket)

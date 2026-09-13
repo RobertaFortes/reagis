@@ -22,7 +22,7 @@ Deux types de JWT coexistent :
 
 | Type | Header | Secret | Expiration | Contenu du payload |
 |------|--------|--------|------------|-------------------|
-| Presenter | `Authorization: Bearer <token>` | `JWT_SECRET` | 1h | `{ userId, role }` |
+| Presenter | `Authorization: Bearer <token>` | `JWT_SECRET` | 1d | `{ userId, role }` |
 | Participant | `Authorization: Bearer <token>` | `PARTICIPANT_JWT_SECRET` | 6h | `{ sessionId, participantToken }` |
 
 ---

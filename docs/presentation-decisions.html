@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reagis — Decisions d'architecture</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #131313;
+    --card: #1A1A1A;
+    --elevated: #2a2a2a;
+    --orange-soft: #ffb59e;
+    --orange: #D85A30;
+    --text: #e5e2e1;
+    --text-dim: #999;
+    --radius: 4px;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    scroll-snap-type: y mandatory;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ---------- SECTIONS ---------- */
+  section {
+    min-height: 100vh;
+    scroll-snap-align: start;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px;
+  }
+
+  .slide-inner {
+    max-width: 960px;
+    width: 100%;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 700;
+    color: var(--orange-soft);
+    margin-bottom: 0.3em;
+    letter-spacing: -0.02em;
+  }
+
+  h2 {
+    font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+    font-weight: 700;
+    color: var(--orange-soft);
+    margin-bottom: 0.6em;
+    letter-spacing: -0.01em;
+  }
+
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--orange-soft);
+    margin-bottom: 0.4em;
+  }
+
+  .subtitle {
+    font-size: clamp(1rem, 2vw, 1.3rem);
+    color: var(--text-dim);
+    margin-bottom: 1.2em;
+  }
+
+  .brief {
+    font-size: 1.05rem;
+    color: var(--text);
+    max-width: 600px;
+    margin-top: 1.5em;
+    border-left: 3px solid var(--orange);
+    padding-left: 16px;
+  }
+
+  /* cards */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+
+  .card-elevated {
+    background: var(--elevated);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 12px;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+  }
+
+  @media (max-width: 700px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  }
+
+  .pro { border-left: 3px solid #4caf50; padding-left: 12px; }
+  .con { border-left: 3px solid #e57373; padding-left: 12px; }
+  .why { border-left: 3px solid var(--orange); padding-left: 12px; }
+
+  .tag {
+    display: inline-block;
+    background: var(--elevated);
+    color: var(--orange-soft);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: var(--radius);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .tag-green { background: #1b3a1b; color: #81c784; }
+  .tag-red { background: #3a1b1b; color: #e57373; }
+  .tag-orange { background: #3a2a1b; color: var(--orange-soft); }
+
+  ul { list-style: none; padding: 0; }
+  ul li { padding: 4px 0; padding-left: 1.2em; position: relative; }
+  ul li::before { content: ""; position: absolute; left: 0; top: 12px; width: 6px; height: 6px; background: var(--orange); border-radius: 50%; }
+
+  p { margin-bottom: 0.7em; }
+
+  code {
+    background: var(--elevated);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.9em;
+    color: var(--orange-soft);
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  }
+
+  /* ---------- SVG diagrams ---------- */
+  svg text {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  }
+
+  .diagram-container {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+    overflow-x: auto;
+  }
+
+  .diagram-container svg {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* ---------- FLOATING NAV ---------- */
+  #nav {
+    position: fixed;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  #nav a {
+    display: block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--elevated);
+    border: 2px solid var(--text-dim);
+    transition: all 0.25s;
+    position: relative;
+  }
+
+  #nav a.active {
+    background: var(--orange);
+    border-color: var(--orange);
+    transform: scale(1.2);
+  }
+
+  #nav a:hover {
+    border-color: var(--orange-soft);
+  }
+
+  #nav a .tooltip {
+    position: absolute;
+    right: 22px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--card);
+    color: var(--text);
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: var(--radius);
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+
+  #nav a:hover .tooltip {
+    opacity: 1;
+  }
+
+  @media (max-width: 700px) {
+    #nav { right: 8px; gap: 8px; }
+    #nav a { width: 10px; height: 10px; }
+    #nav a .tooltip { display: none; }
+  }
+
+  /* ---------- COVER SPECIAL ---------- */
+  .cover-badge {
+    display: inline-block;
+    border: 1px solid var(--orange);
+    color: var(--orange-soft);
+    font-size: 0.85rem;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 1.5em;
+  }
+
+  /* flow step */
+  .flow-step {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    text-align: center;
+    font-size: 0.9rem;
+  }
+
+  .flow-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--orange);
+    font-size: 1.4rem;
+    font-weight: bold;
+  }
+
+  .compact { font-size: 0.92rem; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<!-- ==================== NAV ==================== -->
+<nav id="nav">
+  <a href="#cover"><span class="tooltip">Couverture</span></a>
+  <a href="#monorepo"><span class="tooltip">Monorepo</span></a>
+  <a href="#web-only"><span class="tooltip">Web-only</span></a>
+  <a href="#mvc"><span class="tooltip">Architecture MVC</span></a>
+  <a href="#rest-ws"><span class="tooltip">REST vs WebSocket</span></a>
+  <a href="#mongodb"><span class="tooltip">MongoDB</span></a>
+  <a href="#auth"><span class="tooltip">Authentification</span></a>
+  <a href="#state"><span class="tooltip">State Management</span></a>
+  <a href="#state-machine"><span class="tooltip">Machine d'etats</span></a>
+  <a href="#retro"><span class="tooltip">Retrospective</span></a>
+</nav>
+
+<!-- ==================== 1. COVER ==================== -->
+<section id="cover">
+  <div class="slide-inner" style="text-align:center;">
+    <div class="cover-badge">Projet de fin de formation</div>
+    <h1 style="font-size:clamp(2.5rem,6vw,4rem);">Reagis</h1>
+    <p class="subtitle" style="max-width:500px;margin:0 auto 1em;">Decisions d'architecture</p>
+    <p style="color:var(--text-dim);font-size:0.95rem;">
+      La Capsule &mdash; Titre RNCP niveau 6<br>
+      Concepteur-developpeur d'applications web et mobile
+    </p>
+    <div class="brief" style="margin:2em auto 0;text-align:left;max-width:520px;">
+      Plateforme de sondages et reactions en temps reel pour les evenements en direct &mdash; bars, conferences, meetups. Les participants votent depuis leur smartphone sans rien telecharger.
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 2. MONOREPO ==================== -->
+<section id="monorepo">
+  <div class="slide-inner">
+    <h2>Pourquoi un Monorepo ?</h2>
+
+    <!-- Diagram -->
+    <div class="diagram-container">
+      <svg width="680" height="220" viewBox="0 0 680 220">
+        <!-- Root -->
+        <rect x="260" y="10" width="160" height="44" rx="4" fill="#2a2a2a" stroke="#D85A30" stroke-width="2"/>
+        <text x="340" y="38" text-anchor="middle" fill="#ffb59e" font-weight="700" font-size="15">reagis/</text>
+        <!-- Lines -->
+        <line x1="290" y1="54" x2="120" y2="100" stroke="#555" stroke-width="1.5"/>
+        <line x1="340" y1="54" x2="340" y2="100" stroke="#555" stroke-width="1.5"/>
+        <line x1="390" y1="54" x2="560" y2="100" stroke="#555" stroke-width="1.5"/>
+        <!-- apps/back -->
+        <rect x="40" y="100" width="160" height="44" rx="4" fill="#1A1A1A" stroke="#555" stroke-width="1.5"/>
+        <text x="120" y="128" text-anchor="middle" fill="#e5e2e1" font-size="14" font-weight="600">apps/back</text>
+        <text x="120" y="160" text-anchor="middle" fill="#999" font-size="11">Express + Socket.io</text>
+        <text x="120" y="175" text-anchor="middle" fill="#999" font-size="11">Mongoose + JWT</text>
+        <!-- apps/web -->
+        <rect x="260" y="100" width="160" height="44" rx="4" fill="#1A1A1A" stroke="#555" stroke-width="1.5"/>
+        <text x="340" y="128" text-anchor="middle" fill="#e5e2e1" font-size="14" font-weight="600">apps/web</text>
+        <text x="340" y="160" text-anchor="middle" fill="#999" font-size="11">React + Redux + Vite</text>
+        <text x="340" y="175" text-anchor="middle" fill="#999" font-size="11">Participant &amp; Presenter</text>
+        <!-- packages/shared -->
+        <rect x="480" y="100" width="160" height="44" rx="4" fill="#1A1A1A" stroke="#D85A30" stroke-width="2"/>
+        <text x="560" y="128" text-anchor="middle" fill="#ffb59e" font-size="14" font-weight="600">packages/shared</text>
+        <text x="560" y="160" text-anchor="middle" fill="#ffb59e" font-size="11">wsEvents.ts &bull; types.ts</text>
+        <text x="560" y="175" text-anchor="middle" fill="#999" font-size="11">Source de verite unique</text>
+        <!-- Import arrows back to shared -->
+        <line x1="200" y1="130" x2="480" y2="122" stroke="#D85A30" stroke-width="1" stroke-dasharray="5,4" marker-end="url(#arrowOrange)"/>
+        <line x1="420" y1="122" x2="480" y2="122" stroke="#D85A30" stroke-width="1" stroke-dasharray="5,4" marker-end="url(#arrowOrange)"/>
+        <defs>
+          <marker id="arrowOrange" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#D85A30"/>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+
+    <div class="grid-3" style="margin-top:16px;">
+      <div class="card pro">
+        <span class="tag tag-green">Avantages</span>
+        <ul class="compact">
+          <li>Types et evenements partages = source de verite unique</li>
+          <li>Changements atomiques front + back</li>
+          <li>Gestion des dependances simplifiee (npm workspaces)</li>
+        </ul>
+      </div>
+      <div class="card con">
+        <span class="tag tag-red">Inconvenients</span>
+        <ul class="compact">
+          <li>CI plus lourde (tout rebuild)</li>
+          <li>Deployments couples</li>
+        </ul>
+      </div>
+      <div class="card why">
+        <span class="tag tag-orange">Notre choix</span>
+        <p class="compact">Equipe de 2 developpeurs. Les contrats TypeScript partages (<code>wsEvents.ts</code>) sont critiques pour la coherence des noms d'evenements WebSocket entre client et serveur.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 3. WEB-ONLY ==================== -->
+<section id="web-only">
+  <div class="slide-inner">
+    <h2>Pourquoi Web-only ? (pas d'app native)</h2>
+
+    <!-- Diagram: phone comparison -->
+    <div class="diagram-container">
+      <svg width="580" height="260" viewBox="0 0 580 260">
+        <!-- Phone 1: App Store -->
+        <rect x="40" y="20" width="120" height="200" rx="16" fill="none" stroke="#e57373" stroke-width="2"/>
+        <rect x="52" y="40" width="96" height="150" rx="2" fill="#1A1A1A"/>
+        <text x="100" y="80" text-anchor="middle" fill="#e57373" font-size="11" font-weight="600">App Store</text>
+        <text x="100" y="100" text-anchor="middle" fill="#999" font-size="10">Telecharger...</text>
+        <text x="100" y="115" text-anchor="middle" fill="#999" font-size="10">Installer...</text>
+        <text x="100" y="130" text-anchor="middle" fill="#999" font-size="10">Ouvrir...</text>
+        <text x="100" y="150" text-anchor="middle" fill="#999" font-size="10">Creer un compte...</text>
+        <text x="100" y="170" text-anchor="middle" fill="#e57373" font-size="10" font-weight="600">~ 3 minutes</text>
+        <!-- X mark -->
+        <text x="100" y="242" text-anchor="middle" fill="#e57373" font-size="24" font-weight="700">&#x2717;</text>
+
+        <!-- Arrow -->
+        <text x="220" y="130" text-anchor="middle" fill="#555" font-size="28">vs</text>
+
+        <!-- Phone 2: QR Code / Browser -->
+        <rect x="280" y="20" width="120" height="200" rx="16" fill="none" stroke="#4caf50" stroke-width="2"/>
+        <rect x="292" y="40" width="96" height="150" rx="2" fill="#1A1A1A"/>
+        <text x="340" y="80" text-anchor="middle" fill="#4caf50" font-size="11" font-weight="600">Scanner QR</text>
+        <!-- Simple QR representation -->
+        <rect x="315" y="92" width="50" height="50" rx="2" fill="#2a2a2a" stroke="#4caf50" stroke-width="1"/>
+        <rect x="322" y="99" width="10" height="10" fill="#4caf50"/>
+        <rect x="348" y="99" width="10" height="10" fill="#4caf50"/>
+        <rect x="322" y="125" width="10" height="10" fill="#4caf50"/>
+        <rect x="335" y="112" width="10" height="10" fill="#4caf50"/>
+        <text x="340" y="162" text-anchor="middle" fill="#4caf50" font-size="10" font-weight="600">Voter !</text>
+        <text x="340" y="178" text-anchor="middle" fill="#4caf50" font-size="10" font-weight="600">~ 5 secondes</text>
+        <!-- Check mark -->
+        <text x="340" y="242" text-anchor="middle" fill="#4caf50" font-size="24" font-weight="700">&#x2713;</text>
+
+        <!-- Labels -->
+        <text x="460" y="70" fill="#e5e2e1" font-size="13" font-weight="600">Acces instantane</text>
+        <text x="460" y="92" fill="#999" font-size="11">Pas de telechargement</text>
+        <text x="460" y="112" fill="#999" font-size="11">Pas de compte a creer</text>
+        <text x="460" y="132" fill="#999" font-size="11">Responsive mobile + desktop</text>
+        <text x="460" y="152" fill="#999" font-size="11">Un seul codebase</text>
+      </svg>
+    </div>
+
+    <div class="card why" style="max-width:700px;margin:0 auto;">
+      <span class="tag tag-orange">Notre choix</span>
+      <p>L'experience participant doit etre <strong>sans friction</strong>. Un client dans un bar ne va pas telecharger une application pour voter pendant 10 minutes. Il scanne un QR code et vote en 5 secondes.</p>
+      <p style="color:var(--text-dim);font-size:0.9rem;margin-bottom:0;">Le web responsif offre un acces instantane par lien ou QR code, tout en permettant une interface presenter optimisee pour desktop &mdash; le tout avec un seul codebase.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 4. MVC ==================== -->
+<section id="mvc">
+  <div class="slide-inner">
+    <h2>Architecture en couches (MVC)</h2>
+
+    <!-- Diagram -->
+    <div class="diagram-container">
+      <svg width="700" height="200" viewBox="0 0 700 200">
+        <defs>
+          <marker id="arrowGray" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#666"/>
+          </marker>
+          <marker id="arrowOrange2" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#D85A30"/>
+          </marker>
+        </defs>
+        <!-- Client -->
+        <rect x="10" y="70" width="100" height="50" rx="4" fill="#2a2a2a" stroke="#555" stroke-width="1.5"/>
+        <text x="60" y="100" text-anchor="middle" fill="#e5e2e1" font-size="13" font-weight="600">Client</text>
+        <!-- Arrow -->
+        <line x1="110" y1="95" x2="155" y2="95" stroke="#666" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+        <!-- Middleware -->
+        <rect x="160" y="50" width="100" height="28" rx="4" fill="#2a2a2a" stroke="#D85A30" stroke-width="1.5"/>
+        <text x="210" y="69" text-anchor="middle" fill="#ffb59e" font-size="11" font-weight="600">Middleware</text>
+        <text x="210" y="98" text-anchor="middle" fill="#999" font-size="10">(JWT auth)</text>
+        <!-- Arrow -->
+        <line x1="210" y1="78" x2="210" y2="108" stroke="#D85A30" stroke-width="1" stroke-dasharray="4,3"/>
+        <!-- Routes -->
+        <rect x="160" y="110" width="100" height="50" rx="4" fill="#1A1A1A" stroke="#555" stroke-width="1.5"/>
+        <text x="210" y="140" text-anchor="middle" fill="#e5e2e1" font-size="13" font-weight="600">Routes</text>
+        <!-- Arrow -->
+        <line x1="260" y1="135" x2="315" y2="135" stroke="#666" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+        <!-- Controllers -->
+        <rect x="320" y="110" width="120" height="50" rx="4" fill="#1A1A1A" stroke="#D85A30" stroke-width="2"/>
+        <text x="380" y="140" text-anchor="middle" fill="#ffb59e" font-size="13" font-weight="700">Controllers</text>
+        <!-- Arrow -->
+        <line x1="440" y1="135" x2="495" y2="135" stroke="#666" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+        <!-- Models -->
+        <rect x="500" y="110" width="100" height="50" rx="4" fill="#1A1A1A" stroke="#555" stroke-width="1.5"/>
+        <text x="550" y="140" text-anchor="middle" fill="#e5e2e1" font-size="13" font-weight="600">Models</text>
+        <!-- Arrow -->
+        <line x1="600" y1="135" x2="635" y2="135" stroke="#666" stroke-width="1.5" marker-end="url(#arrowGray)"/>
+        <!-- MongoDB -->
+        <rect x="640" y="115" width="50" height="40" rx="20" fill="#2a2a2a" stroke="#4caf50" stroke-width="1.5"/>
+        <text x="665" y="139" text-anchor="middle" fill="#4caf50" font-size="10" font-weight="600">DB</text>
+      </svg>
+    </div>
+
+    <div class="grid-2" style="margin-top:12px;">
+      <div class="card-elevated">
+        <h3>Routes</h3>
+        <p class="compact">Points d'entree HTTP. Mapping URL, attachement des middlewares (guards d'authentification). Ne contiennent aucune logique metier.</p>
+      </div>
+      <div class="card-elevated">
+        <h3>Controllers</h3>
+        <p class="compact">Logique metier, validation, orchestration. Pas de syntaxe base de donnees directe &mdash; delegue aux models.</p>
+      </div>
+      <div class="card-elevated">
+        <h3>Models (Mongoose)</h3>
+        <p class="compact">Schemas de donnees, regles de validation, indexes. Definition de la structure et des contraintes.</p>
+      </div>
+      <div class="card-elevated">
+        <h3>Middleware</h3>
+        <p class="compact">Preoccupations transversales : verification JWT, gestion des erreurs. Executees avant les routes protegees.</p>
+      </div>
+    </div>
+    <div class="card why" style="margin-top:8px;">
+      <span class="tag tag-orange">Pourquoi</span>
+      <p class="compact" style="margin-bottom:0;">Separation des responsabilites : chaque couche a UN seul role. Facilite la maintenance, la testabilite et la comprehension du code.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 5. REST vs WebSocket ==================== -->
+<section id="rest-ws">
+  <div class="slide-inner">
+    <h2>Flux de communication : REST vs WebSocket</h2>
+
+    <div class="grid-2" style="margin-bottom:16px;">
+      <div class="card">
+        <h3 style="color:#64b5f6;">REST (HTTP)</h3>
+        <ul class="compact">
+          <li>Operations CRUD, authentification</li>
+          <li>Chargement initial des donnees</li>
+          <li>Requete &rarr; Reponse (sans etat)</li>
+          <li>Connexion fermee apres chaque echange</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3 style="color:var(--orange-soft);">WebSocket (Socket.io)</h3>
+        <ul class="compact">
+          <li>Temps reel bidirectionnel</li>
+          <li>Votes, reactions, changements d'etat</li>
+          <li>Connexion persistante</li>
+          <li>Diffusion a tous les clients de la room</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card-elevated" style="margin-bottom:16px;">
+      <span class="tag tag-orange">Regle de decision</span>
+      <p class="compact" style="margin-bottom:0;">Si la donnee change en temps reel ET que plusieurs composants en ont besoin &rarr; <strong>WebSocket + Redux</strong>. Sinon &rarr; <strong>REST + useState</strong>.</p>
+    </div>
+
+    <!-- Vote flow diagram -->
+    <div class="card">
+      <h3>Exemple concret : le flux de vote</h3>
+      <div class="diagram-container">
+        <svg width="720" height="180" viewBox="0 0 720 180">
+          <defs>
+            <marker id="arrowO3" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#D85A30"/>
+            </marker>
+          </defs>
+          <!-- Step 1 -->
+          <rect x="5" y="30" width="110" height="50" rx="4" fill="#2a2a2a" stroke="#D85A30" stroke-width="1.5"/>
+          <text x="60" y="52" text-anchor="middle" fill="#ffb59e" font-size="10" font-weight="600">Participant</text>
+          <text x="60" y="68" text-anchor="middle" fill="#999" font-size="9">clic sur option</text>
+          <line x1="115" y1="55" x2="145" y2="55" stroke="#D85A30" stroke-width="1.5" marker-end="url(#arrowO3)"/>
+          <!-- Step 2 -->
+          <rect x="150" y="30" width="120" height="50" rx="4" fill="#1A1A1A" stroke="#555" stroke-width="1.5"/>
+          <text x="210" y="50" text-anchor="middle" fill="#e5e2e1" font-size="10" font-weight="600">socket.emit</text>
+          <text x="210" y="66" text-anchor="middle" fill="#ffb59e" font-size="9">SUBMIT_VOTE</text>
+          <line x1="270" y1="55" x2="300" y2="55" stroke="#D85A30" stroke-width="1.5" marker-end="url(#arrowO3)"/>
+          <!-- Step 3 -->
+          <rect x="305" y="20" width="130" height="70" rx="4" fill="#1A1A1A" stroke="#D85A30" stroke-width="2"/>
+          <text x="370" y="42" text-anchor="middle" fill="#ffb59e" font-size="10" font-weight="700">Serveur</text>
+          <text x="370" y="58" text-anchor="middle" fill="#999" font-size="9">Vote.create()</text>
+          <text x="370" y="72" text-anchor="middle" fill="#999" font-size="9">$inc compteur</text>
+          <text x="370" y="84" text-anchor="middle" fill="#999" font-size="9">(atomique)</text>
+          <line x1="435" y1="55" x2="465" y2="55" stroke="#D85A30" stroke-width="1.5" marker-end="url(#arrowO3)"/>
+          <!-- Step 4 -->
+          <rect x="470" y="30" width="110" height="50" rx="4" fill="#1A1A1A" stroke="#555" stroke-width="1.5"/>
+          <text x="525" y="50" text-anchor="middle" fill="#e5e2e1" font-size="10" font-weight="600">broadcast</text>
+          <text x="525" y="66" text-anchor="middle" fill="#ffb59e" font-size="9">VOTE_UPDATE</text>
+          <line x1="580" y1="55" x2="610" y2="55" stroke="#D85A30" stroke-width="1.5" marker-end="url(#arrowO3)"/>
+          <!-- Step 5 -->
+          <rect x="615" y="30" width="100" height="50" rx="4" fill="#2a2a2a" stroke="#4caf50" stroke-width="1.5"/>
+          <text x="665" y="50" text-anchor="middle" fill="#4caf50" font-size="10" font-weight="600">Tous clients</text>
+          <text x="665" y="66" text-anchor="middle" fill="#999" font-size="9">Redux &rarr; re-render</text>
+          <!-- Room label -->
+          <rect x="305" y="115" width="410" height="35" rx="4" fill="none" stroke="#555" stroke-width="1" stroke-dasharray="5,4"/>
+          <text x="510" y="137" text-anchor="middle" fill="#999" font-size="11">Room Socket.io : session:$&#123;sessionId&#125;</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 6. MONGODB ==================== -->
+<section id="mongodb">
+  <div class="slide-inner">
+    <h2>MongoDB : pourquoi NoSQL + decisions cles</h2>
+
+    <div class="grid-2" style="margin-bottom:16px;">
+      <div class="card">
+        <h3>Pourquoi MongoDB ?</h3>
+        <ul class="compact">
+          <li>Schema flexible pour les options de sondage (nombre variable par question)</li>
+          <li>JSON-natif avec Node.js &mdash; pas de mapping objet-relationnel</li>
+          <li>Ecritures rapides pour le vote en temps reel</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Compteurs denormalises</h3>
+        <p class="compact"><code>Question.options[].votes</code> mis a jour via <code>$inc</code> atomique &mdash; pas de requetes <code>count()</code>.</p>
+        <p class="compact" style="margin-bottom:0;"><strong>Pourquoi :</strong> performance sous charge concurrente, pas de conditions de course (race conditions).</p>
+      </div>
+    </div>
+
+    <!-- Diagram: denormalization -->
+    <div class="diagram-container">
+      <svg width="620" height="200" viewBox="0 0 620 200">
+        <defs>
+          <marker id="arrowG" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#4caf50"/>
+          </marker>
+        </defs>
+        <!-- Vote doc -->
+        <rect x="10" y="20" width="170" height="90" rx="4" fill="#1A1A1A" stroke="#555" stroke-width="1.5"/>
+        <text x="95" y="42" text-anchor="middle" fill="#ffb59e" font-size="12" font-weight="600">Vote (document)</text>
+        <text x="95" y="62" text-anchor="middle" fill="#999" font-size="10">question: ObjectId</text>
+        <text x="95" y="78" text-anchor="middle" fill="#999" font-size="10">participantToken: sha256</text>
+        <text x="95" y="94" text-anchor="middle" fill="#999" font-size="10">selectedOption: index</text>
+
+        <!-- Arrow -->
+        <line x1="180" y1="65" x2="220" y2="65" stroke="#4caf50" stroke-width="1.5" marker-end="url(#arrowG)"/>
+        <text x="200" y="55" text-anchor="middle" fill="#4caf50" font-size="9">$inc</text>
+
+        <!-- Question doc -->
+        <rect x="225" y="10" width="200" height="110" rx="4" fill="#1A1A1A" stroke="#D85A30" stroke-width="2"/>
+        <text x="325" y="32" text-anchor="middle" fill="#ffb59e" font-size="12" font-weight="700">Question</text>
+        <text x="325" y="52" text-anchor="middle" fill="#999" font-size="10">options: [</text>
+        <text x="325" y="68" text-anchor="middle" fill="#e5e2e1" font-size="10">&#123; text: "Oui", votes: 42 &#125;</text>
+        <text x="325" y="84" text-anchor="middle" fill="#e5e2e1" font-size="10">&#123; text: "Non", votes: 17 &#125;</text>
+        <text x="325" y="100" text-anchor="middle" fill="#999" font-size="10">]</text>
+
+        <!-- Unique index -->
+        <rect x="10" y="130" width="415" height="50" rx="4" fill="#2a2a2a" stroke="#e57373" stroke-width="1.5"/>
+        <text x="222" y="152" text-anchor="middle" fill="#e57373" font-size="11" font-weight="600">Index unique partiel : &#123; question, participantToken &#125;</text>
+        <text x="222" y="170" text-anchor="middle" fill="#999" font-size="10">La BDD elle-meme empeche le double vote &mdash; pas le code applicatif</text>
+
+        <!-- Benefit box -->
+        <rect x="448" y="30" width="165" height="70" rx="4" fill="#1b3a1b" stroke="#4caf50" stroke-width="1"/>
+        <text x="530" y="52" text-anchor="middle" fill="#81c784" font-size="10" font-weight="600">Lecture instantanee</text>
+        <text x="530" y="70" text-anchor="middle" fill="#999" font-size="10">Pas de count() sur</text>
+        <text x="530" y="84" text-anchor="middle" fill="#999" font-size="10">chaque affichage</text>
+      </svg>
+    </div>
+
+    <div class="card why">
+      <span class="tag tag-orange">Compromis</span>
+      <p class="compact" style="margin-bottom:0;">Denormalisation = lectures plus rapides, mais obligation de maintenir les compteurs synchronises. L'operation <code>$inc</code> atomique de MongoDB gere cela sans conditions de course.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 7. AUTH ==================== -->
+<section id="auth">
+  <div class="slide-inner">
+    <h2>Authentification : deux mondes</h2>
+
+    <div class="grid-2">
+      <div class="card" style="border-top:3px solid #64b5f6;">
+        <h3 style="color:#64b5f6;">Presentateur</h3>
+        <div class="diagram-container">
+          <svg width="260" height="170" viewBox="0 0 260 170">
+            <defs>
+              <marker id="arrowB" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+                <polygon points="0 0, 8 3, 0 6" fill="#64b5f6"/>
+              </marker>
+            </defs>
+            <rect x="5" y="10" width="90" height="32" rx="4" fill="#2a2a2a" stroke="#64b5f6" stroke-width="1.5"/>
+            <text x="50" y="30" text-anchor="middle" fill="#64b5f6" font-size="10" font-weight="600">Email + MDP</text>
+            <line x1="95" y1="26" x2="115" y2="26" stroke="#64b5f6" stroke-width="1" marker-end="url(#arrowB)"/>
+            <rect x="120" y="10" width="70" height="32" rx="4" fill="#1A1A1A" stroke="#555" stroke-width="1"/>
+            <text x="155" y="30" text-anchor="middle" fill="#999" font-size="10">bcrypt</text>
+            <line x1="155" y1="42" x2="155" y2="60" stroke="#64b5f6" stroke-width="1" marker-end="url(#arrowB)"/>
+            <rect x="110" y="65" width="90" height="32" rx="4" fill="#1A1A1A" stroke="#64b5f6" stroke-width="1.5"/>
+            <text x="155" y="85" text-anchor="middle" fill="#64b5f6" font-size="10" font-weight="600">JWT (1 jour)</text>
+            <line x1="155" y1="97" x2="155" y2="115" stroke="#64b5f6" stroke-width="1" marker-end="url(#arrowB)"/>
+            <rect x="90" y="120" width="130" height="32" rx="4" fill="#2a2a2a" stroke="#555" stroke-width="1"/>
+            <text x="155" y="140" text-anchor="middle" fill="#999" font-size="9">localStorage + header</text>
+          </svg>
+        </div>
+        <ul class="compact">
+          <li>Compte persistant (gerer ses sessions)</li>
+          <li>JWT stocke dans localStorage</li>
+          <li>Envoye via header Authorization</li>
+        </ul>
+      </div>
+
+      <div class="card" style="border-top:3px solid var(--orange);">
+        <h3>Participant</h3>
+        <div class="diagram-container">
+          <svg width="260" height="170" viewBox="0 0 260 170">
+            <defs>
+              <marker id="arrowO4" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+                <polygon points="0 0, 8 3, 0 6" fill="#D85A30"/>
+              </marker>
+            </defs>
+            <rect x="5" y="10" width="90" height="32" rx="4" fill="#2a2a2a" stroke="#D85A30" stroke-width="1.5"/>
+            <text x="50" y="30" text-anchor="middle" fill="#ffb59e" font-size="10" font-weight="600">deviceId</text>
+            <line x1="95" y1="26" x2="115" y2="26" stroke="#D85A30" stroke-width="1" marker-end="url(#arrowO4)"/>
+            <rect x="120" y="10" width="110" height="32" rx="4" fill="#1A1A1A" stroke="#555" stroke-width="1"/>
+            <text x="175" y="26" text-anchor="middle" fill="#999" font-size="9">SHA256(id:session)</text>
+            <line x1="175" y1="42" x2="175" y2="60" stroke="#D85A30" stroke-width="1" marker-end="url(#arrowO4)"/>
+            <rect x="120" y="65" width="110" height="32" rx="4" fill="#1A1A1A" stroke="#D85A30" stroke-width="1.5"/>
+            <text x="175" y="85" text-anchor="middle" fill="#ffb59e" font-size="10" font-weight="600">JWT (6 heures)</text>
+            <line x1="175" y1="97" x2="175" y2="115" stroke="#D85A30" stroke-width="1" marker-end="url(#arrowO4)"/>
+            <rect x="105" y="120" width="140" height="32" rx="4" fill="#2a2a2a" stroke="#555" stroke-width="1"/>
+            <text x="175" y="137" text-anchor="middle" fill="#999" font-size="9">Deterministe : meme</text>
+            <text x="175" y="148" text-anchor="middle" fill="#999" font-size="9">appareil = meme identite</text>
+          </svg>
+        </div>
+        <ul class="compact">
+          <li>Anonyme &mdash; zero friction (pas d'inscription)</li>
+          <li>Token scope a la session (pas de tracking)</li>
+          <li>Deterministe : meme appareil + meme session = meme participant</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card why" style="margin-top:16px;">
+      <span class="tag tag-orange">Pourquoi deux flux</span>
+      <p class="compact" style="margin-bottom:0;">Les presentateurs ont besoin de comptes (persister les sessions). Les participants ont besoin de <strong>zero friction</strong> (pas d'inscription, pas de login). Secrets JWT separes pour chaque type.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 8. STATE MANAGEMENT ==================== -->
+<section id="state">
+  <div class="slide-inner">
+    <h2>Gestion d'etat : useState vs Redux</h2>
+
+    <div class="grid-2" style="margin-bottom:16px;">
+      <div class="card">
+        <h3 style="color:#64b5f6;">useState</h3>
+        <p class="compact">Etat local de formulaire, toggles UI, donnees specifiques a une page chargees via REST.</p>
+        <div class="card-elevated" style="margin-top:8px;">
+          <code style="font-size:0.85rem;">const [title, setTitle] = useState("")</code>
+        </div>
+        <p class="compact" style="color:var(--text-dim);margin-bottom:0;">Simple, direct, pas de boilerplate.</p>
+      </div>
+      <div class="card" style="border:1px solid var(--orange);">
+        <h3>Redux + socketMiddleware</h3>
+        <p class="compact">Donnees temps reel partagees : compteurs de votes, statut de session, nombre de participants.</p>
+        <div class="card-elevated" style="margin-top:8px;">
+          <code style="font-size:0.85rem;">socket.on &rarr; dispatch(action)</code>
+        </div>
+        <p class="compact" style="color:var(--text-dim);margin-bottom:0;">Plusieurs composants, plusieurs pages, memes donnees live.</p>
+      </div>
+    </div>
+
+    <!-- Middleware pattern -->
+    <div class="card">
+      <h3>Le pattern socketMiddleware</h3>
+      <div class="diagram-container">
+        <svg width="600" height="120" viewBox="0 0 600 120">
+          <defs>
+            <marker id="arrowO5" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#D85A30"/>
+            </marker>
+          </defs>
+          <rect x="10" y="35" width="110" height="45" rx="4" fill="#2a2a2a" stroke="#555" stroke-width="1.5"/>
+          <text x="65" y="55" text-anchor="middle" fill="#e5e2e1" font-size="11" font-weight="600">Socket.io</text>
+          <text x="65" y="70" text-anchor="middle" fill="#999" font-size="9">evenement recu</text>
+          <line x1="120" y1="57" x2="155" y2="57" stroke="#D85A30" stroke-width="1.5" marker-end="url(#arrowO5)"/>
+
+          <rect x="160" y="30" width="130" height="55" rx="4" fill="#1A1A1A" stroke="#D85A30" stroke-width="2"/>
+          <text x="225" y="52" text-anchor="middle" fill="#ffb59e" font-size="11" font-weight="700">Middleware</text>
+          <text x="225" y="70" text-anchor="middle" fill="#999" font-size="9">dispatch(action)</text>
+          <line x1="290" y1="57" x2="325" y2="57" stroke="#D85A30" stroke-width="1.5" marker-end="url(#arrowO5)"/>
+
+          <rect x="330" y="35" width="110" height="45" rx="4" fill="#1A1A1A" stroke="#555" stroke-width="1.5"/>
+          <text x="385" y="55" text-anchor="middle" fill="#e5e2e1" font-size="11" font-weight="600">Redux Store</text>
+          <text x="385" y="70" text-anchor="middle" fill="#999" font-size="9">etat mis a jour</text>
+          <line x1="440" y1="57" x2="475" y2="57" stroke="#D85A30" stroke-width="1.5" marker-end="url(#arrowO5)"/>
+
+          <rect x="480" y="35" width="110" height="45" rx="4" fill="#2a2a2a" stroke="#4caf50" stroke-width="1.5"/>
+          <text x="535" y="55" text-anchor="middle" fill="#4caf50" font-size="11" font-weight="600">Composants</text>
+          <text x="535" y="70" text-anchor="middle" fill="#999" font-size="9">re-render auto</text>
+        </svg>
+      </div>
+    </div>
+
+    <div class="card why">
+      <span class="tag tag-orange">Pourquoi Redux pour le WebSocket</span>
+      <p class="compact" style="margin-bottom:0;">Plusieurs composants sur differentes pages ont besoin des memes donnees en temps reel simultanement (compteurs de votes, statut de session). Redux centralise cet etat partage.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 9. STATE MACHINE ==================== -->
+<section id="state-machine">
+  <div class="slide-inner">
+    <h2>Machine d'etats de la session</h2>
+
+    <div class="diagram-container">
+      <svg width="650" height="250" viewBox="0 0 650 250">
+        <defs>
+          <marker id="arrowW" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#e5e2e1"/>
+          </marker>
+        </defs>
+        <!-- Draft -->
+        <rect x="30" y="90" width="110" height="50" rx="25" fill="#2a2a2a" stroke="#999" stroke-width="2"/>
+        <text x="85" y="120" text-anchor="middle" fill="#999" font-size="14" font-weight="700">draft</text>
+
+        <!-- Arrow draft -> active -->
+        <line x1="140" y1="115" x2="200" y2="115" stroke="#e5e2e1" stroke-width="2" marker-end="url(#arrowW)"/>
+        <text x="170" y="105" text-anchor="middle" fill="#4caf50" font-size="9" font-weight="600">start</text>
+
+        <!-- Active -->
+        <rect x="205" y="90" width="110" height="50" rx="25" fill="#1b3a1b" stroke="#4caf50" stroke-width="2.5"/>
+        <text x="260" y="120" text-anchor="middle" fill="#4caf50" font-size="14" font-weight="700">active</text>
+
+        <!-- Bidirectional arrows active <-> paused -->
+        <line x1="315" y1="105" x2="385" y2="105" stroke="#e5e2e1" stroke-width="2" marker-end="url(#arrowW)"/>
+        <text x="350" y="97" text-anchor="middle" fill="#ffb59e" font-size="9" font-weight="600">pause</text>
+        <line x1="385" y1="125" x2="315" y2="125" stroke="#e5e2e1" stroke-width="2" marker-end="url(#arrowW)"/>
+        <text x="350" y="143" text-anchor="middle" fill="#4caf50" font-size="9" font-weight="600">resume</text>
+
+        <!-- Paused -->
+        <rect x="390" y="90" width="110" height="50" rx="25" fill="#3a2a1b" stroke="#ffb59e" stroke-width="2"/>
+        <text x="445" y="120" text-anchor="middle" fill="#ffb59e" font-size="14" font-weight="700">paused</text>
+
+        <!-- Arrow paused -> finished -->
+        <line x1="500" y1="115" x2="530" y2="115" stroke="#e5e2e1" stroke-width="2" marker-end="url(#arrowW)"/>
+        <text x="520" y="105" text-anchor="middle" fill="#e57373" font-size="9" font-weight="600">end</text>
+
+        <!-- Finished -->
+        <rect x="535" y="90" width="110" height="50" rx="25" fill="#3a1b1b" stroke="#e57373" stroke-width="2"/>
+        <text x="590" y="120" text-anchor="middle" fill="#e57373" font-size="14" font-weight="700">finished</text>
+
+        <!-- Also active -> finished directly -->
+        <path d="M 260 140 Q 260 200 590 200 Q 620 200 620 170 L 600 140" fill="none" stroke="#e57373" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arrowW)"/>
+        <text x="420" y="215" text-anchor="middle" fill="#e57373" font-size="9">end (direct)</text>
+      </svg>
+    </div>
+
+    <div class="grid-3" style="margin-top:20px;">
+      <div class="card-elevated">
+        <h3>Transitions securisees</h3>
+        <p class="compact">Le backend valide chaque transition. Retourne <code>409 Conflict</code> si la transition est invalide (ex: draft &rarr; paused).</p>
+      </div>
+      <div class="card-elevated">
+        <h3>Autorisation</h3>
+        <p class="compact">Seul le proprietaire de la session peut declencher les transitions. Retourne <code>403 Forbidden</code> sinon.</p>
+      </div>
+      <div class="card-elevated">
+        <h3>Votes bloques</h3>
+        <p class="compact">Les votes sont refuses cote serveur quand la session est en pause ou terminee &mdash; pas seulement cote client.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 10. RETRO ==================== -->
+<section id="retro">
+  <div class="slide-inner">
+    <h2>Ce qu'on ferait differemment</h2>
+    <p class="subtitle">Reflexion honnete sur les limites et les axes d'amelioration</p>
+
+    <div class="grid-2">
+      <div class="card" style="border-left:3px solid #e57373;">
+        <h3 style="color:#e57373;">Guards d'authentification</h3>
+        <p class="compact">Certaines routes de mutation (creation de session, ajout de question) ne sont pas protegees par le middleware d'authentification. A corriger en priorite avant mise en production.</p>
+      </div>
+      <div class="card" style="border-left:3px solid #e57373;">
+        <h3 style="color:#e57373;">Tests automatises</h3>
+        <p class="compact">Aucun framework de test configure. Pour un projet en production, il faudrait des tests unitaires (controllers) et d'integration (flux de vote complet).</p>
+      </div>
+      <div class="card" style="border-left:3px solid #64b5f6;">
+        <h3 style="color:#64b5f6;">PostgreSQL ?</h3>
+        <p class="compact">MongoDB convient au prototype, mais PostgreSQL offrirait des garanties d'integrite de donnees plus fortes (transactions ACID, contraintes de cle etrangere).</p>
+      </div>
+      <div class="card" style="border-left:3px solid #64b5f6;">
+        <h3 style="color:#64b5f6;">Rate limiting</h3>
+        <p class="compact">Pas de limitation de debit sur les evenements WebSocket. Un client malveillant pourrait spammer des votes ou des reactions et surcharger le serveur.</p>
+      </div>
+    </div>
+
+    <div class="card why" style="margin-top:20px;text-align:center;">
+      <p style="font-size:1.1rem;margin-bottom:0;"><strong>Ces limites sont connues et documentees.</strong><br>
+      <span style="color:var(--text-dim);">Elles font partie de notre reflexion technique et montrent notre capacite a evaluer un projet de maniere critique.</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SCRIPT ==================== -->
+<script>
+(function() {
+  const sections = document.querySelectorAll('section');
+  const navLinks = document.querySelectorAll('#nav a');
+
+  function updateNav() {
+    const scrollPos = window.scrollY + window.innerHeight / 2;
+    sections.forEach((section, i) => {
+      const top = section.offsetTop;
+      const bottom = top + section.offsetHeight;
+      if (scrollPos >= top && scrollPos < bottom) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        navLinks[i].classList.add('active');
+      }
+    });
+  }
+
+  window.addEventListener('scroll', updateNav, { passive: true });
+  updateNav();
+
+  // Keyboard navigation
+  document.addEventListener('keydown', function(e) {
+    const currentIndex = Array.from(navLinks).findIndex(l => l.classList.contains('active'));
+    if (e.key === 'ArrowDown' || e.key === ' ' || e.key === 'PageDown') {
+      e.preventDefault();
+      if (currentIndex < sections.length - 1) {
+        sections[currentIndex + 1].scrollIntoView({ behavior: 'smooth' });
+      }
+    } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+      e.preventDefault();
+      if (currentIndex > 0) {
+        sections[currentIndex - 1].scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  });
+})();
+</script>
+
+</body>
+</html>

@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import "@/styles/Sidebar.css";
 
 interface StoredUser {
@@ -22,14 +22,14 @@ const Sidebar = () => {
     <aside className="sidebar">
 
       {/* Logo + présentateur */}
-      <div className="sidebar-header">
+      <Link to="/home" className="sidebar-header">
         <img src="/logo-icon.webp" alt="Réagis" className="sidebar-logo" />
 
         <div className="sidebar-brand">
           <h1>Réagis</h1>
           <p>{user?.name ?? "Présentateur"}</p>
         </div>
-      </div>
+      </Link>
 
       {/* Navigation */}
       <nav className="sidebar-nav">

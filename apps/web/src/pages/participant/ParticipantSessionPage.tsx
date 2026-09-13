@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
 import {
@@ -201,7 +201,9 @@ const ParticipantSessionPage = () => {
     <FloatingReactions />
     <CenteredCard className="participant-session-page">
 
-      <img src="/logo-icon.webp" alt="Réagis" className="participant-session-page__logo" />
+      <Link to="/join" className="participant-session-page__logo-link">
+        <img src="/logo-icon.webp" alt="Réagis" className="participant-session-page__logo" />
+      </Link>
 
       <p className="participant-session-page__eyebrow">
         SESSION {session.name && (

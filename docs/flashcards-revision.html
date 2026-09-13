@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reagis — Flashcards Revision RNCP</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Geist:wght@400;500;600&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #131313;
+    color: #e5e2e1;
+    font-family: 'Geist', 'Inter', system-ui, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem 1rem;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1 {
+    font-family: 'Sora', sans-serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #ffb59e;
+    margin-bottom: 0.25rem;
+    text-align: center;
+  }
+
+  .subtitle {
+    color: #a78a82;
+    font-size: 0.85rem;
+    margin-bottom: 1.25rem;
+    text-align: center;
+  }
+
+  /* Category tabs */
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+    max-width: 800px;
+  }
+
+  .tab {
+    background: #1A1A1A;
+    border: 1px solid #2a2a2a;
+    color: #a78a82;
+    padding: 0.4rem 0.85rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-family: 'Geist', sans-serif;
+    transition: all 0.2s;
+    user-select: none;
+  }
+
+  .tab:hover { border-color: #D85A30; color: #e5e2e1; }
+  .tab.active { background: #D85A30; color: #fff; border-color: #D85A30; }
+
+  /* Progress */
+  .progress-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    width: 100%;
+    max-width: 560px;
+  }
+
+  .progress-text {
+    color: #a78a82;
+    font-size: 0.8rem;
+    font-family: 'Geist', sans-serif;
+    white-space: nowrap;
+    min-width: 70px;
+    text-align: right;
+  }
+
+  .progress-bar {
+    flex: 1;
+    height: 4px;
+    background: #2a2a2a;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: #D85A30;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+  }
+
+  /* Card scene */
+  .card-scene {
+    width: 100%;
+    max-width: 560px;
+    height: 340px;
+    perspective: 1000px;
+    margin-bottom: 1.25rem;
+    cursor: pointer;
+  }
+
+  .card {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transition: transform 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
+    transform-style: preserve-3d;
+  }
+
+  .card.flipped { transform: rotateY(180deg); }
+
+  .card-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    background: #1A1A1A;
+    border: 1px solid #2a2a2a;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 2rem 2.25rem;
+    overflow-y: auto;
+  }
+
+  .card-front { z-index: 2; }
+
+  .card-back {
+    transform: rotateY(180deg);
+  }
+
+  .card-label {
+    font-family: 'Sora', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #D85A30;
+    margin-bottom: 0.75rem;
+  }
+
+  .card-front .card-content {
+    font-family: 'Sora', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 1.5;
+    color: #ffb59e;
+  }
+
+  .card-back .card-content {
+    font-size: 0.92rem;
+    line-height: 1.65;
+    color: #e5e2e1;
+  }
+
+  .card-category {
+    position: absolute;
+    bottom: 1rem;
+    right: 1.25rem;
+    font-size: 0.65rem;
+    color: #a78a82;
+    font-style: italic;
+  }
+
+  .flip-hint {
+    position: absolute;
+    bottom: 1rem;
+    left: 1.25rem;
+    font-size: 0.65rem;
+    color: #a78a82;
+  }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .btn {
+    background: #2a2a2a;
+    border: 1px solid #3a3a3a;
+    color: #e5e2e1;
+    padding: 0.55rem 1.1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Geist', sans-serif;
+    font-size: 0.85rem;
+    transition: all 0.15s;
+    user-select: none;
+  }
+
+  .btn:hover { background: #3a3a3a; border-color: #D85A30; }
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .btn:disabled:hover { background: #2a2a2a; border-color: #3a3a3a; }
+
+  .btn-shuffle {
+    background: #D85A30;
+    border-color: #D85A30;
+    color: #fff;
+    font-weight: 600;
+  }
+
+  .btn-shuffle:hover { background: #e06535; border-color: #e06535; }
+
+  .keyboard-hints {
+    color: #a78a82;
+    font-size: 0.7rem;
+    text-align: center;
+  }
+
+  kbd {
+    background: #2a2a2a;
+    border: 1px solid #3a3a3a;
+    border-radius: 3px;
+    padding: 0.1rem 0.35rem;
+    font-family: 'Geist', monospace;
+    font-size: 0.65rem;
+    color: #e5e2e1;
+  }
+
+  @media (max-width: 600px) {
+    body { padding: 1rem 0.75rem; }
+    h1 { font-size: 1.3rem; }
+    .card-scene { height: 300px; }
+    .card-face { padding: 1.5rem 1.25rem; }
+    .card-front .card-content { font-size: 1.05rem; }
+    .card-back .card-content { font-size: 0.85rem; }
+    .tab { font-size: 0.72rem; padding: 0.35rem 0.65rem; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Flashcards Revision</h1>
+<p class="subtitle">RNCP Titre Niveau 6 — Concepteur-developpeur d'applications</p>
+
+<div class="tabs" id="tabs"></div>
+
+<div class="progress-row">
+  <span class="progress-text" id="progressText">1 / 51</span>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+</div>
+
+<div class="card-scene" id="cardScene">
+  <div class="card" id="card">
+    <div class="card-face card-front">
+      <div class="card-label">Question</div>
+      <div class="card-content" id="frontContent"></div>
+      <span class="flip-hint">Cliquer pour retourner</span>
+      <span class="card-category" id="frontCategory"></span>
+    </div>
+    <div class="card-face card-back">
+      <div class="card-label">Reponse</div>
+      <div class="card-content" id="backContent"></div>
+      <span class="card-category" id="backCategory"></span>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <button class="btn" id="prevBtn" title="Precedente">&#8592; Prec.</button>
+  <button class="btn btn-shuffle" id="shuffleBtn">Melanger</button>
+  <button class="btn" id="nextBtn" title="Suivante">Suiv. &#8594;</button>
+</div>
+
+<div class="keyboard-hints">
+  <kbd>&larr;</kbd> <kbd>&rarr;</kbd> naviguer &nbsp;&middot;&nbsp; <kbd>Espace</kbd> retourner &nbsp;&middot;&nbsp; <kbd>S</kbd> melanger
+</div>
+
+<script>
+const ALL_CARDS = [
+  // HTML
+  { cat: "HTML", q: "Qu'est-ce que le HTML ?", a: "HyperText Markup Language \u2014 le langage de structure du web. Il d\u00e9finit le CONTENU et sa HI\u00c9RARCHIE avec des balises (<h1>, <p>, <div>, <form>...). HTML dit QUOI afficher, CSS dit COMMENT l'afficher, et JavaScript ajoute le COMPORTEMENT. Un navigateur lit le HTML et construit le DOM (arbre de n\u0153uds) \u00e0 partir duquel il dessine la page." },
+  { cat: "HTML", q: "Qu'est-ce que le HTML s\u00e9mantique ?", a: "Utiliser des balises qui ont un SENS plut\u00f4t que des <div> partout. <header>, <nav>, <main>, <section>, <article>, <footer> d\u00e9crivent le r\u00f4le du contenu. Avantages : accessibilit\u00e9 (les lecteurs d'\u00e9cran comprennent la structure), SEO (Google comprend mieux la page), maintenabilit\u00e9 (le code se lit comme un plan). Dans R\u00e9agis, la LandingPage utilise <main>, <section>, <header> pour le r\u00e9f\u00e9rencement." },
+  { cat: "HTML", q: "Qu'est-ce que le DOM ?", a: "Document Object Model \u2014 la repr\u00e9sentation en arbre de la page HTML, construite par le navigateur. Chaque balise HTML devient un n\u0153ud de l'arbre. JavaScript peut manipuler cet arbre : ajouter, supprimer ou modifier des \u00e9l\u00e9ments. React abstrait la manipulation directe du DOM gr\u00e2ce au Virtual DOM \u2014 on d\u00e9crit l'\u00e9tat souhait\u00e9 et React se charge de mettre \u00e0 jour le vrai DOM efficacement." },
+  { cat: "HTML", q: "Qu'est-ce qu'un formulaire HTML (<form>) ?", a: "Un conteneur pour les champs de saisie utilisateur (<input>, <select>, <textarea>). Attributs cl\u00e9s : action (URL de destination), method (GET ou POST). En React, on g\u00e8re les formulaires en mode \u00abcontr\u00f4l\u00e9\u00bb : la valeur du champ est stock\u00e9e dans le state (useState), et onChange met \u00e0 jour le state. onSubmit d\u00e9clenche l'envoi (souvent via fetch \u00e0 notre API). Dans R\u00e9agis : LoginPage, CreateSessionPage, JoinPage utilisent cette approche." },
+  { cat: "HTML", q: "Qu'est-ce que l'accessibilit\u00e9 web (a11y) ?", a: "Rendre un site utilisable par TOUS, y compris les personnes en situation de handicap (visuel, moteur, cognitif). Bonnes pratiques : balises s\u00e9mantiques, attributs alt sur les images, contraste de couleurs suffisant (WCAG), navigation au clavier, labels sur les formulaires, aria-* pour les widgets complexes. Le design system Kinetic Noir de R\u00e9agis utilise un fort contraste (orange sur fond noir) pour la lisibilit\u00e9 en environnement sombre." },
+  { cat: "HTML", q: "Qu'est-ce que la balise <meta viewport> ?", a: "La balise <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> dit au navigateur mobile de ne pas zoomer/d\u00e9zoomer automatiquement la page. Sans elle, un smartphone afficherait la page en version desktop mini. Avec elle, la page s'adapte \u00e0 la largeur de l'\u00e9cran et les media queries CSS fonctionnent correctement. C'est INDISPENSABLE pour le responsive design." },
+
+  // CSS
+  { cat: "CSS", q: "Qu'est-ce que CSS et la cascade ?", a: "Cascading Style Sheets \u2014 le langage qui d\u00e9finit l'APPARENCE d'une page web (couleurs, tailles, positions). La \u00abcascade\u00bb est l'algorithme qui d\u00e9termine quel style s'applique quand plusieurs r\u00e8gles ciblent le m\u00eame \u00e9l\u00e9ment. Ordre de priorit\u00e9 : styles inline > ID > classe > balise. Plus une r\u00e8gle est sp\u00e9cifique, plus elle a de poids. C'est pourquoi on \u00e9vite les !important." },
+  { cat: "CSS", q: "Qu'est-ce que le Box Model ?", a: "Chaque \u00e9l\u00e9ment HTML est une bo\u00eete compos\u00e9e de 4 couches : content (le contenu), padding (espace int\u00e9rieur), border (bordure), margin (espace ext\u00e9rieur). Par d\u00e9faut, width ne compte QUE le content. Avec box-sizing: border-box, width inclut padding + border \u2014 beaucoup plus intuitif. C'est pourquoi la plupart des projets ajoutent * { box-sizing: border-box } en reset global (comme dans R\u00e9agis)." },
+  { cat: "CSS", q: "Qu'est-ce que Flexbox ?", a: "Un mod\u00e8le de layout CSS pour disposer des \u00e9l\u00e9ments sur UN axe (horizontal ou vertical). display: flex sur le parent, puis on contr\u00f4le : direction (row/column), alignement (align-items, justify-content), espacement (gap), et le comportement quand l'espace manque (flex-wrap, flex-shrink). Id\u00e9al pour : barres de navigation, listes de boutons, centrage vertical. Dans R\u00e9agis : les controles de la pr\u00e9sentation, les options de vote." },
+  { cat: "CSS", q: "Qu'est-ce que CSS Grid ?", a: "Un mod\u00e8le de layout CSS pour disposer des \u00e9l\u00e9ments sur DEUX axes (lignes ET colonnes). display: grid sur le parent, puis on d\u00e9finit les colonnes (grid-template-columns) et les lignes. Plus puissant que Flexbox pour les mises en page complexes. R\u00e8gle simple : Grid pour le layout g\u00e9n\u00e9ral de la page (2D), Flexbox pour l'alignement des \u00e9l\u00e9ments dans un conteneur (1D). Dans R\u00e9agis : le layout pr\u00e9sentateur utilise Grid (sidebar + contenu)." },
+  { cat: "CSS", q: "Qu'est-ce qu'une media query ?", a: "@media (max-width: 768px) { ... } \u2014 applique des styles CSS uniquement quand la condition est remplie (ex: \u00e9cran < 768px). C'est le fondement du responsive design. Approche mobile-first : on \u00e9crit d'abord le CSS mobile (par d\u00e9faut), puis on ajoute @media (min-width: 768px) pour adapter au desktop. Breakpoints courants : 480px (mobile), 768px (tablette), 1024px (desktop)." },
+  { cat: "CSS", q: "Qu'est-ce que la sp\u00e9cificit\u00e9 CSS ?", a: "Un syst\u00e8me de poids pour d\u00e9terminer quel style gagne quand plusieurs r\u00e8gles ciblent le m\u00eame \u00e9l\u00e9ment. Calcul (a, b, c) : a = nombre d'IDs, b = nombre de classes/attributs/pseudo-classes, c = nombre de balises. #header .nav a = (1,1,1), .nav a = (0,1,1), a = (0,0,1). Le plus \u00e9lev\u00e9 gagne. Bonne pratique : utiliser des classes (sp\u00e9cificit\u00e9 basse et homog\u00e8ne) plut\u00f4t que des IDs." },
+  { cat: "CSS", q: "Qu'est-ce que les variables CSS (custom properties) ?", a: "--primary: #D85A30; puis color: var(--primary). Permettent de centraliser les valeurs (couleurs, espacements) et de les r\u00e9utiliser partout. Avantage vs Sass variables : elles sont dynamiques (modifiables par JS, par media queries, par classe parent). Dans R\u00e9agis, le design system Kinetic Noir d\u00e9finit toutes les couleurs et espacements comme tokens r\u00e9utilisables." },
+  { cat: "CSS", q: "Qu'est-ce qu'une transition et une animation CSS ?", a: "Transition : animer le passage d'un \u00e9tat \u00e0 un autre (ex: hover). transition: background 0.3s ease \u2014 quand le background change, il s'anime en 0.3s. Animation (@keyframes) : animer en continu ou de mani\u00e8re complexe, avec des \u00e9tapes (0%, 50%, 100%). Dans R\u00e9agis : la pulsation du point \u00aben direct\u00bb utilise une animation, les boutons utilisent des transitions au hover." },
+  { cat: "CSS", q: "Positionnement CSS : static, relative, absolute, fixed, sticky ?", a: "static : flux normal (par d\u00e9faut). relative : d\u00e9cal\u00e9 par rapport \u00e0 sa position normale (cr\u00e9e un contexte pour absolute). absolute : positionn\u00e9 par rapport au parent positionn\u00e9 le plus proche (sort du flux). fixed : positionn\u00e9 par rapport \u00e0 la fen\u00eatre (reste en place au scroll). sticky : hybride relative/fixed (se colle au scroll). Dans R\u00e9agis : la sidebar est fixed, les badges sont absolute dans leurs cartes." },
+
+  // Mobile & Responsive
+  { cat: "Mobile & Responsive", q: "Qu'est-ce que l'approche mobile-first ?", a: "Designer et coder d'abord pour les petits \u00e9crans (mobile), puis ajouter des styles pour les plus grands. En CSS : le style de base est mobile, on ajoute @media (min-width: ...) pour tablette/desktop. Avantages : force \u00e0 prioriser le contenu essentiel, meilleure performance mobile (moins de CSS \u00e0 charger), correspond \u00e0 l'usage r\u00e9el (60%+ du trafic est mobile). Dans R\u00e9agis, le participant est mobile-first car il vote sur son smartphone." },
+  { cat: "Mobile & Responsive", q: "App native vs Web app vs PWA ?", a: "App native : d\u00e9velopp\u00e9e pour iOS (Swift) ou Android (Kotlin), install\u00e9e via store, acc\u00e8s complet au mat\u00e9riel. Web app : site responsive accessible via navigateur, pas d'installation. PWA (Progressive Web App) : web app avec des capacit\u00e9s natives (offline, notifications push, install sur l'\u00e9cran d'accueil). R\u00e9agis est une web app responsive \u2014 choix d\u00e9lib\u00e9r\u00e9 : z\u00e9ro friction pour le participant, pas besoin de t\u00e9l\u00e9charger une app pour voter 10 minutes." },
+  { cat: "Mobile & Responsive", q: "Qu'est-ce qu'un QR code et pourquoi l'utiliser ?", a: "Un code-barres 2D qui encode une URL. Le participant scanne avec son t\u00e9l\u00e9phone et acc\u00e8de directement \u00e0 la session. Avantage vs saisir une URL : instantan\u00e9, pas d'erreur de frappe. Dans R\u00e9agis, le pr\u00e9sentateur affiche le QR code + le code de session (RG-XXXX) sur l'\u00e9cran de projection. Le participant a deux options : scanner ou taper le code manuellement." },
+  { cat: "Mobile & Responsive", q: "Qu'est-ce qu'une cible tactile (touch target) ?", a: "La zone cliquable/touchable d'un \u00e9l\u00e9ment interactif. Sur mobile, les doigts sont moins pr\u00e9cis qu'une souris : la taille minimum recommand\u00e9e est 44x44px (Apple) ou 48x48px (Google). Trop petit = erreurs de clic, frustration. Dans R\u00e9agis, les boutons de r\u00e9action ont des cibles de 64px et sont plac\u00e9s en bas de l'\u00e9cran (\u00abzone du pouce\u00bb) pour une ergonomie maximale." },
+  { cat: "Mobile & Responsive", q: "Quelles sont les unit\u00e9s CSS relatives et pourquoi les utiliser ?", a: "rem : relatif \u00e0 la taille de police racine (1rem = 16px par d\u00e9faut). em : relatif au parent. % : relatif au conteneur. vw/vh : relatif \u00e0 la taille de la fen\u00eatre (1vw = 1% de la largeur). Avantage vs pixels : s'adaptent automatiquement aux diff\u00e9rentes tailles d'\u00e9cran et aux pr\u00e9f\u00e9rences utilisateur (zoom, taille de police syst\u00e8me). Indispensable pour le responsive design." },
+  { cat: "Mobile & Responsive", q: "Comment optimiser les performances sur mobile ?", a: "Lazy loading des images et pages (ne charger que ce qui est visible). Bundle splitting (Vite d\u00e9coupe le code par route). Minification du CSS/JS. Compression (gzip/brotli). Limiter les requ\u00eates r\u00e9seau. \u00c9viter les animations co\u00fbteuses (pr\u00e9f\u00e9rer transform/opacity aux propri\u00e9t\u00e9s qui d\u00e9clenchent un reflow comme width/height). Dans R\u00e9agis : React.lazy() d\u00e9coupe le bundle, Socket.io \u00e9vite le polling HTTP." },
+
+  // Fondamentaux Web
+  { cat: "Fondamentaux Web", q: "Qu'est-ce qu'une API ?", a: "Application Programming Interface \u2014 un contrat qui d\u00e9finit comment deux logiciels communiquent. Dans notre cas, le frontend envoie des requ\u00eates HTTP (GET, POST, PATCH, DELETE) au backend qui r\u00e9pond en JSON. C'est comme un serveur de restaurant : tu passes ta commande (requ\u00eate), il transmet \u00e0 la cuisine (backend), et te rapporte le plat (r\u00e9ponse)." },
+  { cat: "Fondamentaux Web", q: "Qu'est-ce que REST ?", a: "REpresentational State Transfer \u2014 un style d'architecture pour les API web. Principes cl\u00e9s : chaque URL repr\u00e9sente une ressource (/sessions, /questions), les verbes HTTP d\u00e9finissent l'action (GET=lire, POST=cr\u00e9er, PATCH=modifier, DELETE=supprimer), et chaque requ\u00eate est ind\u00e9pendante (stateless). Dans R\u00e9agis : GET /api/sessions/my-sessions r\u00e9cup\u00e8re les sessions, POST /api/sessions en cr\u00e9e une." },
+  { cat: "Fondamentaux Web", q: "Quelle est la diff\u00e9rence entre HTTP et WebSocket ?", a: "HTTP = requ\u00eate-r\u00e9ponse (le client demande, le serveur r\u00e9pond, connexion ferm\u00e9e). WebSocket = connexion persistante bidirectionnelle (le serveur peut envoyer des donn\u00e9es sans que le client demande). HTTP pour le CRUD classique (cr\u00e9er session, login). WebSocket pour le temps r\u00e9el (votes live, r\u00e9actions, compteurs). Dans R\u00e9agis, on utilise les deux : REST pour le CRUD, Socket.io pour le live." },
+  { cat: "Fondamentaux Web", q: "Qu'est-ce qu'un middleware ?", a: "Une fonction qui s'ex\u00e9cute ENTRE la r\u00e9ception de la requ\u00eate et le traitement par le contr\u00f4leur. Comme un vigile \u00e0 l'entr\u00e9e d'un club : il v\u00e9rifie ton identit\u00e9 avant de te laisser entrer. Dans Express, un middleware re\u00e7oit (req, res, next) \u2014 il peut modifier la requ\u00eate, bloquer l'acc\u00e8s, ou passer au suivant avec next(). Exemple : notre authenticateToken v\u00e9rifie le JWT avant d'autoriser l'acc\u00e8s aux routes prot\u00e9g\u00e9es." },
+  { cat: "Fondamentaux Web", q: "Qu'est-ce que le CORS ?", a: "Cross-Origin Resource Sharing \u2014 un m\u00e9canisme de s\u00e9curit\u00e9 du navigateur qui bloque les requ\u00eates entre domaines diff\u00e9rents. Notre frontend (localhost:5173) et backend (localhost:4000) sont sur des ports diff\u00e9rents = origines diff\u00e9rentes. Sans configuration CORS c\u00f4t\u00e9 serveur, le navigateur bloquerait toutes les requ\u00eates API. On configure Express pour autoriser notre domaine frontend." },
+
+  // Backend / Node.js
+  { cat: "Backend / Node.js", q: "Qu'est-ce que Node.js ?", a: "Un environnement d'ex\u00e9cution JavaScript c\u00f4t\u00e9 serveur, bas\u00e9 sur le moteur V8 de Chrome. Avant Node, JavaScript ne tournait que dans le navigateur. Node permet d'utiliser JS partout : serveur, scripts, outils CLI. Avantage cl\u00e9 : un seul langage (TypeScript/JS) pour tout le projet front+back = partage de code (notre package shared)." },
+  { cat: "Backend / Node.js", q: "Qu'est-ce qu'Express ?", a: "Un framework web minimaliste pour Node.js. Il fournit : le routage (associer des URL \u00e0 des fonctions), les middlewares (cha\u00eene de traitements), la gestion des requ\u00eates/r\u00e9ponses HTTP. C'est le squelette de notre API. On d\u00e9finit des routes (app.use('/api/sessions', sessionRoutes)), on branche des middlewares (auth, CORS), et Express g\u00e8re le reste." },
+  { cat: "Backend / Node.js", q: "Qu'est-ce que Mongoose ?", a: "Un ODM (Object Document Mapper) pour MongoDB et Node.js. Il permet de d\u00e9finir des sch\u00e9mas (structure des donn\u00e9es), des validations, des index, et fournit une API pour interagir avec la base. C'est le pont entre notre code TypeScript et MongoDB. Exemple : notre mod\u00e8le Session d\u00e9finit les champs (name, code, status), les contraintes (code unique), et les valeurs par d\u00e9faut (status: 'draft')." },
+  { cat: "Backend / Node.js", q: "Qu'est-ce que JWT ?", a: "JSON Web Token \u2014 un standard pour transmettre des informations de mani\u00e8re s\u00e9curis\u00e9e entre deux parties. Structure : Header.Payload.Signature. Le serveur cr\u00e9e le token avec un secret, le client le stocke et l'envoie \u00e0 chaque requ\u00eate. Le serveur v\u00e9rifie la signature sans consulter la base de donn\u00e9es. Avantage vs sessions c\u00f4t\u00e9 serveur : stateless, scalable. Dans R\u00e9agis : le pr\u00e9sentateur re\u00e7oit un JWT au login, le participant en re\u00e7oit un en rejoignant une session." },
+  { cat: "Backend / Node.js", q: "Qu'est-ce que le hachage (bcrypt) ?", a: "Transformer un mot de passe en une cha\u00eene irr\u00e9versible. Contrairement au chiffrement, on ne peut PAS retrouver le mot de passe original. bcrypt ajoute un \u00absel\u00bb (donn\u00e9e al\u00e9atoire) pour que deux mots de passe identiques donnent des hachages diff\u00e9rents. Pour v\u00e9rifier : on hache le mot de passe soumis et on compare les hachages. Jamais stocker un mot de passe en clair !" },
+
+  // Frontend / React
+  { cat: "Frontend / React", q: "Qu'est-ce que React ?", a: "Une biblioth\u00e8que JavaScript pour construire des interfaces utilisateur \u00e0 base de composants. Chaque composant est une fonction qui retourne du JSX (HTML dans JS). React g\u00e8re un DOM virtuel : quand l'\u00e9tat change, il calcule la diff\u00e9rence minimale et met \u00e0 jour uniquement ce qui a chang\u00e9 dans le vrai DOM. R\u00e9sultat : des interfaces r\u00e9actives et performantes." },
+  { cat: "Frontend / React", q: "Qu'est-ce que le Virtual DOM ?", a: "Une copie l\u00e9g\u00e8re du DOM r\u00e9el, maintenue en m\u00e9moire par React. Quand un \u00e9tat change, React cr\u00e9e un nouveau Virtual DOM, le compare avec l'ancien (diffing), et applique uniquement les changements n\u00e9cessaires au vrai DOM (reconciliation). C'est plus performant que de manipuler le DOM directement, car les op\u00e9rations DOM sont co\u00fbteuses." },
+  { cat: "Frontend / React", q: "useState vs Redux \u2014 quand utiliser quoi ?", a: "useState : \u00e9tat local \u00e0 un composant (formulaires, toggles UI, donn\u00e9es d'une seule page). Redux : \u00e9tat global partag\u00e9 entre plusieurs composants/pages, surtout quand les donn\u00e9es changent en temps r\u00e9el. R\u00e8gle dans R\u00e9agis : si la donn\u00e9e vient du WebSocket et que plusieurs composants la lisent \u2192 Redux. Sinon \u2192 useState. Exemple : les compteurs de votes = Redux (partag\u00e9), le texte d'un champ de saisie = useState (local)." },
+  { cat: "Frontend / React", q: "Qu'est-ce que Redux ?", a: "Une biblioth\u00e8que de gestion d'\u00e9tat global pour applications JavaScript. Architecture : Store (\u00e9tat unique) \u2192 Actions (\u00e9v\u00e9nements) \u2192 Reducers (fonctions pures qui calculent le nouvel \u00e9tat). Flux unidirectionnel : l'UI dispatch une action \u2192 le reducer met \u00e0 jour le store \u2192 les composants abonn\u00e9s se re-rendent. Dans R\u00e9agis, Redux stocke les donn\u00e9es WebSocket live (votes, statut session, compteur participants)." },
+  { cat: "Frontend / React", q: "Qu'est-ce que le lazy loading ?", a: "Charger du code uniquement quand il est n\u00e9cessaire, pas au d\u00e9marrage. Dans React, React.lazy() + Suspense permet de d\u00e9couper le bundle en morceaux : chaque page est charg\u00e9e uniquement quand l'utilisateur y navigue. R\u00e9sultat : chargement initial plus rapide. Dans R\u00e9agis, toutes les pages sauf LandingPage et LoginPage sont lazy-loaded." },
+  { cat: "Frontend / React", q: "Qu'est-ce que Vite ?", a: "Un outil de build et serveur de d\u00e9veloppement ultra-rapide pour les projets web modernes. En dev : il sert les fichiers via ES modules natifs (pas de bundling = d\u00e9marrage instantan\u00e9). En production : il utilise Rollup pour cr\u00e9er un bundle optimis\u00e9. Avantage vs Webpack : beaucoup plus rapide gr\u00e2ce au Hot Module Replacement (HMR) quasi-instantan\u00e9." },
+
+  // Base de donn\u00e9es
+  { cat: "Base de donn\u00e9es", q: "SQL vs NoSQL \u2014 quelle diff\u00e9rence ?", a: "SQL (PostgreSQL, MySQL) : donn\u00e9es structur\u00e9es en tables avec des relations, sch\u00e9ma rigide, requ\u00eates SQL, transactions ACID. NoSQL (MongoDB) : documents JSON flexibles, sch\u00e9ma souple, requ\u00eates en JSON, scalabilit\u00e9 horizontale. On a choisi MongoDB pour R\u00e9agis car : les options de sondage varient par question (sch\u00e9ma flexible), JSON natif avec Node.js, \u00e9critures rapides pour le vote en temps r\u00e9el." },
+  { cat: "Base de donn\u00e9es", q: "Qu'est-ce qu'un index en base de donn\u00e9es ?", a: "Une structure de donn\u00e9es qui acc\u00e9l\u00e8re les recherches, comme l'index d'un livre. Sans index, MongoDB doit scanner tous les documents (collection scan). Avec un index sur un champ, il trouve directement le bon document. Trade-off : les index acc\u00e9l\u00e8rent les lectures mais ralentissent l\u00e9g\u00e8rement les \u00e9critures (l'index doit \u00eatre mis \u00e0 jour). Dans R\u00e9agis, on a des index uniques sur Vote {question, participantToken} pour emp\u00eacher le double vote." },
+  { cat: "Base de donn\u00e9es", q: "Qu'est-ce que la d\u00e9normalisation ?", a: "Dupliquer volontairement des donn\u00e9es pour \u00e9viter des calculs co\u00fbteux \u00e0 la lecture. Normalis\u00e9 : compter les votes \u00e0 chaque requ\u00eate (SELECT COUNT). D\u00e9normalis\u00e9 : stocker le compteur directement sur la question et l'incr\u00e9menter \u00e0 chaque vote ($inc). Trade-off : lectures plus rapides, mais il faut maintenir la coh\u00e9rence. Dans R\u00e9agis, on utilise $inc atomique de MongoDB = pas de race condition m\u00eame sous charge." },
+  { cat: "Base de donn\u00e9es", q: "Qu'est-ce qu'une op\u00e9ration atomique ?", a: "Une op\u00e9ration qui s'ex\u00e9cute enti\u00e8rement ou pas du tout, sans \u00e9tat interm\u00e9diaire visible. $inc de MongoDB est atomique : m\u00eame si 100 participants votent en m\u00eame temps, chaque incr\u00e9ment est garanti. Sans atomicit\u00e9 : lire la valeur (10), ajouter 1 (11), \u00e9crire (11) \u2014 mais un autre vote pourrait lire 10 avant l'\u00e9criture et \u00e9crire aussi 11 au lieu de 12. C'est une \u00abrace condition\u00bb." },
+
+  // Architecture & Patterns
+  { cat: "Architecture & Patterns", q: "Qu'est-ce qu'un monorepo ?", a: "Un seul d\u00e9p\u00f4t Git contenant plusieurs projets/packages. R\u00e9agis : apps/back (API), apps/web (frontend), packages/shared (code partag\u00e9). Avantages : partage de code facilit\u00e9, changements atomiques (modifier un \u00e9v\u00e9nement WebSocket dans shared met \u00e0 jour front+back en un commit), tooling unifi\u00e9. Inconv\u00e9nient : le d\u00e9p\u00f4t grossit, CI plus lourde. Outil : npm workspaces g\u00e8re les d\u00e9pendances crois\u00e9es." },
+  { cat: "Architecture & Patterns", q: "Qu'est-ce que MVC ?", a: "Model-View-Controller \u2014 un pattern de s\u00e9paration des responsabilit\u00e9s. Model : les donn\u00e9es et leur logique (nos sch\u00e9mas Mongoose). View : l'affichage (notre app React). Controller : la logique m\u00e9tier qui fait le lien (nos controllers Express). Chaque couche a UNE responsabilit\u00e9. Avantage : on peut modifier le frontend sans toucher au backend, ou changer de base de donn\u00e9es sans modifier les contr\u00f4leurs." },
+  { cat: "Architecture & Patterns", q: "Qu'est-ce que Socket.io ?", a: "Une biblioth\u00e8que qui abstrait les WebSockets avec des fonctionnalit\u00e9s en plus : reconnexion automatique, rooms (groupes de connexions), acknowledgements (confirmation de r\u00e9ception), fallback HTTP si WebSocket n'est pas support\u00e9. Dans R\u00e9agis, les rooms isolent les sessions : un vote dans la session \u00abRG-A1B2\u00bb n'est broadcast qu'aux participants de cette session." },
+  { cat: "Architecture & Patterns", q: "Qu'est-ce qu'une room Socket.io ?", a: "Un canal logique dans lequel on regroupe des connexions. Un socket peut rejoindre une room (socket.join('session:123')), et le serveur peut broadcaster \u00e0 toute la room (io.to('session:123').emit(...)). C'est comme des salles de chat : chaque session R\u00e9agis est une room s\u00e9par\u00e9e. Les \u00e9v\u00e9nements (votes, r\u00e9actions) ne sont envoy\u00e9s qu'aux membres de la room concern\u00e9e." },
+  { cat: "Architecture & Patterns", q: "Qu'est-ce que TypeScript ?", a: "Un sur-ensemble de JavaScript qui ajoute le typage statique. On d\u00e9finit les types des variables, param\u00e8tres et retours de fonctions. Le compilateur d\u00e9tecte les erreurs AVANT l'ex\u00e9cution (vs JavaScript qui crashe au runtime). Avantage dans R\u00e9agis : les types partag\u00e9s dans packages/shared garantissent que le frontend et le backend utilisent les m\u00eames structures de donn\u00e9es." },
+
+  // S\u00e9curit\u00e9
+  { cat: "S\u00e9curit\u00e9", q: "Quelles sont les principales failles de s\u00e9curit\u00e9 web (OWASP) ?", a: "Injection (SQL/NoSQL injection \u2014 ex\u00e9cuter du code malveillant via les entr\u00e9es utilisateur), XSS (Cross-Site Scripting \u2014 injecter du JS dans une page vue par d'autres), CSRF (forcer un utilisateur authentifi\u00e9 \u00e0 ex\u00e9cuter une action), authentification cass\u00e9e (tokens faibles, pas d'expiration). React prot\u00e8ge contre XSS par d\u00e9faut (\u00e9chappe le HTML). Notre JWT a une expiration. Mongoose prot\u00e8ge contre l'injection NoSQL via les sch\u00e9mas." },
+  { cat: "S\u00e9curit\u00e9", q: "Qu'est-ce que le rate limiting ?", a: "Limiter le nombre de requ\u00eates qu'un client peut faire dans un intervalle de temps. Prot\u00e8ge contre : attaques par force brute (essayer des milliers de mots de passe), DDoS (surcharger le serveur), abus d'API. Exemple : max 100 requ\u00eates par minute par IP. C'est un point d'am\u00e9lioration identifi\u00e9 pour R\u00e9agis, notamment sur les \u00e9v\u00e9nements WebSocket." },
+
+  // M\u00e9thodologie & Outils
+  { cat: "M\u00e9thodologie & Outils", q: "Qu'est-ce que Git et pourquoi l'utiliser ?", a: "Un syst\u00e8me de contr\u00f4le de version distribu\u00e9. Il track chaque modification du code, permet de revenir en arri\u00e8re, de travailler en parall\u00e8le (branches), et de fusionner le travail de plusieurs d\u00e9veloppeurs (merge). Workflow classique : cr\u00e9er une branche par fonctionnalit\u00e9, d\u00e9velopper, faire une Pull Request, review, merger dans main. Sans Git, collaborer \u00e0 deux sur le m\u00eame code serait un cauchemar." },
+  { cat: "M\u00e9thodologie & Outils", q: "Qu'est-ce que l'Agile / Scrum ?", a: "Une m\u00e9thodologie de gestion de projet it\u00e9rative. Scrum divise le travail en sprints (p\u00e9riodes fixes de 1-4 semaines). Chaque sprint a un objectif, des t\u00e2ches estim\u00e9es, et se termine par une livraison fonctionnelle. C\u00e9r\u00e9monies : Daily standup (sync quotidienne), Sprint planning (planifier), Sprint review (d\u00e9montrer), R\u00e9trospective (am\u00e9liorer le process). Dans R\u00e9agis, on a travaill\u00e9 en sprints de 1 semaine avec Trello pour tracker les t\u00e2ches." },
+  { cat: "M\u00e9thodologie & Outils", q: "Qu'est-ce que le responsive design ?", a: "Adapter l'interface \u00e0 la taille de l'\u00e9cran (mobile, tablette, desktop) avec un seul codebase. Techniques : media queries CSS (@media), flexbox, CSS grid, unit\u00e9s relatives (rem, %, vw/vh). Approche mobile-first : designer d'abord pour mobile, puis \u00e9tendre pour desktop. Dans R\u00e9agis, la vue participant est mobile-first (smartphone en main), la vue pr\u00e9sentateur est desktop-first (\u00e9cran de projection)." }
+];
+
+const CATEGORIES = ["Toutes", ...new Set(ALL_CARDS.map(c => c.cat))];
+
+let currentCards = [...ALL_CARDS];
+let currentIndex = 0;
+let isFlipped = false;
+let activeCategory = "Toutes";
+
+// DOM
+const card = document.getElementById("card");
+const cardScene = document.getElementById("cardScene");
+const frontContent = document.getElementById("frontContent");
+const backContent = document.getElementById("backContent");
+const frontCategory = document.getElementById("frontCategory");
+const backCategory = document.getElementById("backCategory");
+const progressText = document.getElementById("progressText");
+const progressFill = document.getElementById("progressFill");
+const prevBtn = document.getElementById("prevBtn");
+const nextBtn = document.getElementById("nextBtn");
+const shuffleBtn = document.getElementById("shuffleBtn");
+const tabsContainer = document.getElementById("tabs");
+
+function renderTabs() {
+  tabsContainer.innerHTML = "";
+  CATEGORIES.forEach(cat => {
+    const tab = document.createElement("button");
+    tab.className = "tab" + (cat === activeCategory ? " active" : "");
+    tab.textContent = cat;
+    tab.addEventListener("click", () => filterByCategory(cat));
+    tabsContainer.appendChild(tab);
+  });
+}
+
+function filterByCategory(cat) {
+  activeCategory = cat;
+  currentCards = cat === "Toutes" ? [...ALL_CARDS] : ALL_CARDS.filter(c => c.cat === cat);
+  currentIndex = 0;
+  isFlipped = false;
+  renderTabs();
+  renderCard();
+}
+
+function renderCard() {
+  if (currentCards.length === 0) {
+    frontContent.textContent = "Aucune carte dans cette categorie.";
+    backContent.textContent = "";
+    frontCategory.textContent = "";
+    backCategory.textContent = "";
+    progressText.textContent = "0 / 0";
+    progressFill.style.width = "0%";
+    prevBtn.disabled = true;
+    nextBtn.disabled = true;
+    return;
+  }
+
+  card.classList.remove("flipped");
+  isFlipped = false;
+
+  const c = currentCards[currentIndex];
+  frontContent.textContent = c.q;
+  backContent.textContent = c.a;
+  frontCategory.textContent = c.cat;
+  backCategory.textContent = c.cat;
+
+  progressText.textContent = (currentIndex + 1) + " / " + currentCards.length;
+  progressFill.style.width = ((currentIndex + 1) / currentCards.length * 100) + "%";
+
+  prevBtn.disabled = currentIndex === 0;
+  nextBtn.disabled = currentIndex === currentCards.length - 1;
+}
+
+function flipCard() {
+  if (currentCards.length === 0) return;
+  isFlipped = !isFlipped;
+  card.classList.toggle("flipped", isFlipped);
+}
+
+function goNext() {
+  if (currentIndex < currentCards.length - 1) {
+    currentIndex++;
+    renderCard();
+  }
+}
+
+function goPrev() {
+  if (currentIndex > 0) {
+    currentIndex--;
+    renderCard();
+  }
+}
+
+function shuffle() {
+  for (let i = currentCards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [currentCards[i], currentCards[j]] = [currentCards[j], currentCards[i]];
+  }
+  currentIndex = 0;
+  isFlipped = false;
+  renderCard();
+}
+
+// Events
+cardScene.addEventListener("click", flipCard);
+prevBtn.addEventListener("click", goPrev);
+nextBtn.addEventListener("click", goNext);
+shuffleBtn.addEventListener("click", shuffle);
+
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowRight") { e.preventDefault(); goNext(); }
+  else if (e.key === "ArrowLeft") { e.preventDefault(); goPrev(); }
+  else if (e.key === " ") { e.preventDefault(); flipCard(); }
+  else if (e.key === "s" || e.key === "S") { shuffle(); }
+});
+
+// Init
+renderTabs();
+renderCard();
+</script>
+</body>
+</html>
