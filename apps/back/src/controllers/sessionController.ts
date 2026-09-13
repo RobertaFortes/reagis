@@ -1,5 +1,7 @@
+import mongoose from 'mongoose';
 import Session from '../models/Session';
 import Question from '../models/Question';
+import Vote from '../models/Vote';
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
@@ -390,6 +392,74 @@ export const updateSession = async (
     console.error(error);
     res.status(500).json({ message: 'Erreur lors de la mise à jour de la session' });
   }
+};
+
+export const deleteSession = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  //Permet de gérer la suppression des votes/questions de la session de manière globale (tout ou rien)
+  const dbSession = await mongoose.startSession();
+
+  try {
+    dbSession.startTransaction();
+    
+    const session = await Session.findById(req.params.id).session(dbSession);
+
+    if (!session) {
+      await dbSession.abortTransaction();
+      res.status(404).json({ message: 'Session introuvable' });
+      return;
+    }
+
+    if (String(session.presenter) !== req.user.userId) {
+      await dbSession.abortTransaction();
+      res.status(403).json({ message: 'Non autorisé' });
+      return;
+    }
+
+    if (session.status !== 'draft' && session.status !== 'finished') {
+      await dbSession.abortTransaction();
+      res.status(409).json({ message: 'Seule une session en état brouillon ou terminé peut être supprimée' });
+      return;
+    }
+
+    // Récupère les questions de la session
+    const questions = await Question.find({
+      session: session._id,
+    }).select('_id')
+      .session(dbSession);
+
+    const questionIds = questions.map((question) => question._id);
+
+    // Supprime les votes associés aux questions
+    await Vote.deleteMany({
+      question: { $in: questionIds },
+    }).session(dbSession);
+
+    // Supprime les questions
+    await Question.deleteMany({
+      session: session._id,
+    }).session(dbSession);
+
+    // Supprime la session
+    await Session.findByIdAndDelete(session._id).session(dbSession);
+    
+    await dbSession.commitTransaction();
+
+    res.status(200).json({
+      message: 'Session supprimée avec succès',
+    });
+
+  } catch (error) {
+    await dbSession.abortTransaction();
+    console.error(error);
+    res.status(500).json({
+      message: 'Erreur lors de la suppression de la session',
+    });
+  } finally {
+    await dbSession.endSession();
+  }  
 };
 
 export const joinSessionByCode = async (
