@@ -335,3 +335,26 @@ export async function joinSessionByCode(code: string, deviceId: string): Promise
 
   return body; // { token, session }
 }
+
+// DELETE /api/sessions/:id
+export async function deleteSession(id: string): Promise<void> {
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/api/sessions/${id}`, {
+      method: "DELETE",
+      headers: getAuthHeaders(),
+    });
+  } catch {
+    throw new SessionError("Impossible de contacter le serveur.");
+  }
+
+  if (!response.ok) {
+    let body: any = {};
+    try {
+      body = await response.json();
+    } catch {
+      // pas de body JSON, on garde le message par défaut
+    }
+    throw new SessionError(body.message ?? "Erreur serveur");
+  }
+}

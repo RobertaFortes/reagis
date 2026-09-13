@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getMySessions, type Session } from "@/api/sessionApi";
+import { getMySessions, deleteSession, type Session } from "@/api/sessionApi";
 import Button from '@/components/Button';
+import DeleteIconButton from '@/components/DeleteIconButton';
 
 const STATUS_LABEL: Record<Session["status"], { text: string; className: string }> = {
   active:   { text: "● EN DIRECT", className: "badge-live" },
@@ -15,6 +16,7 @@ const HomePage = () => {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     getMySessions()
@@ -25,6 +27,14 @@ const HomePage = () => {
 
   const activeSessions = sessions.filter((s) => s.status === "active" || s.status === "paused");
   const otherSessions = sessions.filter((s) => s.status !== "active" && s.status !== "paused");
+  const handleDeleteSession = async (sessionId: string) => {
+    try {
+      await deleteSession(sessionId);
+      setSessions((prev) => prev.filter((s) => s._id !== sessionId));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erreur lors de la suppression");
+    }
+  };
 
   return (
     <>
@@ -77,6 +87,7 @@ const HomePage = () => {
         )}
         {otherSessions.map((session) => {
           const badge = STATUS_LABEL[session.status];
+          const canDelete = session.status === "finished" || session.status === "draft";
           return (
             <div
               key={session._id}
@@ -84,7 +95,15 @@ const HomePage = () => {
               onClick={() => navigate(`/sessions/${session._id}`)}
               style={{ cursor: "pointer" }}
             >
-              <h3>{session.name}</h3>
+              <div className="session-card__header">
+                <h3>{session.name}</h3>
+                {canDelete && (
+                  <DeleteIconButton
+                    confirmMessage={`Supprimer la session "${session.name}" ?`}
+                    onDelete={() => handleDeleteSession(session._id)}
+                  />
+                )}
+              </div>
               <span className={badge.className}>{badge.text}</span>
             </div>
           );
