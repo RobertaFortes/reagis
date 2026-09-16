@@ -13,12 +13,14 @@ import {
   resumeSession,
   endSession,
   updateSession,
+  deleteSession,
 } from '../controllers/sessionController';
 
 const router = express.Router();
 
 router.post('/', createSession);
 router.get('/my-sessions', authenticateToken, getSessionByIdUser); //Attention à l'ordre
+router.delete('/:id', authenticateToken, deleteSession);
 
 router.patch('/:id', authenticateToken, updateSession);
 router.patch('/:id/start', authenticateToken, startSession);
