@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import LandingPage from "@/pages/LandingPage";
 import LoginPage from "@/pages/presenter/LoginPage";
+import RequireAuth from "@/components/RequireAuth";
 
 const JoinPage = lazy(() => import("@/pages/participant/JoinPage"));
 const AppLayout = lazy(() => import("@/components/AppLayout"));
@@ -24,19 +25,25 @@ function App() {
           {/* Participant — sans auth, sans sidebar */}
           <Route path="/join" element={<JoinPage />} />
           <Route path="/session/:code" element={<ParticipantSessionPage />} />
-          <Route path="/sessions/:id/present" element={<PresentationPage />} />
 
           {/* Public */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
 
+          {/* Créateur — protégé */}
+          <Route element={<RequireAuth />}>
+            <Route path="/sessions/:id/present" element={<PresentationPage />} />
+          </Route>
+
           {/* Créateur — avec auth et sidebar */}
+          <Route element={<RequireAuth />}>
           <Route element={<AppLayout />}>
             <Route path="/home" element={<HomePage />} />
             <Route path="/sessions" element={<SessionPage />} />
             <Route path="/sessions/new" element={<CreateSessionPage />} />
             <Route path="/sessions/:id" element={<SessionDetailPage />} />
             <Route path="/sessions/:id/edit" element={<EditSessionPage />} />
+          </Route>
           </Route>
         </Routes>
       </Suspense>

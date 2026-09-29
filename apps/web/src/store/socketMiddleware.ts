@@ -1,6 +1,7 @@
 import type { Middleware } from '@reduxjs/toolkit';
 import { WsEvents } from '@reagis/shared';
 import { socket } from '@/socket';
+import { getToken } from '@/api/authStorage';
 import { setSession, updateParticipantCount, sessionStarted, sessionEnded, updateReactionCount, sessionPaused, sessionResumed, updateQuestionIndex, addFloatingReaction, removeFloatingReaction } from './sessionSlice';
 import { updateVotes, setQuestion } from './questionSlice';
 import { setConnected, setError } from './uiSlice';
@@ -167,7 +168,7 @@ export const socketMiddleware: Middleware = (store) => {
         }
 
         const { sessionId } = action.payload;
-        const token = localStorage.getItem('reagis_token');
+        const token = getToken();
 
         if (!token) {
           store.dispatch(setError('Non authentifié'));
