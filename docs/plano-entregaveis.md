@@ -1,7 +1,7 @@
 # Plano de entregáveis (worktrees)
 
 > Estado em 2026-09-29. WT-A e parte do WT-B já feitos na branch `claude/logo-logout-test-coverage-05efbc`.
-> Pendências herdadas: 3 testes BE desatualizados (`sessionController.test` startSession; `joinHandler.test` draft/active — o mock não cobre `Question.find` → CastError); erro TS pré-existente em `JoinPage.tsx:102` (title recebe JSX); `@vitest/coverage-v8` não instalado.
+> Pendências herdadas: erro TS pré-existente em `JoinPage.tsx:102` (title recebe JSX); `@vitest/coverage-v8` não instalado.
 
 ## Roadmap de entregáveis compartilháveis (1 worktree ≈ 1 branch ≈ 1 PR)
 
