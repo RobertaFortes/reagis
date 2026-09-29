@@ -108,7 +108,6 @@ const JoinPage = () => {
           setMode((m) => (m === "manual" ? "scan" : "manual"));
         }}
       >
-        {/* {mode === "manual" ? (<> <LogoScan/>Scanner un QR code </> ) : "ou saisir le code manuellement"} */}
       </Button>
     </CenteredCard>
   );

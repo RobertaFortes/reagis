@@ -4,7 +4,7 @@ type ButtonVariant = 'btn-primary' | 'btn-secondary' ;
 
 interface ButtonProps
   extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'title'> {
-  title: string;
+  title: React.ReactNode;
   variant?: ButtonVariant;
   type?: "button" | "submit" | "reset";
 }
