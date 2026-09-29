@@ -8,6 +8,13 @@ vi.mock('../../models/Session', () => ({
   },
 }));
 
+vi.mock('../../models/Question', () => ({
+  default: {
+    find: vi.fn(() => ({ sort: vi.fn().mockResolvedValue([]) })),
+    countDocuments: vi.fn().mockResolvedValue(0),
+  },
+}));
+
 import Session from '../../models/Session';
 import { registerJoinHandler, type SessionSocket } from '../joinHandler';
 

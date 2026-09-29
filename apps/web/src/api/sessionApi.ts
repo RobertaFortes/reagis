@@ -1,3 +1,5 @@
+import { authFetch, getToken, getUser } from "./authStorage";
+
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "";
 
 export interface Session {
@@ -26,7 +28,7 @@ export class SessionError extends Error {
 }
 
 function getAuthHeaders(): Record<string, string> {
-  const token = localStorage.getItem("reagis_token");
+  const token = getToken();
   return {
     "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -39,12 +41,11 @@ export async function createSession(data: {
   code: string;
   reaction?: Session["reaction"];
 }): Promise<Session> {
-  const user = localStorage.getItem("reagis_user");
-  const presenter = user ? JSON.parse(user).id : undefined;
+  const presenter = getUser()?.id;
 
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}/api/sessions`, {
+    response = await authFetch(`${API_BASE_URL}/api/sessions`, {
       method: "POST",
       headers: getAuthHeaders(),
       body: JSON.stringify({ ...data, presenter }),
@@ -71,7 +72,7 @@ export async function createSession(data: {
 export async function getMySessions(): Promise<Session[]> {
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}/api/sessions/my-sessions`, {
+    response = await authFetch(`${API_BASE_URL}/api/sessions/my-sessions`, {
       headers: getAuthHeaders(),
     });
   } catch {
@@ -96,7 +97,7 @@ export async function getMySessions(): Promise<Session[]> {
 export async function startSession(id: string): Promise<Session> {
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}/api/sessions/${id}/start`, {
+    response = await authFetch(`${API_BASE_URL}/api/sessions/${id}/start`, {
       method: "PATCH",
       headers: getAuthHeaders(),
     });
@@ -122,7 +123,7 @@ export async function startSession(id: string): Promise<Session> {
 export async function endSession(id: string): Promise<Session> {
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}/api/sessions/${id}/end`, {
+    response = await authFetch(`${API_BASE_URL}/api/sessions/${id}/end`, {
       method: "PATCH",
       headers: getAuthHeaders(),
     });
@@ -148,7 +149,7 @@ export async function endSession(id: string): Promise<Session> {
 export async function nextQuestion(id: string): Promise<Session> {
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}/api/sessions/${id}/next-question`, {
+    response = await authFetch(`${API_BASE_URL}/api/sessions/${id}/next-question`, {
       method: "PATCH",
       headers: getAuthHeaders(),
     });
@@ -174,7 +175,7 @@ export async function nextQuestion(id: string): Promise<Session> {
 export async function previousQuestion(id: string): Promise<Session> {
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}/api/sessions/${id}/previous-question`, {
+    response = await authFetch(`${API_BASE_URL}/api/sessions/${id}/previous-question`, {
       method: "PATCH",
       headers: getAuthHeaders(),
     });
@@ -200,7 +201,7 @@ export async function previousQuestion(id: string): Promise<Session> {
 export async function pauseSession(id: string): Promise<Session> {
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}/api/sessions/${id}/pause`, {
+    response = await authFetch(`${API_BASE_URL}/api/sessions/${id}/pause`, {
       method: "PATCH",
       headers: getAuthHeaders(),
     });
@@ -226,7 +227,7 @@ export async function pauseSession(id: string): Promise<Session> {
 export async function resumeSession(id: string): Promise<Session> {
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}/api/sessions/${id}/resume`, {
+    response = await authFetch(`${API_BASE_URL}/api/sessions/${id}/resume`, {
       method: "PATCH",
       headers: getAuthHeaders(),
     });
@@ -255,7 +256,7 @@ export async function updateSession(
 ): Promise<Session> {
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}/api/sessions/${id}`, {
+    response = await authFetch(`${API_BASE_URL}/api/sessions/${id}`, {
       method: "PATCH",
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
@@ -282,7 +283,7 @@ export async function updateSession(
 export async function getSessionById(id: string): Promise<Session> {
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}/api/sessions/${id}`, {
+    response = await authFetch(`${API_BASE_URL}/api/sessions/${id}`, {
       headers: getAuthHeaders(),
     });
   } catch {
@@ -307,7 +308,7 @@ export async function getSessionById(id: string): Promise<Session> {
 export async function joinSessionByCode(code: string, deviceId: string): Promise<{ token: string; session: Session }> {
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}/api/sessions/code/${encodeURIComponent(code)}`, {
+    response = await authFetch(`${API_BASE_URL}/api/sessions/code/${encodeURIComponent(code)}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -340,7 +341,7 @@ export async function joinSessionByCode(code: string, deviceId: string): Promise
 export async function deleteSession(id: string): Promise<void> {
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}/api/sessions/${id}`, {
+    response = await authFetch(`${API_BASE_URL}/api/sessions/${id}`, {
       method: "DELETE",
       headers: getAuthHeaders(),
     });

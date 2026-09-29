@@ -1,21 +1,18 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
+import { clearAuth, getUser } from "@/api/authStorage";
+import { socket } from "@/socket";
 import "@/styles/Sidebar.css";
 
-interface StoredUser {
-  name: string;
-  email: string;
-}
 const Sidebar = () => {
   const navigate = useNavigate();
 
-  const storedUser = localStorage.getItem("reagis_user");
-  const user = storedUser ? JSON.parse(storedUser) : null;
+  const user = getUser();
 
   const handleLogout = () => {
-    localStorage.removeItem("reagis_token");
-    localStorage.removeItem("reagis_user");
+    clearAuth();
+    socket.disconnect();
 
-    navigate("/");
+    navigate("/", { replace: true });
   };
 
   return (

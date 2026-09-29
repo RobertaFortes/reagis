@@ -8,6 +8,13 @@ vi.mock('../../models/Session', () => ({
   },
 }));
 
+// Mock Question model (première question : aucune dans ce scénario)
+vi.mock('../../models/Question', () => ({
+  default: {
+    findOne: vi.fn(() => ({ sort: vi.fn().mockResolvedValue(null) })),
+  },
+}));
+
 import Session from '../../models/Session';
 import { startSession } from '../sessionController';
 

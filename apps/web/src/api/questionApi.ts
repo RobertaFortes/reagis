@@ -1,3 +1,5 @@
+import { authFetch, getToken, getUser } from "./authStorage";
+
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? "";
 
 export interface QuestionOption {
@@ -20,7 +22,7 @@ export interface Question {
 export class QuestionError extends Error {}
 
 function getAuthHeaders(): Record<string, string> {
-  const token = localStorage.getItem("reagis_token");
+  const token = getToken();
   return {
     "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -31,7 +33,7 @@ function getAuthHeaders(): Record<string, string> {
 export async function getQuestionsBySession(sessionId: string): Promise<Question[]> {
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}/api/questions/session/${sessionId}`, {
+    response = await authFetch(`${API_BASE_URL}/api/questions/session/${sessionId}`, {
       headers: getAuthHeaders(),
     });
   } catch {
@@ -61,7 +63,7 @@ export async function createQuestion(data: {
 }): Promise<Question> {
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}/api/questions`, {
+    response = await authFetch(`${API_BASE_URL}/api/questions`, {
       method: "POST",
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
@@ -91,7 +93,7 @@ export async function updateQuestion(
 ): Promise<Question> {
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}/api/questions/${id}`, {
+    response = await authFetch(`${API_BASE_URL}/api/questions/${id}`, {
       method: "PATCH",
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
@@ -118,7 +120,7 @@ export async function updateQuestion(
 export async function deleteQuestion(id: string): Promise<void> {
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}/api/questions/${id}`, {
+    response = await authFetch(`${API_BASE_URL}/api/questions/${id}`, {
       method: "DELETE",
       headers: getAuthHeaders(),
     });
