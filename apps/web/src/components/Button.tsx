@@ -1,6 +1,6 @@
 import '@/styles/ui.css';
 
-type ButtonVariant = 'btn-primary' | 'btn-secondary' ;
+type ButtonVariant = 'btn-primary' | 'btn-secondary' | 'btn-danger';
 
 interface ButtonProps
   extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'title'> {

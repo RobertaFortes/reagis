@@ -78,13 +78,10 @@ const SessionsPage = () => {
     return copy;
   }, [filtered, sortColumn, sortDirection]);
 
+  // Les erreurs remontent jusqu'au ConfirmDialog, qui les affiche dans la modale.
   const handleDeleteSession = async (sessionId: string) => {
-    try {
-      await deleteSession(sessionId);
-      setSessions((prev) => prev.filter((s) => s._id !== sessionId));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur lors de la suppression");
-    }
+    await deleteSession(sessionId);
+    setSessions((prev) => prev.filter((s) => s._id !== sessionId));
   };
 
   const renderSortIndicator = (column: SortColumn) => {
@@ -160,7 +157,8 @@ const SessionsPage = () => {
                   <td className="sessions-table__actions">
                     {canDelete && (
                       <DeleteIconButton
-                        confirmMessage={`Supprimer la session "${session.name}" ?`}
+                        confirmTitle="Supprimer la session ?"
+                    confirmMessage={<>« <strong>{session.name}</strong> » et tous ses résultats seront supprimés définitivement.</>}
                         onDelete={() => handleDeleteSession(session._id)}
                       />
                     )}

@@ -1,44 +1,50 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import TrashIcon from "@/components/TrashIcon";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 type DeleteIconButtonProps = {
   onDelete: () => Promise<void>;
-  confirmMessage?: string;
+  confirmTitle?: ReactNode;
+  confirmMessage?: ReactNode;
+  confirmLabel?: string;
   label?: string;
   className?: string;
 };
 
 const DeleteIconButton = ({
   onDelete,
-  confirmMessage = "Supprimer cet élément ?",
+  confirmTitle = "Supprimer cet élément ?",
+  confirmMessage,
+  confirmLabel = "Oui, supprimer",
   label = "Supprimer",
   className = "",
 }: DeleteIconButtonProps) => {
-  const [loading, setLoading] = useState(false);
-
-  const handleClick = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-
-    if (!window.confirm(confirmMessage)) return;
-
-    setLoading(true);
-    try {
-      await onDelete();
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [open, setOpen] = useState(false);
 
   return (
-    <button
-      type="button"
-      className={`icon-btn-delete ${className}`}
-      aria-label={label}
-      disabled={loading}
-      onClick={handleClick}
-    >
-      <TrashIcon />
-    </button>
+    <>
+      <button
+        type="button"
+        className={`icon-btn-delete ${className}`}
+        aria-label={label}
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen(true);
+        }}
+      >
+        <TrashIcon />
+      </button>
+
+      <ConfirmDialog
+        open={open}
+        onClose={() => setOpen(false)}
+        onConfirm={onDelete}
+        title={confirmTitle}
+        message={confirmMessage}
+        confirmLabel={confirmLabel}
+        variant="danger"
+      />
+    </>
   );
 };
 
