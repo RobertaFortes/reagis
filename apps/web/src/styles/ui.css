@@ -401,6 +401,8 @@ h3 { font-size: 16px; font-weight: 600; }
   scroll-snap-type: x mandatory;
   margin-top: var(--sp-sm);
   padding-bottom: var(--sp-xs);
+  scrollbar-color: var(--outline) transparent;
+  scrollbar-width: thin;
 }
 
 .sessions-row > * {
@@ -598,4 +600,103 @@ td {
     flex-direction: column;
     align-items: flex-start;
   }
+}
+
+/* ========================================
+   MES SESSIONS — barre d'outils, filtres, pagination
+   ======================================== */
+
+.sessions-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-xs);
+}
+
+.view-toggle {
+  display: flex;
+  gap: 4px;
+}
+
+.view-toggle button,
+.pagination__pages button {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 8px;
+
+  background: transparent;
+  border: 1px solid var(--outline);
+  border-radius: var(--r-md);
+  color: var(--text-mid);
+  font-size: 16px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.view-toggle button:hover,
+.pagination__pages button:hover:not(:disabled) {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.view-toggle button.is-active,
+.pagination__pages button.is-active {
+  background: #D85A3014;
+  border-color: #D85A3044;
+  color: var(--primary);
+}
+
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-xs);
+  margin-top: var(--sp-sm);
+}
+
+.filter-chip {
+  padding: 6px 14px;
+
+  background: var(--surface-1);
+  border: 1px solid var(--outline);
+  border-radius: var(--r-full);
+  color: var(--text-mid);
+  font-family: var(--font-body);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.filter-chip:hover {
+  color: var(--text-high);
+}
+
+.filter-chip.is-active {
+  background: #D85A3014;
+  border-color: #D85A3044;
+  color: var(--primary);
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-sm);
+  margin-top: var(--sp-md);
+}
+
+.pagination__range {
+  color: var(--text-mid);
+  font-size: 13px;
+}
+
+.pagination__pages {
+  display: flex;
+  gap: 4px;
+}
+
+.pagination__pages button {
+  font-size: 13px;
+}
+
+.pagination__pages button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
