@@ -17,13 +17,7 @@
 .login-logo {
   height: 80px;
   object-fit: contain;
-  margin-bottom: var(--sp-xs);
-}
-
-.login-page .login-subtitle {
-  color: var(--text-mid);
-  font-size: 14px;
-  margin: 0 0 var(--sp-md);
+  margin-bottom: var(--sp-md);
 }
 
 /* ══════════ Carte ══════════ */

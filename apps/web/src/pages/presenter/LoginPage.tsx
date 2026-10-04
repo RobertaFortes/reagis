@@ -91,8 +91,6 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
         <img src="/logo.webp" alt="Réagis" className="login-logo" />
       </Link>
 
-      <p className="login-subtitle">Application présentateur</p>
-
       <section className="login-card">
         <form onSubmit={handleSubmit} noValidate>
           {/* NOM - uniquement en mode inscription */}
@@ -150,7 +148,7 @@ const LoginPage = ({ onLoginSuccess }: LoginPageProps) => {
             </p>
           )}
 
-          <Button type="submit" title="login" variant="btn-primary">
+          <Button type="submit" variant="btn-primary">
             {isSubmitting
               ? isSignup
                 ? 'CRÉATION…'
