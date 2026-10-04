@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 const Scanner = lazy(() =>  import("@yudiel/react-qr-scanner").then(m => ({ default: m.Scanner })));
 import type { IDetectedBarcode } from "@yudiel/react-qr-scanner";
 import { CenteredCard } from "@/components/CenteredCard";
-import "@/styles/JoinPage.css";
+import "@/styles/join-page.css";
 import Button from '@/components/Button';
 import LogoScan from '@/components/LogoScan';
 import Spinner from "@/components/Spinner";

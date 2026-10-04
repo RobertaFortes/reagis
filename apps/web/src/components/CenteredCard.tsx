@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import "@/styles/CenteredCard.css";
+import "@/styles/centered-card.css";
 
 interface CenteredCardProps {
   children: ReactNode;

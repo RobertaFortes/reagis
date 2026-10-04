@@ -1,5 +1,5 @@
 import type { Option } from "@/types/results";
-import "@/styles/VerticalBarChart.css";
+import "@/styles/vertical-bar-chart.css";
 
 const BAR_COLORS = [
   "#D85A30",

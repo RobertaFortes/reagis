@@ -86,13 +86,14 @@ apps/web/src/
   components/      # Button, Sidebar, Badge, KpiCard, VoteBar, AppLayout
   api/             # Fetch layer (authApi, sessionApi, questionApi)
   store/           # Redux slices (scaffolded, empty — to wire with WebSocket)
-  styles/          # CSS files (global, ui, layout, login, Sidebar)
+  styles/          # CSS files, kebab-case (global, ui, layout, login, sidebar, …)
 ```
 
 ## Conventions
 - **Code language**: English (variables, functions, components)
 - **Docs/commits**: French or English accepted
 - **Web imports**: always use `@/` alias (e.g. `import X from "@/components/X"`)
+- **CSS files**: kebab-case in `apps/web/src/styles/` (e.g. `session-results.css`), even for component styles
 - **State management**: `useState` for simple pages, Redux when state is shared (WebSocket live data)
 - **API layer**: files in `apps/web/src/api/` — fetch-based with custom error class
 - **Session codes**: generated client-side (format `RG-XXXX`), backend enforces uniqueness (409 on conflict)
