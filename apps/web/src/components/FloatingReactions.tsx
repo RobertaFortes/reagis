@@ -1,5 +1,5 @@
 import { useAppSelector } from "@/store/hooks";
-import "@/styles/FloatingReactions.css";
+import "@/styles/floating-reactions.css";
 
 const FloatingReactions = () => {
   const reactions = useAppSelector((s) => s.session.floatingReactions);

@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import type { QuestionResult } from "@/types/results";
 import VerticalBarChart from "@/components/VerticalBarChart";
-import "@/styles/SlideResults.css";
+import "@/styles/slide-results.css";
 
 interface SlideResultsProps {
   sessionName: string;

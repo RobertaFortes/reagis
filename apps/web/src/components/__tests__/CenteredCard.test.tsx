@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { CenteredCard } from '@/components/CenteredCard';
 
 // Mock the CSS import so jsdom doesn't choke on it
-vi.mock('@/styles/CenteredCard.css', () => ({}));
+vi.mock('@/styles/centered-card.css', () => ({}));
 
 describe('CenteredCard', () => {
   it('renders its children', () => {

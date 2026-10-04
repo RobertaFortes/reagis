@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { wsSubmitVote, wsSendReaction } from "@/store/socketMiddleware";
 import Button from "@/components/Button";
-import "@/styles/VotePage.css";
+import "@/styles/vote-page.css";
 
 const VOTED_KEY = "reagis_voted_questions";
 

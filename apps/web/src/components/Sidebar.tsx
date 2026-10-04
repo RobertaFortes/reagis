@@ -1,7 +1,7 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { clearAuth, getUser } from "@/api/authStorage";
 import { socket } from "@/socket";
-import "@/styles/Sidebar.css";
+import "@/styles/sidebar.css";
 
 const Sidebar = () => {
   const navigate = useNavigate();
