@@ -131,7 +131,7 @@
 .presentation-controls__error {
   max-width: 240px;
   font-size: 12px;
-  color: #e57373;
+  color: var(--danger);
 }
 
 .presentation-controls__btn {

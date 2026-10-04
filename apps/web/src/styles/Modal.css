@@ -45,7 +45,7 @@
 
 .modal--danger .modal__icon {
   background: rgba(211, 47, 47, 0.12);
-  color: #e57373;
+  color: var(--danger);
 }
 
 .modal__title {
@@ -82,7 +82,6 @@
 
 .modal__body .error {
   margin-top: var(--sp-xs);
-  color: #e57373;
 }
 
 .modal__footer {

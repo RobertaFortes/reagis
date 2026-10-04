@@ -119,7 +119,11 @@ const CreateSessionPage = () => {
             className="input"
             placeholder="Ex : Soirée match — Bar du Coin"
             value={sessionName}
-            onChange={(e) => setSessionName(e.target.value)}
+            onChange={(e) => {
+              setSessionName(e.target.value);
+              if (sessionError) setSessionError("");
+            }}
+            aria-invalid={!!sessionError && !sessionName.trim()}
             disabled={!!sessionId}
           />
 
@@ -140,7 +144,7 @@ const CreateSessionPage = () => {
 
           {!sessionId && (
             <>
-              {sessionError && <p className="error">{sessionError}</p>}
+              {sessionError && <p className="error" role="alert">{sessionError}</p>}
               <Button
                 title={creatingSession ? "Création…" : "CRÉER LA SESSION"}
                 type="button"
