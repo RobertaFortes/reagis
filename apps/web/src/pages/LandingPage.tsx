@@ -46,7 +46,7 @@ const LandingPage = () => {
           <p>Vos participants rejoignent avec un simple code, depuis leur navigateur.</p>
         </div>
         <div className="landing-feature">
-          <span className="landing-feature-icon">&#127912;</span>
+          <span className="landing-feature-icon">&#128640;</span>
           <h3>Simple et rapide</h3>
           <p>Créez vos questions en quelques clics, lancez la session, c'est parti.</p>
         </div>
