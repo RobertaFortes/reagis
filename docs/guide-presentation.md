@@ -18,7 +18,7 @@
 
 ### Étape 1 — Montrer l'interface présentateur (desktop)
 
-1. Se connecter sur `/` (LoginPage)
+1. Se connecter sur `/login` (LoginPage) — `/` est la landing page publique
 2. Aller sur `/home` → montrer le dashboard
 3. Montrer la session déjà créée (les questions, les options)
 4. **Expliquer** : « Le présentateur a une sidebar pour naviguer. C'est une interface desktop. »
@@ -103,7 +103,7 @@ Chaque couche a **une seule question** à résoudre :
 - **Controller** → « Que faut-il faire ? » Les validations métier, les transitions d'état, les broadcasts WebSocket.
 - **Model** → « Comment les données sont structurées ? » Les champs, les types, les index, les contraintes.
 
-L'avantage concret : le middleware `authenticateToken` est **réutilisé sur 8 routes** sans dupliquer le code :
+L'avantage concret : le middleware `authenticateToken` est **réutilisé sur 9 routes** sans dupliquer le code :
 
 ```typescript
 router.get('/my-sessions',  authenticateToken, getMySessions);
@@ -118,7 +118,7 @@ Si un jour on change la méthode d'authentification (JWT → OAuth par exemple),
 > Chaque fichier a une seule raison de changer → c'est plus facile à lire, à tester, et à maintenir. »
 
 **Si le prof demande « pourquoi pas tout dans un seul fichier ? » :**
-> « Ça marcherait pour un petit projet. Mais avec 12 routes, 2 types d'auth, et du WebSocket, un seul fichier serait illisible. La séparation permet de réutiliser (un middleware pour 8 routes) et de limiter l'impact d'un changement à un seul endroit. »
+> « Ça marcherait pour un petit projet. Mais avec une vingtaine de routes, 2 types d'auth, et du WebSocket, un seul fichier serait illisible. La séparation permet de réutiliser (un middleware pour 9 routes) et de limiter l'impact d'un changement à un seul endroit. »
 
 ### Les 4 couches du frontend
 
@@ -186,12 +186,17 @@ User ──1:N──► Session ──1:N──► Question ──1:N──► V
 | Direction | Événement | C'est quoi |
 |-----------|-----------|------------|
 | Client → Serveur | `join_session` | Un participant rejoint la session |
+| Client → Serveur | `presenter_join` | Le présentateur rejoint sa session (JWT vérifié) |
 | Client → Serveur | `submit_vote` | Un participant vote |
 | Client → Serveur | `send_reaction` | Un participant envoie un emoji |
 | Serveur → Clients | `vote_update` | Les compteurs de votes ont changé |
-| Serveur → Clients | `question_changed` | Le présentateur a changé de question |
+| Serveur → Clients | `question_changed` | La question courante a changé |
 | Serveur → Clients | `session_started` | La session a démarré |
+| Serveur → Clients | `session_paused` | La session est en pause (votes bloqués) |
+| Serveur → Clients | `session_resumed` | La session a repris |
+| Serveur → Clients | `session_ended` | La session est terminée |
 | Serveur → Clients | `participant_count` | Le nombre de participants a changé |
+| Serveur → Clients | `reaction_update` | Une réaction a été envoyée (compteur + emoji) |
 
 > « Les noms de ces événements sont définis dans `packages/shared/wsEvents.ts`.
 > C'est la **source de vérité** : le back et le web importent le même fichier. »
@@ -228,7 +233,7 @@ Socket.io event arrive
 |---|---|---|
 | **Compte** | Email + mot de passe | Aucun (anonyme) |
 | **Token** | JWT signé avec `JWT_SECRET` | JWT signé avec `PARTICIPANT_JWT_SECRET` |
-| **Durée** | 1 heure | 6 heures |
+| **Durée** | 1 jour | 6 heures |
 | **Contenu du JWT** | `{ userId, role }` | `{ sessionId, participantToken }` |
 | **Middleware** | `authenticateToken` | `authenticateParticipant` |
 
@@ -247,6 +252,8 @@ Socket.io event arrive
 > « C'est **déterministe** : même appareil + même session = même token.
 > Si le participant rafraîchit la page, il récupère le même token.
 > Mais dans une autre session, le token est différent — pas de traçage entre sessions. »
+
+> ⚠️ À savoir avant la soutenance : aujourd'hui, le WebSocket utilise le **JWT** participant (qui change à chaque join) comme identité de vote, pas ce hash. Voir la note « Limite actuelle » dans `docs/auth-et-websocket.md`.
 
 **Si on te demande pourquoi SHA256 :**
 > « Pour créer un identifiant unique et stable sans stocker de session côté serveur. Le hash est toujours le même pour les mêmes entrées, donc le participant peut se reconnecter. »
@@ -458,7 +465,7 @@ export const WsEvents = {
 
 3. **Garde le DevTools ouvert** (onglet Network → WS) sur un écran pour montrer les messages WebSocket si le prof le demande.
 
-4. **Si quelqu'un essaie de voter deux fois**, c'est une bonne chose ! Montre que la base refuse le doublon.
+4. **Si quelqu'un essaie de voter deux fois**, l'interface bloque le bouton. ⚠️ Tant que la limite décrite dans `docs/auth-et-websocket.md` n'est pas corrigée, éviter de démontrer le double vote avec deux onglets.
 
 5. **Si le WiFi est lent**, pas de panique : Socket.io gère la reconnexion automatiquement. Tu peux même en parler : « regardez, la reconnexion est transparente ».
 

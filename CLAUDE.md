@@ -19,6 +19,12 @@ npm -w @reagis/back run dev        # Backend: tsx watch on port 4000
 npm -w @reagis/web run dev         # Web: Vite on port 5173
 ```
 
+### Tests (Vitest)
+```bash
+npm -w @reagis/back run test       # Backend (src/**/__tests__/*.test.ts)
+npm -w @reagis/web run test        # Web (Vitest + Testing Library, jsdom)
+```
+
 ### Type checking
 ```bash
 npm -w @reagis/back run typecheck  # Backend
@@ -37,7 +43,7 @@ npm -w @reagis/back run seed:demo  # Populate DB with demo data
 npm -w @reagis/back run ws:demo    # WebSocket test client
 ```
 
-No linter or test framework configured.
+No linter configured. Tests live next to the code in `__tests__/` folders.
 
 ### Run the full stack locally
 ```bash
@@ -66,7 +72,9 @@ npm -w @reagis/web run dev
 ## Environment
 
 Backend: copy `apps/back/.env.example` → `.env` (MONGO_URI, JWT_SECRET, CLIENT_URL, etc.)
-Web: uses Vite env vars (VITE_API_URL, VITE_WS_URL)
+Web: copy `apps/web/.env.example` → `.env` (VITE_API_URL, VITE_WS_URL). `VITE_API_URL` is required — there is no Vite proxy to the backend.
+
+Deployment: web on Vercel (`vercel.json`), API on Render (`render.yaml`).
 
 Node version: 22.18.0 (see `.nvmrc`)
 
@@ -76,16 +84,18 @@ apps/back/src/
   models/          # Mongoose schemas (User, Session, Question, Vote)
   controllers/     # Business logic per entity
   routes/          # Express REST routes
-  sockets/         # Socket.io event handlers (joinSession, submitVote, sendReaction)
+  sockets/         # Socket.io handlers (joinHandler, presenterHandler, voteHandler, reactionHandler, rooms)
   middleware/      # Auth JWT (presenter + participant)
 
 apps/web/src/
   pages/LandingPage  # Landing page (public)
-  pages/presenter/ # Login, Home, Sessions, CreateSession, SessionDetail, EditSession, Presentation
-  pages/participant/ # Join, ParticipantSession, VotePage (sub-component)
-  components/      # Button, Sidebar, Badge, KpiCard, VoteBar, AppLayout
-  api/             # Fetch layer (authApi, sessionApi, questionApi)
-  store/           # Redux slices (scaffolded, empty — to wire with WebSocket)
+  pages/presenter/ # Login, Home, Session (list), CreateSession, SessionDetail, EditSession, Presentation
+  pages/participant/ # Join (code + QR scan), ParticipantSession, VotePage (sub-component)
+  components/      # AppLayout, Sidebar, RequireAuth, Button, Badge, KpiCard, VoteBar, Modal, ConfirmDialog,
+                   # Pagination, Spinner, SessionResults, SlideResults, VerticalBarChart, FloatingReactions, …
+  api/             # Fetch layer (authApi, authStorage, sessionApi, questionApi)
+  store/           # Redux slices (session, question, votes, ui) + socketMiddleware (WS ↔ Redux)
+  socket.ts        # socket.io-client instance (autoConnect: false)
   styles/          # CSS files, kebab-case (global, ui, layout, login, sidebar, …)
 ```
 
@@ -102,12 +112,13 @@ apps/web/src/
 
 ## Design system (Kinetic Noir)
 Dark theme optimized for low-light environments (bars, conferences).
-- **Primary orange**: `#ffb59e` (tokens) / `#D85A30` (interactive states)
-- **Surface**: `#131313` background, `#1A1A1A` cards, `#2a2a2a` elevated
-- **Typography**: Sora (headings, geometric), Geist (body, semi-monospace for stable counters)
-- **Grid**: 8px base spacing, `0.25rem` border-radius
+- **Source of truth for implemented tokens**: `apps/web/src/styles/global.css` (CSS variables)
+- **Primary orange**: `#D85A30` (`--primary`), hover `#C04E27`
+- **Surface**: `#0A0A0A` background (level 0), `#1A1A1A` cards (level 1), `#262626` overlays (level 2), `#404040` outlines
+- **Typography**: Sora (headings), Inter (body) — the original spec in `docs/DESIGN.md` mentions Geist, the code uses Inter
+- **Grid**: 8px base spacing, 4px border-radius for small elements
 - **Depth**: tonal levels (not shadows) — level 0/1/2
-- Full spec in `docs/DESIGN.md`
+- Full spec in `docs/DESIGN.md`, visual reference in `docs/ui-kit.html`
 
 ## Database design decisions
 - Vote documents have partial unique indexes on `{question, participantToken}` and `{question, user}` — the DB itself prevents duplicate votes even under concurrent load
@@ -122,12 +133,13 @@ Full reference: `docs/api-routes.md`.
 - Auth routes (`/api/auth/*`): `{ result: true/false, error?, token?, user? }`
 - All other routes: bare document on success, `{ message: string }` on error
 
-**Auth guards status** (known gaps to fix in S4):
-- Protected: `GET /my-sessions`, `PATCH /start`, `PATCH /end`, `POST /votes/vote`
-- Unprotected (should be): `POST /sessions`, `POST /questions`, `DELETE /questions/:id`, `PATCH /reorder`
+**Auth guards status** (known gaps):
+- Protected (presenter JWT + ownership check): `GET /sessions/my-sessions`, `PATCH /sessions/:id`, `DELETE /sessions/:id`, `PATCH /sessions/:id/{start,next-question,previous-question,pause,resume,end}`
+- Protected (participant JWT): `POST /votes/vote`
+- Unprotected (should be): `POST /sessions` (presenter taken from body), `POST /questions`, `PATCH /questions/:id`, `DELETE /questions/:id`, `PATCH /questions/reorder/:sessionId`
+- CORS falls back to `*` when `CLIENT_URL` is not set
 
-**WebSocket events implemented**: `join_session`, `presenter_join`, `submit_vote`, `send_reaction`, `vote_update`, `reaction_update`, `question_changed`, `session_started`, `session_paused`, `session_resumed`, `session_ended`, `participant_count`
+**WebSocket events implemented** (all of `wsEvents.ts`): `join_session`, `presenter_join`, `submit_vote`, `send_reaction`, `vote_update`, `reaction_update`, `question_changed`, `session_started`, `session_paused`, `session_resumed`, `session_ended`, `participant_count`. Votes go through WebSocket (`submit_vote`); the REST `POST /votes/vote` is an unused fallback.
 
-## Current sprint (S3 — 24-28/08/2026)
-Real-time P1: Socket.io rooms, WebSocket ↔ Redux middleware, live dashboard graphs.
-See `docs/roadmap-trello.csv` for full 6-sprint plan (delivery: 14-19/09/2026).
+## Project status
+The features of the 6-sprint plan are implemented (real-time, reactions, reconnection, QR code, pause/resume, presentation view). See `docs/roadmap-trello.csv` for the original plan and `docs/plano-entregaveis.md` for the remaining hardening/test backlog.

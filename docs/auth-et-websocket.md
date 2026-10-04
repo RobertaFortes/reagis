@@ -14,7 +14,7 @@ Reagis a **deux types d'utilisateurs** avec des parcours très différents :
 | **Compte** | Email + mot de passe | Aucun (anonyme) |
 | **Identifiant** | `userId` (MongoDB) | `deviceId` (généré côté navigateur) |
 | **Token JWT** | Signé avec `JWT_SECRET` | Signé avec `PARTICIPANT_JWT_SECRET` |
-| **Durée du token** | 1 heure | 6 heures |
+| **Durée du token** | 1 jour (`1d`) | 6 heures |
 | **Accès** | REST API protégée + WebSocket | REST API publique + WebSocket |
 
 Le choix d'avoir deux secrets JWT séparés est une mesure de sécurité : même si un token participant fuite, il ne peut pas être utilisé pour accéder aux routes présentateur, et inversement.
@@ -36,7 +36,8 @@ POST /api/auth/login    → retourne un token JWT
 2. Génère un **JWT** contenant `{ userId, role: "presenter" }`
 3. Renvoie le token au client
 
-Le client stocke ce token dans `localStorage` sous la clé `reagis_token`.
+Le client stocke ce token dans `localStorage` sous la clé `reagis_token` (et l'utilisateur sous `reagis_user`).
+Côté front, `RequireAuth` protège les routes présentateur et `authFetch` (`api/authStorage.ts`) purge la session et renvoie vers l'accueil sur une réponse 401.
 
 ### Utilisation du token
 
@@ -59,7 +60,9 @@ Le middleware `authenticateToken` (côté serveur) :
 | `apps/back/src/routes/auth.routes.ts` | Routes signup/login |
 | `apps/back/src/middleware/authenticateToken.ts` | Middleware de vérification JWT |
 | `apps/back/src/models/User.ts` | Modèle Mongoose (email, password hashé, role) |
-| `apps/web/src/api/authApi.ts` | Appels fetch côté client |
+| `apps/web/src/api/authApi.ts` | Appels fetch côté client (signup / login) |
+| `apps/web/src/api/authStorage.ts` | Lecture/écriture du token, `isTokenValid`, `authFetch` |
+| `apps/web/src/components/RequireAuth.tsx` | Garde de routes React Router |
 
 ---
 
@@ -74,14 +77,14 @@ Participant ouvre /session/RG-XXXX
         │
         ▼
 Client génère un deviceId unique
-(stocké dans localStorage, persistant)
+(localStorage "reagis_device_id", persistant)
         │
         ▼
 POST /api/sessions/code/RG-XXXX
 body: { deviceId: "device_1724..." }
         │
         ▼
-Serveur calcule : SHA256(deviceId + sessionId)
+Serveur calcule : SHA256(deviceId + ":" + sessionId)
   → participantToken (hash déterministe)
         │
         ▼
@@ -91,8 +94,8 @@ Serveur signe un JWT contenant :
         │
         ▼
 Client reçoit { token, session }
-  → stocke le token
-  → ouvre le WebSocket
+  → stocke le token (localStorage "reagis_participant_token")
+  → ouvre le WebSocket (dispatch wsConnect)
 ```
 
 ### Pourquoi SHA256 ?
@@ -107,7 +110,7 @@ Le `participantToken` est un hash **déterministe** : même appareil + même ses
 
 | Fichier | Rôle |
 |---|---|
-| `apps/back/src/controllers/sessionController.ts` | Méthode `joinByCode` — génère le token |
+| `apps/back/src/controllers/sessionController.ts` | Méthode `joinSessionByCode` — génère le token |
 | `apps/back/src/middleware/authenticateParticipant.ts` | Middleware JWT participant |
 | `apps/web/src/api/sessionApi.ts` | `joinSessionByCode()` côté client |
 
@@ -179,9 +182,20 @@ Les noms d'événements sont définis dans le package partagé `@reagis/shared` 
 | `session_resumed` | `{ sessionId, status }` | La session a repris |
 | `session_ended` | `{ sessionId, status }` | La session est terminée |
 | `vote_update` | `{ questionId, options: [{ label, votes }] }` | Résultats mis à jour après un vote |
-| `participant_count` | `{ sessionId, count }` | Nombre de participants connectés |
-| `question_changed` | `{ id, text, options, status }` | Le présentateur a changé de question |
-| `reaction_update` | `{ sessionId, reactionCount }` | Compteur de réactions mis à jour |
+| `participant_count` | `{ sessionId, count }` | Nombre de participants connectés (le présentateur n'est pas compté) |
+| `question_changed` | `{ id, text, options, status, currentQuestionIndex?, totalQuestions? }` | Nouvelle question courante (start, next/previous, resume). Index et total seulement sur next/previous |
+| `reaction_update` | `{ sessionId, reactionCount, emoji }` | Compteur de réactions mis à jour (+ emoji flottant à l'écran) |
+
+#### Acks (réponses aux événements client)
+
+| Événement | Ack en cas de succès | Erreurs possibles (`{ ok: false, error }`) |
+|---|---|---|
+| `join_session` | `{ ok: true, session: { id, name, code, status, currentQuestionIndex, totalQuestions, reaction, reactionCount }, question }` | `'code et participantToken requis'`, `'Session introuvable'`, `'Session terminée'` |
+| `presenter_join` | `{ ok: true, participantCount }` | `'sessionId et token requis'`, `'Session introuvable'`, `'Non autorisé'`, `'Token invalide ou expiré'` |
+| `submit_vote` | `{ ok: true }` | `'Rejoignez la session avant de voter'`, `'Session en pause'`, `'Question introuvable'`, `'Question fermée'`, `'Option invalide'`, `'Vous avez déjà voté sur cette question'` |
+| `send_reaction` | — (pas d'ack) | — |
+
+Un participant peut rejoindre une session `draft` (écran d'attente avec réactions), `active` ou `paused` ; seules les sessions `finished` sont refusées. Si la session est active ou en pause, l'ack contient la question courante.
 
 ### Cycle de vie d'une connexion participant
 
@@ -195,11 +209,15 @@ Les noms d'événements sont définis dans le package partagé `@reagis/shared` 
    ← Reçoit ack { ok: true, session: {...} }
    → Serveur ajoute le socket à la room
 
-4. Écoute les événements :
-   - "vote_update"       → met à jour les résultats
+4. Écoute les événements (via socketMiddleware → Redux) :
+   - "session_started" / "session_paused" / "session_resumed" → change l'écran
    - "question_changed"  → affiche la nouvelle question
-   - "participant_count" → compteur en direct
-   - "session_ended"     → redirige
+   - "vote_update"       → met à jour les résultats
+   - "reaction_update"   → compteur + emoji flottant
+   - "session_ended"     → affiche les résultats finaux
+
+   En cas de reconnexion automatique de Socket.io, le middleware
+   ré-émet "join_session" avec les mêmes identifiants.
 
 5. Déconnexion (ferme l'onglet, navigation)
    → Serveur retire le socket de la room
@@ -216,10 +234,14 @@ Les noms d'événements sont définis dans le package partagé `@reagis/shared` 
 3. Émet "presenter_join" { sessionId, token }
    → Serveur vérifie le JWT
    → Serveur vérifie que le userId correspond au presenter de la session
-   ← Reçoit ack { ok: true }
+   ← Reçoit ack { ok: true, participantCount }
 
-4. Écoute "vote_update" et "participant_count"
-   → Dashboard en temps réel
+4. Écoute "vote_update", "participant_count", "question_changed",
+   "reaction_update" et les changements de statut
+   → Dashboard (SessionDetailPage) et vue projection (PresentationPage) en temps réel
+
+   La connexion est ouverte dès que la session n'est pas terminée
+   (y compris en draft, pour voir les participants qui attendent).
 ```
 
 ### Fichiers concernés
@@ -231,6 +253,7 @@ Les noms d'événements sont définis dans le package partagé `@reagis/shared` 
 | `apps/back/src/sockets/joinHandler.ts` | Handler `join_session` + déconnexion |
 | `apps/back/src/sockets/voteHandler.ts` | Handler `submit_vote` + broadcast |
 | `apps/back/src/sockets/presenterHandler.ts` | Handler `presenter_join` (vérifie le JWT) |
+| `apps/back/src/sockets/reactionHandler.ts` | Handler `send_reaction` (`$inc` reactionCount + broadcast) |
 | `apps/back/src/sockets/rooms.ts` | Helper `sessionRoom(id)` → `session:<id>` |
 | `packages/shared/wsEvents.ts` | Noms des événements (source unique) |
 | `apps/web/src/socket.ts` | Instance socket côté client |
@@ -249,13 +272,16 @@ Collection "votes" — index unique partiel :
 
 Si un participant tente de voter deux fois sur la même question, MongoDB renvoie une erreur `11000` (duplicate key). Le handler `submit_vote` intercepte cette erreur et renvoie un message propre.
 
+> ⚠️ **Limite actuelle (à corriger)** : le champ `participantToken` envoyé dans `join_session` est en réalité le **JWT participant** reçu de `POST /api/sessions/code/:code` (voir `ParticipantSessionPage` → `wsConnect(result.token, code)`), et `joinHandler` le stocke tel quel sans le vérifier. Or ce JWT change à chaque appel REST (champ `iat`), donc l'identité de vote côté serveur n'est **pas** le hash déterministe `SHA256(deviceId:sessionId)`. Conséquences : deux onglets ouverts sur le même appareil peuvent chacun voter (l'UI ne bloque que via `localStorage` `reagis_voted_questions`, lu au rendu), et un client modifié peut envoyer n'importe quelle chaîne. Correctif : vérifier le JWT avec `PARTICIPANT_JWT_SECRET` dans `joinHandler` et utiliser le `participantToken` qu'il contient.
+
 En parallèle, le compteur de votes est mis à jour avec `$inc` (opération atomique MongoDB) directement sur le document Question :
 
 ```typescript
 // Pas de race condition, même avec 100 votes simultanés
-Question.updateOne(
-  { _id: questionId },
-  { $inc: { 'options.{optionIndex}.votes': 1 } }
+await Question.findByIdAndUpdate(
+  question._id,
+  { $inc: { [`options.${optionIndex}.votes`]: 1 } },
+  { new: true }
 );
 ```
 
@@ -290,7 +316,7 @@ Le préfixe `VITE_` est obligatoire pour que Vite expose la variable au code cli
 ┌─────────────────────────────────────────────────────────┐
 │                     PRÉSENTATEUR                        │
 │                                                         │
-│  Login ──► JWT (JWT_SECRET, 1h)                        │
+│  Login ──► JWT (JWT_SECRET, 1d)                        │
 │    │                                                    │
 │    ├── REST : GET /my-sessions (header Authorization)  │
 │    │                                                    │

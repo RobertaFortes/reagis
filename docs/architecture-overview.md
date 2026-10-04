@@ -8,8 +8,9 @@
 
 ```
 reagis/
- ├── packages/shared/          ← types TS + noms d'événements WS
+ ├── packages/shared/          ← noms d'événements WS + statuts de session
  │     wsEvents.ts                (source de vérité)
+ │     sessionStatus.ts
  │     types.ts
  │
  ├── apps/back/                ← Express + Mongoose + Socket.io
@@ -24,10 +25,11 @@ reagis/
        src/
          pages/presenter/      Pages du présentateur (desktop)
          pages/participant/    Pages du participant (mobile-first)
-         components/           Composants partagés (Button, VoteBar, etc.)
-         api/                  Couche fetch (sessionApi, questionApi, authApi)
+         components/           Composants partagés (Button, VoteBar, RequireAuth, Modal, etc.)
+         api/                  Couche fetch (sessionApi, questionApi, authApi, authStorage)
          store/                Redux (slices + socketMiddleware)
-         styles/               CSS (global, ui, layout)
+         socket.ts             Instance socket.io-client (autoConnect: false)
+         styles/               CSS en kebab-case (global, ui, layout, une feuille par page/composant)
 ```
 
 **Dépendances :**
@@ -37,7 +39,9 @@ apps/back  ──imports──►  packages/shared
 apps/web   ──imports──►  packages/shared
 ```
 
-Le package `shared` ne dépend de personne. Il définit les contrats (noms d'événements, types) que le back et le web doivent respecter.
+Le package `shared` ne dépend de personne. Il définit les contrats (noms d'événements, statuts) que le back et le web doivent respecter.
+
+**Déploiement :** le web est déployé sur Vercel (`vercel.json`, réécriture SPA vers `index.html`), l'API sur Render (`render.yaml`, build de `shared` puis du back).
 
 ---
 
@@ -47,10 +51,10 @@ Le package `shared` ne dépend de personne. Il définit les contrats (noms d'év
 |---|---|---|
 | **Appareil** | Desktop (écran de projection) | Mobile (smartphone personnel) |
 | **Auth** | Email + mot de passe → JWT (1d) | Anonyme → SHA256(deviceId:sessionId) → JWT (6h) |
-| **Routes web** | `/sessions/*` | `/join`, `/session/:code` |
-| **Layout** | Sidebar + contenu (AppLayout) | Carte centrée, sans navigation |
-| **Rôle** | Crée, lance, contrôle la session | Rejoint, vote, réagit |
-| **WebSocket** | Reçoit (votes, compteurs) | Envoie (votes, réactions) + reçoit (mises à jour) |
+| **Routes web** | `/home`, `/sessions/*` | `/join`, `/session/:code` |
+| **Layout** | Sidebar + contenu (AppLayout) ; vue projection plein écran | Carte centrée, sans navigation |
+| **Rôle** | Crée, lance, contrôle la session | Rejoint (code ou QR), vote, réagit |
+| **WebSocket** | Reçoit (votes, compteurs, réactions) — les commandes passent en REST | Envoie (votes, réactions) + reçoit (mises à jour) |
 
 ---
 
@@ -61,9 +65,9 @@ Le package `shared` ne dépend de personne. Il définit les contrats (noms d'év
 | Route | Page | Description |
 |---|---|---|
 | `/` | `LandingPage` | Page d'accueil / vitrine du produit |
-| `/login` | `LoginPage` | Connexion / inscription présentateur |
+| `/login` | `LoginPage` | Connexion / inscription présentateur (`/login?signup=1` ouvre l'inscription) |
 
-### Présentateur (auth requise, avec sidebar via AppLayout)
+### Présentateur (auth requise via `RequireAuth`, avec sidebar via AppLayout sauf `/present`)
 
 | Route | Page | Description |
 |---|---|---|
@@ -78,7 +82,7 @@ Le package `shared` ne dépend de personne. Il définit les contrats (noms d'év
 
 | Route | Page | Description |
 |---|---|---|
-| `/join` | `JoinPage` | Saisir un code de session |
+| `/join` | `JoinPage` | Saisir un code de session ou scanner le QR code |
 | `/session/:code` | `ParticipantSessionPage` | Attente → vote → résultats (contient `VotePage` en sous-composant) |
 
 ---
@@ -99,7 +103,8 @@ Le package `shared` ne dépend de personne. Il définit les contrats (noms d'év
                           └──────────┘          └──────────┘
 ```
 
-- **Draft** : le présentateur prépare (CRUD questions, modifier le nom). Pas de WebSocket.
+- **Draft** : le présentateur prépare (CRUD questions, modifier le nom et la réaction). Les participants peuvent déjà rejoindre (écran d'attente avec réactions) et le présentateur voit le compteur de participants.
+- Suppression possible uniquement en **draft** ou **finished** (cascade questions + votes).
 - **Active** : les participants votent en temps réel. WebSocket connecté pour tous. Le présentateur navigue librement entre les questions.
 - **Paused** : votes bloqués côté serveur. Le WebSocket reste connecté. Le présentateur peut reprendre ou terminer.
 - **Finished** : tout est fermé. Les données sont conservées pour consultation.
@@ -185,7 +190,10 @@ Le package `shared` ne dépend de personne. Il définit les contrats (noms d'év
       │     → écran réaction           │                                     │
       │                               │                                     │
       │  5. Le présentateur démarre    │                                     │
+      │     (PATCH /sessions/:id/start)│                                     │
+      │                               │                                     │
       │                               │  broadcast(SESSION_STARTED)         │
+      │                               │  + QUESTION_CHANGED (1re question)  │
       │  ◄───────────────────────────  │                                     │
       │                               │                                     │
       │  6. session.status = 'active'  │                                     │
@@ -211,9 +219,11 @@ Le package `shared` ne dépend de personne. Il définit les contrats (noms d'év
 
 | Mécanisme | Détail |
 |---|---|
-| **Auth présentateur** | JWT signé (JWT_SECRET), vérifié par middleware `authenticateToken` |
+| **Auth présentateur** | JWT signé (JWT_SECRET, 1 jour), vérifié par middleware `authenticateToken` + contrôle « propriétaire de la session » (403) |
 | **Auth participant** | JWT signé (PARTICIPANT_JWT_SECRET), token déterministe par device+session |
 | **Anti-double vote** | Index unique MongoDB `{question, participantToken}` — la DB refuse le doublon |
 | **Compteurs atomiques** | `$inc` MongoDB sur `Question.options[].votes` — pas de race condition |
 | **Isolation des sessions** | Rooms Socket.io `session:<id>` — un participant ne reçoit que les événements de sa session |
 | **Pas de traçage cross-session** | Le token participant change par session (SHA256 inclut le sessionId) |
+
+**Limites connues** (voir `docs/api-routes.md` et `docs/auth-et-websocket.md`) : certaines routes de création/modification de questions et `POST /api/sessions` ne sont pas protégées ; CORS retombe sur `*` si `CLIENT_URL` n'est pas défini ; l'identité de vote WebSocket repose aujourd'hui sur le JWT participant non vérifié plutôt que sur le hash déterministe.

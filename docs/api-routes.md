@@ -25,6 +25,12 @@ Deux types de JWT coexistent :
 | Presenter | `Authorization: Bearer <token>` | `JWT_SECRET` | 1d | `{ userId, role }` |
 | Participant | `Authorization: Bearer <token>` | `PARTICIPANT_JWT_SECRET` | 6h | `{ sessionId, participantToken }` |
 
+Erreurs communes des routes protégées (format `{ message }`) :
+
+| Code | Presenter (`authenticateToken`) | Participant (`authenticateParticipant`) |
+|---|---|---|
+| 401 | `'Token manquant'` / `'Token invalide ou expiré'` | `'Token participant manquant'` / `'Token participant invalide ou expiré'` |
+
 ---
 
 ## Auth
@@ -38,7 +44,7 @@ Créer un compte présentateur.
 | Auth | Aucune |
 | Body | `{ email: string, password: string, name: string }` |
 | Succès 201 | `{ result: true, user: { id, email, name, role } }` |
-| Erreur 400 | `{ result: false, error: 'Tous les champs sont requis' }` |
+| Erreur 400 | `{ result: false, error: 'Email, password et name sont obligatoires' }` |
 | Erreur 409 | `{ result: false, error: 'Cet email est déjà utilisé' }` |
 
 > Note : le rôle est toujours `'presenter'` (hardcodé).
@@ -52,8 +58,10 @@ Authentifier un présentateur et obtenir un JWT.
 | Auth | Aucune |
 | Body | `{ email: string, password: string }` |
 | Succès 200 | `{ result: true, token: string, user: { id, email, name, role } }` |
-| Erreur 400 | `{ result: false, error: 'Email et mot de passe requis' }` |
-| Erreur 401 | `{ result: false, error: 'Identifiants invalides' }` |
+| Erreur 400 | `{ result: false, error: 'Email et password sont obligatoires' }` |
+| Erreur 401 | `{ result: false, error: 'Email ou mot de passe incorrect' }` |
+
+> Le JWT présentateur expire au bout de **1 jour** (`expiresIn: '1d'`).
 
 ---
 
@@ -81,7 +89,7 @@ Lister les sessions du présentateur authentifié.
 |---|---|
 | Auth | JWT presenter |
 | Params | Aucun — l'identité vient du token |
-| Succès 200 | `Session[]` |
+| Succès 200 | `Session[]` — champs `name code status createdAt updatedAt startedAt endedAt` |
 
 ### GET `/api/sessions/:id`
 
@@ -94,7 +102,7 @@ Récupérer une session par son ID MongoDB.
 | Succès 200 | Document `Session` |
 | Erreur 404 | `{ message: 'Session introuvable' }` |
 
-> Note : pas de validation `ObjectId.isValid()` sur ce endpoint.
+> Note : pas de validation `ObjectId.isValid()` sur ce endpoint (un id mal formé renvoie 500).
 
 ### PATCH `/api/sessions/:id/start`
 
@@ -122,6 +130,19 @@ Modifier une session en brouillon (nom, reaction).
 | Erreur 403 | `{ message: 'Non autorisé' }` |
 | Erreur 404 | `{ message: 'Session introuvable' }` |
 | Erreur 409 | `{ message: 'Seule une session en brouillon peut être modifiée' }` |
+
+### DELETE `/api/sessions/:id`
+
+Supprimer une session **et** ses questions et votes (transaction MongoDB : tout ou rien).
+
+| | Détail |
+|---|---|
+| Auth | JWT presenter |
+| Params | `id` — ObjectId |
+| Succès 200 | `{ message: 'Session supprimée avec succès' }` |
+| Erreur 403 | `{ message: 'Non autorisé' }` |
+| Erreur 404 | `{ message: 'Session introuvable' }` |
+| Erreur 409 | `{ message: 'Seule une session en état brouillon ou terminé peut être supprimée' }` |
 
 ### PATCH `/api/sessions/:id/next-question`
 
@@ -177,6 +198,8 @@ Reprendre une session en pause (paused → active).
 | Erreur 404 | `{ message: 'Session introuvable' }` |
 | Erreur 409 | `{ message: 'Seule une session en pause peut être reprise' }` |
 
+> Après `SESSION_RESUMED`, le serveur renvoie aussi `QUESTION_CHANGED` avec la question courante pour resynchroniser les participants.
+
 ### PATCH `/api/sessions/:id/end`
 
 Terminer une session (active ou paused → finished).
@@ -199,9 +222,11 @@ Rejoindre une session en tant que participant anonyme.
 | Auth | Aucune |
 | Params | `code` — code de session (insensible à la casse, converti en majuscules) |
 | Body | `{ deviceId: string }` |
-| Succès 200 | `{ token: string, session: Session }` |
+| Succès 200 | `{ token: string, session: Session }` — `token` = JWT participant (6h) |
 | Erreur 400 | `{ message: 'deviceId requis' }` |
 | Erreur 404 | `{ message: 'Session introuvable' }` |
+
+> Le statut de la session n'est pas vérifié ici ; c'est l'événement WS `join_session` qui refuse les sessions `finished`.
 
 > Le `participantToken` est déterministe : `SHA256(deviceId + ":" + sessionId)`. Même device + même session = même identité.
 
@@ -228,6 +253,7 @@ Créer une question liée à une session.
 |---|---|
 | Auth | ⚠️ Aucune (devrait être protégée) |
 | Body | `{ session: string (ObjectId), text: string, order: number, options?: Array<{ label: string }> }` |
+| Note | Le statut de la session n'est pas vérifié (une question peut être ajoutée à une session active) |
 | Succès 201 | Document `Question` |
 | Erreur 400 | `{ message: 'Identifiant de session invalide' }` ou `{ message: 'Le texte et l'ordre de la question sont obligatoires' }` |
 
@@ -237,7 +263,7 @@ Modifier une question (texte et/ou options). Uniquement si la session est en bro
 
 | | Détail |
 |---|---|
-| Auth | Aucune |
+| Auth | ⚠️ Aucune (devrait être protégée) |
 | Params | `id` — ObjectId |
 | Body | `{ text?: string, options?: Array<{ label: string }> }` |
 | Succès 200 | Document `Question` mis à jour |
@@ -267,7 +293,7 @@ Réordonner les questions d'une session.
 | Params | `sessionId` — ObjectId |
 | Body | `{ questionIds: string[] }` — tableau ordonné d'ObjectIds |
 | Succès 200 | `Question[]` dans le nouvel ordre |
-| Erreur 400 | Messages de validation variés |
+| Erreur 400 | `'Identifiant de session invalide'`, `'questions doit être un tableau'`, `'Un ou plusieurs identifiants de question sont invalides'`, `'Une ou plusieurs questions n'existent pas ou n'appartiennent pas à cette session'` |
 
 > Les positions `order` sont recalculées en 1-based (index + 1) via `bulkWrite`.
 
@@ -319,14 +345,20 @@ Les transitions sont protégées côté backend :
 | Route backend | Statut côté front |
 |---|---|
 | `PATCH /api/questions/reorder/:sessionId` | Aucun appel — fonctionnalité de drag-and-drop non implémentée |
-| `POST /api/votes/vote` | Non utilisé en REST — les votes passent par WebSocket |
+| `POST /api/votes/vote` | Non utilisé en REST — les votes passent par WebSocket (`submit_vote`) ; `apps/web/src/api/voteApi.ts` est vide |
+
+## Route technique
+
+| Route | Réponse |
+|---|---|
+| `GET /health` | `{ status: 'ok' }` — sonde de disponibilité (Render) |
 
 ## Événements WebSocket liés aux transitions
 
 | Transition | Événement broadcast | Données |
 |---|---|---|
-| `start` | `SESSION_STARTED` | `{ sessionId, status: 'active' }` |
+| `start` | `SESSION_STARTED` puis `QUESTION_CHANGED` (1re question) | `{ sessionId, status: 'active' }` / `{ id, text, options, status }` |
 | `pause` | `SESSION_PAUSED` | `{ sessionId, status: 'paused' }` |
-| `resume` | `SESSION_RESUMED` | `{ sessionId, status: 'active' }` |
+| `resume` | `SESSION_RESUMED` puis `QUESTION_CHANGED` (question courante) | `{ sessionId, status: 'active' }` / `{ id, text, options, status }` |
 | `end` | `SESSION_ENDED` | `{ sessionId, status: 'finished' }` |
-| `next-question` / `previous-question` | `QUESTION_CHANGED` | `{ id, text, options, status }` |
+| `next-question` / `previous-question` | `QUESTION_CHANGED` | `{ id, text, options, status, currentQuestionIndex, totalQuestions }` |

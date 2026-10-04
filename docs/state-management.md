@@ -10,7 +10,7 @@
 |---|---|---|
 | Données temps réel (votes, participants, statut) | **Redux** | Plusieurs composants les lisent ; mises à jour via WebSocket |
 | Formulaires et états UI locaux | **`useState`** | N'existe que dans le composant ; jetable |
-| Token et données utilisateur | **`localStorage`** | Persiste entre les reloads ; pas besoin de réactivité |
+| Token et données utilisateur | **`localStorage`** | Persiste entre les reloads ; pas besoin de réactivité (`reagis_token`, `reagis_user`, `reagis_device_id`, `reagis_participant_token`, `reagis_voted_questions`) |
 
 ---
 
@@ -18,9 +18,9 @@
 
 ```
 store
- ├── session        → données de la session en cours (nom, statut, compteurs)
+ ├── session        → données de la session en cours (nom, statut, compteurs, réactions flottantes)
  ├── question       → question en cours + options avec votes
- ├── votes          → IDs des questions déjà votées par le participant
+ ├── votes          → IDs des questions déjà votées (prévu, non branché)
  └── ui             → état de la connexion WebSocket + erreurs
 ```
 
@@ -35,9 +35,11 @@ Stocke les données de la session. **Utilisé par les deux côtés** (présentat
 | `code` | `string` | Code d'accès (RG-XXXX) |
 | `status` | `string` | `draft`, `active`, `paused` ou `finished` |
 | `currentQuestionIndex` | `number` | Index de la question en cours |
+| `totalQuestions` | `number` | Nombre total de questions |
 | `reaction` | `string \| null` | Emoji configuré pour les réactions |
 | `reactionCount` | `number` | Total de réactions reçues |
 | `participantCount` | `number` | Participants connectés dans la room |
+| `floatingReactions` | `{ id, emoji, left }[]` | Emojis animés en cours d'affichage (retirés après 3 s) |
 
 **Actions :**
 
@@ -50,7 +52,9 @@ Stocke les données de la session. **Utilisé par les deux côtés** (présentat
 | `sessionPaused` | Middleware (événement `SESSION_PAUSED`) | `status = 'paused'` |
 | `sessionResumed` | Middleware (événement `SESSION_RESUMED`) | `status = 'active'` |
 | `sessionEnded` | Middleware (événement `SESSION_ENDED`) | `status = 'finished'` |
-| `clearSession` | Composant (au démontage) | Reset à l'état initial |
+| `updateQuestionIndex` | Middleware (événement `QUESTION_CHANGED` avec index) | Met à jour `currentQuestionIndex` et `totalQuestions` |
+| `addFloatingReaction` / `removeFloatingReaction` | Middleware (événement `REACTION_UPDATE`) | Ajoute un emoji animé puis le retire après 3 s |
+| `clearSession` | — | Reset à l'état initial (défini, pas encore appelé) |
 
 ---
 
@@ -64,26 +68,28 @@ Stocke la question actuelle et les votes par option.
 | `text` | `string` | Énoncé |
 | `options` | `{ label, votes }[]` | Options avec compteur de votes |
 | `status` | `string` | `pending`, `active` ou `closed` |
+| `order` | `number` | Position 1-based de la question (pour « Question 2/5 ») |
+| `total` | `number` | Nombre total de questions |
 
 **Actions :**
 
 | Action | Qui la déclenche | Effet |
 |---|---|---|
 | `setQuestion` | Middleware (événement `QUESTION_CHANGED`) ou présentateur (seed initial) | Définit la question en cours |
-| `updateVotes` | Middleware (événement `VOTE_UPDATE`) | Met à jour les compteurs des options |
-| `clearQuestion` | Composant | Reset |
+| `updateVotes` | Middleware (événement `VOTE_UPDATE`) | Met à jour les compteurs des options (ignoré si `questionId` ≠ question courante) |
+| `clearQuestion` | — | Reset (défini, pas encore appelé) |
 
 ---
 
 ### `votesSlice`
 
-**Exclusif au participant.** Garde en mémoire quelles questions ont déjà été votées pour empêcher le re-vote côté UI.
+**Prévu pour le participant, pas encore branché.** Doit garder en mémoire quelles questions ont déjà été votées pour empêcher le re-vote côté UI.
 
 | Champ | Type | Description |
 |---|---|---|
 | `votedQuestions` | `string[]` | IDs des questions votées |
 
-> La protection réelle contre les doublons est l'index unique dans MongoDB. Ce slice est uniquement pour l'UX.
+> État actuel : l'action `markVoted` n'est appelée nulle part. `VotePage` mémorise les questions votées dans `localStorage` (clé `reagis_voted_questions`) et le serveur renvoie l'erreur `'Vous avez déjà voté sur cette question'` dans l'ack. La protection réelle contre les doublons reste l'index unique MongoDB.
 
 ---
 
@@ -151,6 +157,10 @@ Composant                     Middleware                    Serveur
 
 Les listeners sont enregistrés **une seule fois** (`listenersBound`), au premier `ws/connect` ou `ws/presenterConnect`. Le socket est créé avec `autoConnect: false` — la connexion ne s'ouvre que lorsque le middleware la déclenche.
 
+### Reconnexion
+
+Le middleware mémorise les identifiants du dernier join (`lastJoin` : participant `{ participantToken, code }` ou présentateur `{ sessionId, token }`). À chaque événement `connect` — premier connect **ou** reconnexion automatique de Socket.io — il appelle `rejoin()`, qui ré-émet `JOIN_SESSION` ou `PRESENTER_JOIN` et resynchronise le store avec l'ack (`setSession`, `setQuestion`, `updateParticipantCount`). `ws/disconnect` efface `lastJoin`.
+
 ---
 
 ## Qui utilise quoi — par page
@@ -159,19 +169,23 @@ Les listeners sont enregistrés **une seule fois** (`listenersBound`), au premie
 
 | Page | Redux | useState |
 |---|---|---|
-| `ParticipantSessionPage` | `session` (lecture), `wsConnect`, `wsSendReaction` | `state` (loading/ready), `isBouncing` (animation) |
-| `VotePage` | `question` (lecture), `wsSubmitVote` | `selectedOption`, `submitting` |
+| `ParticipantSessionPage` | `session` (lecture), `wsConnect`, `wsDisconnect`, `wsSendReaction` | `state` (loading/ready/not-found/error), `isBouncing` (animation), `resultQuestions` (résultats finaux via REST) |
+| `VotePage` | `question`, `session.reaction` (lecture), `wsSubmitVote`, `wsSendReaction` | `selectedOption` |
+| `JoinPage` | — | `code`, `mode` (saisie / scan QR), `scanError` |
 
 ### Présentateur
 
 | Page | Redux | useState |
 |---|---|---|
-| `SessionDetailPage` | `question.options`, `question.id`, `session.participantCount`, `wsPresenterConnect`, `setQuestion` | `session`, `questions`, `loading`, `error` |
+| `SessionDetailPage` | `question.options`, `question.id`, `session.participantCount`, `session.currentQuestionIndex`, `session.status`, `wsPresenterConnect`, `wsDisconnect`, `setQuestion` | `session`, `questions`, `loading`, `error`, `confirmEndOpen` |
+| `PresentationPage` | `question.*` (options, id, text, order, total), `session.status`, `session.participantCount`, `session.currentQuestionIndex`, `wsPresenterConnect`, `wsDisconnect`, `setQuestion` | `session`, `questions`, `loading`, `error`, `controlsVisible`, `actionError`, `confirmEndOpen`, `transitioning` |
 | `CreateSessionPage` | — | Tout en local (formulaire de création) |
 | `EditSessionPage` | — | Tout en local (formulaire d'édition) |
-| `SessionPage` | — | `sessions`, `loading`, `search` |
-| `LoginPage` | — | `email`, `password`, `error` |
-| `HomePage` | — | `sessions`, `loading` |
+| `SessionPage` | — | `sessions`, `loading`, `error`, `search`, `statusFilter`, tri, `view`, `page` |
+| `LoginPage` | — | `isSignup`, `name`, `email`, `password`, `error`, `isSubmitting`, `showPassword` |
+| `HomePage` | — | `sessions`, `loading`, `error` |
+
+Composants branchés sur Redux : `BarReactionCount` (`session.reaction`, `session.reactionCount`) et `FloatingReactions` (`session.floatingReactions`).
 
 > **Règle** : les pages de formulaires et de listes utilisent `useState`. Redux n'intervient que là où il y a des données temps réel via WebSocket.
 
@@ -181,11 +195,11 @@ Les listeners sont enregistrés **une seule fois** (`listenersBound`), au premie
 
 ```
  1. ParticipantSessionPage se monte
- 2. REST : joinSessionByCode(code, deviceId) → reçoit token + session
+ 2. REST : joinSessionByCode(code, deviceId) → reçoit token (JWT participant) + session
  3. dispatch(wsConnect(token, code))
  4. Middleware : socket.connect() + emit(JOIN_SESSION)
  5. Serveur : join room, ack avec les données de la session
- 6. Middleware : dispatch(setSession(session))
+ 6. Middleware : dispatch(setSession(session)) (+ setQuestion si une question est en cours)
  7. Composant : session.status === 'active' → rend <VotePage />
  8. VotePage lit state.question via useAppSelector
  9. Le participant sélectionne une option, clique « Voter »
@@ -204,7 +218,7 @@ Les listeners sont enregistrés **une seule fois** (`listenersBound`), au premie
 1. SessionDetailPage se monte
 2. REST : getSessionById + getQuestionsBySession → state local
 3. dispatch(setQuestion()) → seed Redux avec les données REST
-4. Si status === 'active' : dispatch(wsPresenterConnect(sessionId))
+4. Si status !== 'finished' (draft inclus) : dispatch(wsPresenterConnect(sessionId))
 5. Middleware : socket.connect() + emit(PRESENTER_JOIN)
 6. Listeners actifs : VOTE_UPDATE, PARTICIPANT_COUNT, etc.
 7. À chaque vote reçu : dispatch(updateVotes())
