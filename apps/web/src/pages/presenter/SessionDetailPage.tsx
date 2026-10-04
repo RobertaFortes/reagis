@@ -10,6 +10,8 @@ import Button from "@/components/Button";
 import { QRCodeSVG } from "qrcode.react";
 import FloatingReactions from "@/components/FloatingReactions";
 import SessionResults from "@/components/SessionResults";
+import ConfirmDialog from "@/components/ConfirmDialog";
+import Spinner from "@/components/Spinner";
 
 const STATUS_LABEL: Record<Session["status"], { text: string; className: string }> = {
   active:   { text: "● EN DIRECT", className: "badge-live" },
@@ -27,6 +29,7 @@ const SessionDetailPage = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [confirmEndOpen, setConfirmEndOpen] = useState(false);
 
   const handleStart = async () => {
     if (!id) return;
@@ -78,14 +81,10 @@ const SessionDetailPage = () => {
     }
   };
 
+  // Appelé par la ConfirmDialog : les erreurs y remontent et s'y affichent
   const handleEnd = async () => {
     if (!id) return;
-    try {
-      const updated = await endSession(id);
-      setSession(updated);
-    } catch (err: any) {
-      setError(err.message);
-    }
+    setSession(await endSession(id));
   };
 
   // Redux live state
@@ -154,7 +153,7 @@ const SessionDetailPage = () => {
     );
   }, [questions, session?.currentQuestionIndex, dispatch]);
 
-  if (loading) return <p>Chargement…</p>;
+  if (loading) return <Spinner />;
   if (!session) return <p className="error">{error || "Session introuvable."}</p>;
 
   const badge = STATUS_LABEL[session.status];
@@ -167,9 +166,10 @@ const SessionDetailPage = () => {
     : currentQuestion?.options ?? [];
 
   const totalVotes = options.reduce((sum, o) => sum + o.votes, 0);
-
-  // Debug — remove after validating
-  console.log('[dash] liveQuestionId:', liveQuestionId, 'currentQ._id:', currentQuestion?._id, 'match:', questionIdMatch, 'liveVotes:', liveOptions.reduce((s, o) => s + o.votes, 0));
+  const resultVotes = questions.reduce(
+    (sum, q) => sum + q.options.reduce((s, o) => s + o.votes, 0),
+    0
+  );
 
   return (
     <>
@@ -192,7 +192,15 @@ const SessionDetailPage = () => {
               </button>
             )}
           </div>
-          <span className={badge.className}>{badge.text}</span>
+          <div className="page-header__meta">
+            <span className={badge.className}>{badge.text}</span>
+            {session.status === "finished" && (
+              <span className="page-header__summary">
+                {questions.length} question{questions.length !== 1 ? "s" : ""} · {resultVotes} vote{resultVotes !== 1 ? "s" : ""}
+                {session.endedAt && ` · terminée le ${new Date(session.endedAt).toLocaleDateString("fr-FR")}`}
+              </span>
+            )}
+          </div>
         </div>
 
         {session.status === "draft" && (
@@ -217,19 +225,19 @@ const SessionDetailPage = () => {
         {session.status === "active" && (
           <div style={{ display: "flex", gap: 8 }}>
             <Button title="⏸ PAUSE" type="button" variant="btn-secondary" onClick={handlePause} />
-            <Button title="■ TERMINER" type="button" variant="btn-secondary" onClick={handleEnd} />
+            <Button title="■ TERMINER" type="button" variant="btn-secondary" onClick={() => setConfirmEndOpen(true)} />
           </div>
         )}
         {session.status === "paused" && (
           <div style={{ display: "flex", gap: 8 }}>
             <Button title="▶ REPRENDRE" type="button" variant="btn-primary" onClick={handleResume} />
-            <Button title="■ TERMINER" type="button" variant="btn-secondary" onClick={handleEnd} />
+            <Button title="■ TERMINER" type="button" variant="btn-secondary" onClick={() => setConfirmEndOpen(true)} />
           </div>
         )}
       </header>
 
       {session.status === "finished" ? (
-        <SessionResults sessionName={session.name} questions={questions} />
+        <SessionResults sessionName={session.name} questions={questions} showHeader={false} />
       ) : (
         <>
           <div className="kpi-grid">
@@ -306,6 +314,17 @@ const SessionDetailPage = () => {
           </div>
         </>
       )}
+
+      <ConfirmDialog
+        open={confirmEndOpen}
+        onClose={() => setConfirmEndOpen(false)}
+        onConfirm={handleEnd}
+        title="Terminer la session ?"
+        message="Les participants ne pourront plus voter. Cette action est définitive."
+        confirmLabel="Oui, terminer"
+        variant="danger"
+        icon="■"
+      />
     </>
   );
 };

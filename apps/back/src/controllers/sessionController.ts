@@ -62,9 +62,12 @@ export const getSessionByIdUser = async (
   res: Response
 ): Promise<void> => {
   try {
+    // Plus récentes d'abord ; seuls les champs utiles aux listes sont renvoyés
     const sessions = await Session.find({
       presenter: req.user.userId,
-    });
+    })
+      .sort({ createdAt: -1 })
+      .select('name code status createdAt updatedAt startedAt endedAt');
 
     res.status(200).json(sessions);
   } catch (error) {

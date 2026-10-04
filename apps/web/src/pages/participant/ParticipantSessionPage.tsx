@@ -22,6 +22,7 @@ import Button from "@/components/Button";
 import FloatingReactions from "@/components/FloatingReactions";
 import SessionResults from "@/components/SessionResults";
 import VotePage from "./VotePage";
+import Spinner from "@/components/Spinner";
 
 type PageState = "loading" | "not-found" | "error" | "ready";
 
@@ -139,9 +140,7 @@ const ParticipantSessionPage = () => {
   if (state === "loading") {
     return (
       <CenteredCard className="participant-session-page">
-        <p className="participant-session-page__status">
-          Chargement de la session…
-        </p>
+        <Spinner label="Chargement de la session…" />
       </CenteredCard>
     );
   }

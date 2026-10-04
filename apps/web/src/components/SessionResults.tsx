@@ -7,9 +7,11 @@ interface SessionResultsProps {
   sessionName: string;
   questions: QuestionResult[];
   compact?: boolean;
+  // false quand la page parente affiche déjà le nom et le statut (ex. SessionDetailPage)
+  showHeader?: boolean;
 }
 
-const SessionResults = ({ sessionName, questions, compact = false }: SessionResultsProps) => {
+const SessionResults = ({ sessionName, questions, compact = false, showHeader = true }: SessionResultsProps) => {
   if (compact) {
     return <SlideResults sessionName={sessionName} questions={questions} />;
   }
@@ -21,13 +23,15 @@ const SessionResults = ({ sessionName, questions, compact = false }: SessionResu
 
   return (
     <div className={`session-results${compact ? " session-results--compact" : ""}`}>
-      <div className="session-results__header">
-        <span className="badge-finished">TERMINÉE</span>
-        {!compact && <h2 className="session-results__title">{sessionName}</h2>}
-        <p className="session-results__summary">
-          {questions.length} question{questions.length !== 1 ? "s" : ""} · {totalVotes} vote{totalVotes !== 1 ? "s" : ""}
-        </p>
-      </div>
+      {showHeader && (
+        <div className="session-results__header">
+          <span className="badge-finished">TERMINÉE</span>
+          {!compact && <h2 className="session-results__title">{sessionName}</h2>}
+          <p className="session-results__summary">
+            {questions.length} question{questions.length !== 1 ? "s" : ""} · {totalVotes} vote{totalVotes !== 1 ? "s" : ""}
+          </p>
+        </div>
+      )}
 
       <div className="session-results__questions">
         {questions.map((q, i) => {

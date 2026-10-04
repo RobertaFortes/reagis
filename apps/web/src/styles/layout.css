@@ -29,11 +29,29 @@
   margin-bottom: var(--sp-lg);
 }
 
+/* Formulaires : le titre est directement suivi d'un panneau */
+.page-header--compact {
+  margin-bottom: var(--sp-md);
+}
+
 .page-header h1 {
   font-family: var(--font-display);
   font-size: 28px;
   font-weight: 700;
   color: var(--text-high);
+}
+
+.page-header__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: var(--sp-xs);
+}
+
+.page-header__summary {
+  color: var(--text-mid);
+  font-size: 14px;
 }
 
 /* ========================================

@@ -107,7 +107,9 @@ const CreateSessionPage = () => {
         ← Retour
       </Link>
 
-      <h1>Créer une session</h1>
+      <header className="page-header page-header--compact">
+        <h1>Créer une session</h1>
+      </header>
 
       <div className="create-grid">
         {/* Left panel */}
@@ -117,7 +119,11 @@ const CreateSessionPage = () => {
             className="input"
             placeholder="Ex : Soirée match — Bar du Coin"
             value={sessionName}
-            onChange={(e) => setSessionName(e.target.value)}
+            onChange={(e) => {
+              setSessionName(e.target.value);
+              if (sessionError) setSessionError("");
+            }}
+            aria-invalid={!!sessionError && !sessionName.trim()}
             disabled={!!sessionId}
           />
 
@@ -138,7 +144,7 @@ const CreateSessionPage = () => {
 
           {!sessionId && (
             <>
-              {sessionError && <p className="error">{sessionError}</p>}
+              {sessionError && <p className="error" role="alert">{sessionError}</p>}
               <Button
                 title={creatingSession ? "Création…" : "CRÉER LA SESSION"}
                 type="button"

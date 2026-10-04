@@ -13,6 +13,7 @@
   --text-low: #555555;
 
   --success: #4CAF7D;
+  --danger: #E57373;
 
   --font-display: 'Sora', sans-serif;
   --font-body: 'Inter', sans-serif;
@@ -54,7 +55,7 @@ body {
 }
 
 .icon-btn-delete:hover {
-  color: #d32f2f;
+  color: var(--danger);
   background: rgba(211, 47, 47, 0.1);
 }
 
