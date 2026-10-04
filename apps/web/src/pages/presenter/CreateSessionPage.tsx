@@ -107,7 +107,9 @@ const CreateSessionPage = () => {
         ← Retour
       </Link>
 
-      <h1>Créer une session</h1>
+      <header className="page-header">
+        <h1>Créer une session</h1>
+      </header>
 
       <div className="create-grid">
         {/* Left panel */}

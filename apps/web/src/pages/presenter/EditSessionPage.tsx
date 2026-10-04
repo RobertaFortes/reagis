@@ -179,7 +179,9 @@ const EditSessionPage = () => {
         ← Retour
       </Link>
 
-      <h1>Modifier la session</h1>
+      <header className="page-header">
+        <h1>Modifier la session</h1>
+      </header>
 
       {error && <p className="error">{error}</p>}
 
