@@ -10,6 +10,7 @@ import Button from "@/components/Button";
 import { QRCodeSVG } from "qrcode.react";
 import FloatingReactions from "@/components/FloatingReactions";
 import SessionResults from "@/components/SessionResults";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 const STATUS_LABEL: Record<Session["status"], { text: string; className: string }> = {
   active:   { text: "● EN DIRECT", className: "badge-live" },
@@ -27,6 +28,7 @@ const SessionDetailPage = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [confirmEndOpen, setConfirmEndOpen] = useState(false);
 
   const handleStart = async () => {
     if (!id) return;
@@ -78,14 +80,10 @@ const SessionDetailPage = () => {
     }
   };
 
+  // Appelé par la ConfirmDialog : les erreurs y remontent et s'y affichent
   const handleEnd = async () => {
     if (!id) return;
-    try {
-      const updated = await endSession(id);
-      setSession(updated);
-    } catch (err: any) {
-      setError(err.message);
-    }
+    setSession(await endSession(id));
   };
 
   // Redux live state
@@ -226,13 +224,13 @@ const SessionDetailPage = () => {
         {session.status === "active" && (
           <div style={{ display: "flex", gap: 8 }}>
             <Button title="⏸ PAUSE" type="button" variant="btn-secondary" onClick={handlePause} />
-            <Button title="■ TERMINER" type="button" variant="btn-secondary" onClick={handleEnd} />
+            <Button title="■ TERMINER" type="button" variant="btn-secondary" onClick={() => setConfirmEndOpen(true)} />
           </div>
         )}
         {session.status === "paused" && (
           <div style={{ display: "flex", gap: 8 }}>
             <Button title="▶ REPRENDRE" type="button" variant="btn-primary" onClick={handleResume} />
-            <Button title="■ TERMINER" type="button" variant="btn-secondary" onClick={handleEnd} />
+            <Button title="■ TERMINER" type="button" variant="btn-secondary" onClick={() => setConfirmEndOpen(true)} />
           </div>
         )}
       </header>
@@ -315,6 +313,17 @@ const SessionDetailPage = () => {
           </div>
         </>
       )}
+
+      <ConfirmDialog
+        open={confirmEndOpen}
+        onClose={() => setConfirmEndOpen(false)}
+        onConfirm={handleEnd}
+        title="Terminer la session ?"
+        message="Les participants ne pourront plus voter. Cette action est définitive."
+        confirmLabel="Oui, terminer"
+        variant="danger"
+        icon="■"
+      />
     </>
   );
 };

@@ -81,19 +81,57 @@
 
 /* ---- Controls bar ---- */
 
+/* Barre flottante en bas de l'écran : ne décale pas la question projetée */
 .presentation-controls {
+  position: fixed;
+  bottom: var(--sp-md);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px var(--sp-sm);
+  padding: 8px;
   background: var(--surface-1);
   border: 1px solid var(--outline);
   border-radius: var(--r-lg);
-  margin-bottom: var(--sp-md);
+
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-.presentation-controls__spacer {
-  flex: 1;
+.presentation-controls--hidden {
+  opacity: 0;
+  transform: translate(-50%, 8px);
+  pointer-events: none;
+}
+
+.presentation-controls__counter {
+  min-width: 56px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-mid);
+}
+
+.presentation-controls__divider {
+  width: 1px;
+  height: 24px;
+  margin: 0 4px;
+  background: var(--outline);
+}
+
+.presentation-controls__btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+  border-color: var(--outline);
+  color: var(--text-high);
+}
+
+.presentation-controls__error {
+  max-width: 240px;
+  font-size: 12px;
+  color: #e57373;
 }
 
 .presentation-controls__btn {
@@ -109,7 +147,7 @@
   transition: border-color 0.15s ease, color 0.15s ease;
 }
 
-.presentation-controls__btn:hover {
+.presentation-controls__btn:hover:not(:disabled) {
   border-color: var(--primary);
   color: var(--primary);
 }

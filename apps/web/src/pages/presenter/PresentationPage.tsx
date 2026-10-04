@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { getSessionById, nextQuestion, previousQuestion, pauseSession, resumeSession, endSession, type Session } from "@/api/sessionApi";
 import { getQuestionsBySession, type Question } from "@/api/questionApi";
@@ -9,6 +9,7 @@ import VoteBar from "@/components/VoteBar";
 import { QRCodeSVG } from "qrcode.react";
 import FloatingReactions from "@/components/FloatingReactions";
 import SessionResults from "@/components/SessionResults";
+import ConfirmDialog from "@/components/ConfirmDialog";
 import "@/styles/PresentationPage.css";
 
 const STATUS_LABEL: Record<Session["status"], { text: string; className: string }> = {
@@ -26,7 +27,9 @@ const PresentationPage = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [showControls, setShowControls] = useState(false);
+  const [controlsVisible, setControlsVisible] = useState(true);
+  const [actionError, setActionError] = useState("");
+  const [confirmEndOpen, setConfirmEndOpen] = useState(false);
 
   // Redux live state
   const liveOptions = useAppSelector((s) => s.question.options);
@@ -50,30 +53,27 @@ const PresentationPage = () => {
       .finally(() => setLoading(false));
   }, [id]);
 
-  // Session control handlers
-  const handleNext = async () => {
-    if (!id) return;
-    try { setSessionState(await nextQuestion(id)); } catch {}
-  };
-  const handlePrev = async () => {
-    if (!id) return;
-    try { setSessionState(await previousQuestion(id)); } catch {}
-  };
-  const handlePause = async () => {
-    if (!id) return;
-    try { setSessionState(await pauseSession(id)); } catch {}
-  };
-  const handleResume = async () => {
-    if (!id) return;
-    try { setSessionState(await resumeSession(id)); } catch {}
-  };
-  const handleEnd = async () => {
+  // Session control handlers — une erreur s'affiche dans la barre de contrôle
+  const runAction = async (action: (sessionId: string) => Promise<Session>) => {
     if (!id) return;
     try {
-      setSessionState(await endSession(id));
-      // Re-fetch questions with final vote counts
-      setQuestions(await getQuestionsBySession(id));
-    } catch {}
+      setSessionState(await action(id));
+      setActionError("");
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Action impossible");
+    }
+  };
+  const handleNext = () => runAction(nextQuestion);
+  const handlePrev = () => runAction(previousQuestion);
+  const handlePause = () => runAction(pauseSession);
+  const handleResume = () => runAction(resumeSession);
+
+  // Appelé par la ConfirmDialog : les erreurs y remontent et s'y affichent
+  const handleEnd = async () => {
+    if (!id) return;
+    setSessionState(await endSession(id));
+    // Re-fetch questions with final vote counts
+    getQuestionsBySession(id).then(setQuestions).catch(() => {});
   };
 
   // Sync question index from Redux → local session state
@@ -139,6 +139,51 @@ const PresentationPage = () => {
     }
   }, []);
 
+  // Barre de contrôle : visible au mouvement de la souris, masquée après 3 s d'inactivité
+  // (sauf survol de la barre) pour garder la projection épurée.
+  const hideTimer = useRef<ReturnType<typeof setTimeout>>();
+  const hoveringControls = useRef(false);
+
+  const revealControls = useCallback(() => {
+    setControlsVisible(true);
+    clearTimeout(hideTimer.current);
+    hideTimer.current = setTimeout(() => {
+      if (!hoveringControls.current) setControlsVisible(false);
+    }, 3000);
+  }, []);
+
+  useEffect(() => {
+    revealControls();
+    window.addEventListener("mousemove", revealControls);
+    return () => {
+      window.removeEventListener("mousemove", revealControls);
+      clearTimeout(hideTimer.current);
+    };
+  }, [revealControls]);
+
+  // Raccourcis clavier (compatibles avec les télécommandes de présentation,
+  // qui envoient PageUp / PageDown). Les refs évitent de réabonner l'écouteur.
+  const shortcuts = useRef<Record<string, (() => void) | undefined>>({});
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (document.querySelector("dialog[open]")) return;
+      const target = e.target as HTMLElement;
+      if (target.closest("input, textarea, select")) return;
+      // Espace sur un bouton focalisé : laisser le navigateur cliquer le bouton
+      if (e.key === " " && target.closest("button")) return;
+
+      const action = shortcuts.current[e.key];
+      if (action) {
+        e.preventDefault();
+        action();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
   if (loading) return <div className="presentation-page"><p>Chargement…</p></div>;
   if (!session) return <div className="presentation-page"><p className="error">{error || "Session introuvable."}</p></div>;
 
@@ -157,6 +202,20 @@ const PresentationPage = () => {
   const questionTotal = liveQuestionTotal || questions.length;
   const totalVotes = options.reduce((sum, o) => sum + o.votes, 0);
 
+  const isLive = status === "active" || status === "paused";
+  const canPrev = isLive && questionOrder > 1;
+  const canNext = isLive && questionOrder < questionTotal;
+
+  const next = canNext ? handleNext : undefined;
+  const prev = canPrev ? handlePrev : undefined;
+  const togglePause = status === "active" ? handlePause : status === "paused" ? handleResume : undefined;
+  shortcuts.current = {
+    ArrowRight: next, PageDown: next, " ": next,
+    ArrowLeft: prev, PageUp: prev,
+    p: togglePause, P: togglePause,
+    f: toggleFullscreen, F: toggleFullscreen,
+  };
+
   return (
     <div className="presentation-page">
       <FloatingReactions />
@@ -170,41 +229,13 @@ const PresentationPage = () => {
         <div className="presentation-header__right">
           <button
             className="presentation-fullscreen-btn"
-            onClick={() => setShowControls((v) => !v)}
-            title="Afficher/masquer les contrôles"
-          >
-            ☰
-          </button>
-          <button
-            className="presentation-fullscreen-btn"
             onClick={toggleFullscreen}
-            title="Plein écran"
+            title="Plein écran (F)"
           >
             ⛶
           </button>
         </div>
       </header>
-
-      {showControls && status !== "finished" && (
-        <div className="presentation-controls">
-          {questionTotal > 1 && questionOrder > 1 && (
-            <button className="presentation-controls__btn" onClick={handlePrev}>← Précédente</button>
-          )}
-          {questionTotal > 1 && questionOrder < questionTotal && (
-            <button className="presentation-controls__btn" onClick={handleNext}>Suivante →</button>
-          )}
-
-          <div className="presentation-controls__spacer" />
-
-          {status === "active" && (
-            <button className="presentation-controls__btn" onClick={handlePause}>⏸ Pause</button>
-          )}
-          {status === "paused" && (
-            <button className="presentation-controls__btn presentation-controls__btn--primary" onClick={handleResume}>▶ Reprendre</button>
-          )}
-          <button className="presentation-controls__btn presentation-controls__btn--danger" onClick={handleEnd}>■ Terminer</button>
-        </div>
-      )}
 
       {status === "finished" ? (
         <div className="presentation-main">
@@ -258,6 +289,48 @@ const PresentationPage = () => {
         <strong>{session.code}</strong>
         <span>Scannez pour rejoindre</span>
       </div>
+
+      {isLive && (
+        <div
+          className={`presentation-controls ${controlsVisible || status === "paused" ? "" : "presentation-controls--hidden"}`}
+          onMouseEnter={() => { hoveringControls.current = true; }}
+          onMouseLeave={() => { hoveringControls.current = false; revealControls(); }}
+        >
+          <button className="presentation-controls__btn" onClick={handlePrev} disabled={!canPrev} title="Question précédente (←)">
+            ←
+          </button>
+          <span className="presentation-controls__counter">
+            {questionOrder} / {questionTotal}
+          </span>
+          <button className="presentation-controls__btn" onClick={handleNext} disabled={!canNext} title="Question suivante (→)">
+            →
+          </button>
+
+          <span className="presentation-controls__divider" />
+
+          {status === "active" ? (
+            <button className="presentation-controls__btn" onClick={handlePause} title="Pause (P)">⏸ Pause</button>
+          ) : (
+            <button className="presentation-controls__btn presentation-controls__btn--primary" onClick={handleResume} title="Reprendre (P)">▶ Reprendre</button>
+          )}
+          <button className="presentation-controls__btn presentation-controls__btn--danger" onClick={() => setConfirmEndOpen(true)}>
+            ■ Terminer
+          </button>
+
+          {actionError && <span className="presentation-controls__error" role="alert">{actionError}</span>}
+        </div>
+      )}
+
+      <ConfirmDialog
+        open={confirmEndOpen}
+        onClose={() => setConfirmEndOpen(false)}
+        onConfirm={handleEnd}
+        title="Terminer la session ?"
+        message="Les participants ne pourront plus voter. Cette action est définitive."
+        confirmLabel="Oui, terminer"
+        variant="danger"
+        icon="■"
+      />
     </div>
   );
 };

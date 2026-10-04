@@ -12,6 +12,7 @@ type ConfirmDialogProps = {
   confirmLabel?: string;
   cancelLabel?: string;
   variant?: "danger" | "default";
+  icon?: ReactNode;
 };
 
 const ConfirmDialog = ({
@@ -23,6 +24,7 @@ const ConfirmDialog = ({
   confirmLabel = "Confirmer",
   cancelLabel = "Annuler",
   variant = "default",
+  icon,
 }: ConfirmDialogProps) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -53,7 +55,7 @@ const ConfirmDialog = ({
       open={open}
       onClose={handleClose}
       title={title}
-      icon={variant === "danger" ? <TrashIcon size={16} /> : undefined}
+      icon={icon ?? (variant === "danger" ? <TrashIcon size={16} /> : undefined)}
       className={variant === "danger" ? "modal--danger" : ""}
       footer={
         <>
