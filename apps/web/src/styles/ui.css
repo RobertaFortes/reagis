@@ -307,10 +307,48 @@ h3 { font-size: 16px; font-weight: 600; }
   transition: border-color 0.15s ease;
 }
 
+.session-card {
+  cursor: pointer;
+}
+
 .session-card:hover {
   border-color: var(--primary);
 }
 
+.session-card .session-card__header {
+  width: 100%;
+}
+
+.session-card__code {
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: var(--text-mid);
+}
+
+.session-card__meta {
+  font-size: 12px;
+  color: var(--text-mid);
+}
+
+.session-card__action {
+  align-self: flex-end;
+  margin-top: auto;
+  padding: 8px 16px;
+  font-size: 13px;
+}
+
+.session-card--compact {
+  gap: var(--sp-xs);
+  padding: var(--sp-sm);
+}
+
+.session-card--compact h3 {
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .session-card--active {
   border-color: #D85A3044;
   background: #D85A300A;
@@ -320,13 +358,61 @@ h3 { font-size: 16px; font-weight: 600; }
   border-color: var(--primary);
 }
 
-.session-card--active {
-  border-color: #D85A3044;
-  background: #D85A300A;
+/* ========================================
+   ACCUEIL — sections et rangée défilante
+   ======================================== */
+
+.home-section {
+  margin-bottom: var(--sp-lg);
 }
 
-.session-card--active:hover {
-  border-color: var(--primary);
+.home-section__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-sm);
+}
+
+.home-section__link {
+  color: var(--primary);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.home-section__link:hover {
+  text-decoration: underline;
+}
+
+.home-section .sessions-grid {
+  margin-bottom: 0;
+}
+
+.sessions-grid--live {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+/* Défilement horizontal natif (scroll-snap) : effet « slide » sans JS */
+.sessions-row {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(200px, 220px);
+  gap: var(--sp-sm);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  margin-top: var(--sp-sm);
+  padding-bottom: var(--sp-xs);
+}
+
+.sessions-row > * {
+  scroll-snap-align: start;
+}
+
+.kpi--highlight {
+  border-color: #D85A3044;
+}
+
+.kpi--highlight strong {
+  color: var(--primary);
 }
 
 /* ========================================

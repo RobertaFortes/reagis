@@ -1,15 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getMySessions, deleteSession, type Session } from "@/api/sessionApi";
+import { getMySessions, deleteSession, type SessionSummary } from "@/api/sessionApi";
 import Button from '@/components/Button';
 import DeleteIconButton from '@/components/DeleteIconButton';
-
-const STATUS_LABEL: Record<Session["status"], { text: string; className: string }> = {
-  active:   { text: "● EN DIRECT", className: "badge-live" },
-  draft:    { text: "BROUILLON",   className: "badge-draft" },
-  paused:   { text: "⏸ EN PAUSE",  className: "badge-draft" },
-  finished: { text: "TERMINÉE",    className: "badge-finished" },
-};
+import Badge, { STATUS_LABEL } from '@/components/Badge';
 
 type SortColumn = "name" | "code" | "createdAt" | "status";
 type SortDirection = "asc" | "desc";
@@ -24,7 +18,7 @@ function formatDate(iso: string): string {
 
 const SessionsPage = () => {
   const navigate = useNavigate();
-  const [sessions, setSessions] = useState<Session[]>([]);
+  const [sessions, setSessions] = useState<SessionSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
@@ -135,12 +129,10 @@ const SessionsPage = () => {
           <tbody>
             {sorted.length === 0 && (
                <tr>
--                <td colSpan={5}>Aucune session trouvée.</td>
-+                <td colSpan={5}>Aucune session trouvée.</td>
+                <td colSpan={5}>Aucune session trouvée.</td>
                </tr>
              )}
              {sorted.map((session) => {
-              const badge = STATUS_LABEL[session.status];
               const canDelete = session.status === "finished" || session.status === "draft";
               return (
                 <tr
@@ -152,7 +144,7 @@ const SessionsPage = () => {
                   <td>{session.code}</td>
                   <td>{formatDate(session.createdAt)}</td>
                   <td>
-                    <span className={badge.className}>{badge.text}</span>
+                    <Badge status={session.status} />
                   </td>
                   <td className="sessions-table__actions">
                     {canDelete && (

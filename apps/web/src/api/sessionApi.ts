@@ -17,6 +17,12 @@ export interface Session {
   updatedAt: string;
 }
 
+// Version allégée renvoyée par GET /my-sessions
+export type SessionSummary = Pick<
+  Session,
+  "_id" | "name" | "code" | "status" | "createdAt" | "updatedAt" | "startedAt" | "endedAt"
+>;
+
 export class SessionError extends Error {
   code: string;
 
@@ -69,7 +75,7 @@ export async function createSession(data: {
 }
 
 // GET /api/sessions/my-sessions
-export async function getMySessions(): Promise<Session[]> {
+export async function getMySessions(): Promise<SessionSummary[]> {
   let response: Response;
   try {
     response = await authFetch(`${API_BASE_URL}/api/sessions/my-sessions`, {

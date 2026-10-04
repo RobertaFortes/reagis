@@ -5,6 +5,7 @@ import { WsEvents } from '@reagis/shared';
 vi.mock('../../models/Session', () => ({
   default: {
     findById: vi.fn(),
+    find: vi.fn(),
   },
 }));
 
@@ -16,7 +17,7 @@ vi.mock('../../models/Question', () => ({
 }));
 
 import Session from '../../models/Session';
-import { startSession } from '../sessionController';
+import { startSession, getSessionByIdUser } from '../sessionController';
 
 function mockReq(overrides: Record<string, any> = {}) {
   return {
@@ -122,5 +123,27 @@ describe('startSession', () => {
 
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith(sessionDoc);
+  });
+});
+
+describe('getSessionByIdUser', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('renvoie les sessions du présentateur, triées par date décroissante', async () => {
+    const sessions = [{ name: 'B' }, { name: 'A' }];
+    const select = vi.fn().mockResolvedValue(sessions);
+    const sort = vi.fn().mockReturnValue({ select });
+    vi.mocked(Session.find).mockReturnValue({ sort } as any);
+
+    const res = mockRes();
+    await getSessionByIdUser(mockReq(), res);
+
+    expect(Session.find).toHaveBeenCalledWith({ presenter: 'user-1' });
+    expect(sort).toHaveBeenCalledWith({ createdAt: -1 });
+    expect(select).toHaveBeenCalledWith(expect.stringContaining('status'));
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(sessions);
   });
 });
