@@ -32,8 +32,7 @@ app.use('/api/votes', voteRoutes);
 
 
 // Sockets — une session = une room. Les noms d'événements viennent de
-// @reagis/shared (source unique de vérité, partagée avec le web ; le mobile
-// duplique ces mêmes constantes localement).
+// @reagis/shared (source unique de vérité, partagée avec le web).
 registerSocketHandlers(io);
 
 const PORT = process.env.PORT || 4000;

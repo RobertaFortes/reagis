@@ -1,5 +1,5 @@
-// Noms d'événements WebSocket partagés entre back, web et mobile.
-// Un seul point de vérité évite les typos entre les 3 apps.
+// Noms d'événements WebSocket partagés entre back et web.
+// Un seul point de vérité évite les typos entre les apps.
 
 export const WsEvents = {
   // Client → Serveur

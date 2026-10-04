@@ -43,7 +43,7 @@ npm -w @reagis/back run seed:demo  # Populate DB with demo data
 npm -w @reagis/back run ws:demo    # WebSocket test client
 ```
 
-No linter configured. Tests live next to the code in `__tests__/` folders.
+No linter, no coverage tool. Tests live next to the code in `__tests__/` folders: 11 test files, 39 cases (9 back: sessionController, joinHandler; 30 web: authStorage, RequireAuth, sessionSlice, components). Not covered: vote/reaction/presenter socket handlers, socketMiddleware, auth routes.
 
 ### Run the full stack locally
 ```bash
