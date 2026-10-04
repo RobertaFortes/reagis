@@ -112,12 +112,22 @@ const PresentationPage = () => {
     };
   }, [session?._id, session?.status, dispatch]);
 
-  // Seed Redux question state from REST data
+  // Seed Redux question state from REST data.
+  // Les questions REST sont chargées une seule fois : leurs compteurs deviennent
+  // périmés. Après le premier chargement, si Redux contient déjà la question
+  // courante (reçue via question_changed, compteurs à jour), on ne l'écrase pas —
+  // sinon les barres se vident après un changement de question.
+  const liveQuestionIdRef = useRef(liveQuestionId);
+  liveQuestionIdRef.current = liveQuestionId;
+  const seededRef = useRef(false);
+
   useEffect(() => {
     if (!questions.length || !session) return;
 
     const current = questions[session.currentQuestionIndex];
     if (!current) return;
+    if (seededRef.current && liveQuestionIdRef.current === current._id) return;
+    seededRef.current = true;
 
     dispatch(
       setQuestion({
@@ -240,7 +250,7 @@ const PresentationPage = () => {
 
       {status === "finished" ? (
         <div className="presentation-main">
-          <SessionResults sessionName={session.name} questions={questions} />
+          <SessionResults sessionName={session.name} questions={questions} showTitle={false} />
         </div>
       ) : currentQuestion ? (
         <div className={`presentation-main ${transitioning ? "presentation-main--fade-out" : "presentation-main--fade-in"}`}>
