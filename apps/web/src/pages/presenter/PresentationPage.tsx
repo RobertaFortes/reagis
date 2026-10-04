@@ -250,7 +250,7 @@ const PresentationPage = () => {
 
       {status === "finished" ? (
         <div className="presentation-main">
-          <SessionResults sessionName={session.name} questions={questions} />
+          <SessionResults sessionName={session.name} questions={questions} showTitle={false} />
         </div>
       ) : currentQuestion ? (
         <div className={`presentation-main ${transitioning ? "presentation-main--fade-out" : "presentation-main--fade-in"}`}>

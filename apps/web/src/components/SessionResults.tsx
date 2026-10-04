@@ -9,9 +9,11 @@ interface SessionResultsProps {
   compact?: boolean;
   // false quand la page parente affiche déjà le nom et le statut (ex. SessionDetailPage)
   showHeader?: boolean;
+  // false pour masquer seulement le badge et le titre, en gardant le résumé (ex. PresentationPage)
+  showTitle?: boolean;
 }
 
-const SessionResults = ({ sessionName, questions, compact = false, showHeader = true }: SessionResultsProps) => {
+const SessionResults = ({ sessionName, questions, compact = false, showHeader = true, showTitle = true }: SessionResultsProps) => {
   if (compact) {
     return <SlideResults sessionName={sessionName} questions={questions} />;
   }
@@ -25,8 +27,8 @@ const SessionResults = ({ sessionName, questions, compact = false, showHeader = 
     <div className={`session-results${compact ? " session-results--compact" : ""}`}>
       {showHeader && (
         <div className="session-results__header">
-          <span className="badge-finished">TERMINÉE</span>
-          {!compact && <h2 className="session-results__title">{sessionName}</h2>}
+          {showTitle && <span className="badge-finished">TERMINÉE</span>}
+          {showTitle && !compact && <h2 className="session-results__title">{sessionName}</h2>}
           <p className="session-results__summary">
             {questions.length} question{questions.length !== 1 ? "s" : ""} · {totalVotes} vote{totalVotes !== 1 ? "s" : ""}
           </p>
