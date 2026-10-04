@@ -4,6 +4,25 @@
 > Mis à jour à chaque session de travail. Entrées les plus récentes en premier.
 
 ---
+## 2026-10-04 — Revue de cohérence de la documentation
+
+**Contexte :** relecture de toute la documentation (README, CLAUDE.md, `docs/`) face au code actuel.
+
+**Corrigé :**
+- README : setup complet (`.env` du web, seed, tests, build, déploiement), table des routes, index de la doc
+- `apps/web/.env.example` créé (`VITE_API_URL` est obligatoire, pas de proxy Vite) ; `JWT_EXPIRES_IN` retiré de `apps/back/.env.example` (non lu par le code)
+- Durée du JWT présentateur : **1 jour** (`expiresIn: '1d'`), et non 1 h
+- `api-routes.md` : ajout de `DELETE /api/sessions/:id`, messages d'erreur réels, payloads `QUESTION_CHANGED`, `PATCH /questions/:id` non protégé
+- `auth-et-websocket.md` / `state-management.md` : acks WS, payload `reaction_update` (avec `emoji`), reconnexion, champs de slices ajoutés depuis S3
+- `presentation-context.md` : événements « planifiés » désormais tous implémentés, statut `paused`, planning à jour
+- `DESIGN.md` : front-matter fermé + note sur les tokens réellement implémentés (Inter, `#D85A30`, `#0A0A0A`)
+
+**Découvert (code, non corrigé ici) :**
+1. Le client envoie le **JWT participant** comme `participantToken` dans `join_session`, et le serveur ne le vérifie pas → l'identité de vote n'est pas le hash déterministe ; deux onglets peuvent voter deux fois.
+2. Les polices Sora / Inter ne sont chargées nulle part dans `apps/web/index.html` (fallback `sans-serif`).
+3. `apps/web/src/api/voteApi.ts` est vide ; `markVoted` / `clearSession` / `clearQuestion` ne sont pas appelés.
+
+---
 ## 2026-09-10 — Audit SEO LandingPage 
 état actuel est 99 Performance / 91 Accessibilité / 100 Bonnes pratiques / 83 SEO
 1. apps/web/index.html — Ajouter une meta description

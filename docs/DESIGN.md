@@ -105,6 +105,22 @@ spacing:
   gutter: 16px
   margin-mobile: 20px
   margin-desktop: 48px
+---
+
+> **Note d'implémentation.** Les tokens YAML ci-dessus sont l'export initial du design system
+> (palette Material générée : `primary #ffb59e`, `surface #131313`, police Geist). L'application
+> implémente la version décrite dans le texte ci-dessous, dont la source de vérité est
+> `apps/web/src/styles/global.css` (et `docs/ui-kit.html`) :
+>
+> | Token CSS | Valeur |
+> |---|---|
+> | `--primary` / `--primary-hover` | `#D85A30` / `#C04E27` |
+> | `--surface-0` / `--surface-1` / `--surface-2` | `#0A0A0A` / `#1A1A1A` / `#262626` |
+> | `--outline` | `#404040` |
+> | `--text-high` / `--text-mid` / `--text-low` | `#E5E2E1` / `#8A8A8A` / `#555555` |
+> | `--success` / `--danger` | `#4CAF7D` / `#E57373` |
+> | `--font-display` / `--font-body` | Sora / **Inter** (et non Geist) |
+> | `--r-sm` / `--r-md` / `--r-lg` | 4px / 8px / 12px |
 
 ## Identité & style
 
@@ -124,7 +140,7 @@ La palette repose sur un orange primaire unique et énergique, posé sur un fond
 
 La typographie suit une double stratégie pour équilibrer caractère et lisibilité fonctionnelle.
 
-**Sora** est utilisée pour les titres et les données principales. Sa construction géométrique et généreuse donne une voix futuriste et affirmée. **Geist** est la police de travail pour tous les éléments d'interface, descriptions et champs de saisie ; son influence semi-monospace garantit que les chiffres qui changent rapidement (comme les compteurs de vote) restent stables et lisibles.
+**Sora** est utilisée pour les titres et les données principales. Sa construction géométrique et généreuse donne une voix futuriste et affirmée. **Geist** (remplacée par **Inter** dans l'implémentation) est la police de travail pour tous les éléments d'interface, descriptions et champs de saisie ; son influence semi-monospace garantit que les chiffres qui changent rapidement (comme les compteurs de vote) restent stables et lisibles.
 
 Pour les participants mobiles, les titres sont réduits pour maximiser l'espace disponible pour les boutons de réaction. Les "label-caps" sont utilisés pour les métadonnées et en-têtes utilitaires, pour maintenir une esthétique technique de type "tableau de bord".
 

@@ -31,11 +31,11 @@ réaction configurable par le présentateur.
 | Champ | Type | Requis | Contraintes | Default |
 |-------|------|--------|-------------|---------|
 | `name` | String | oui | trim | — |
-| `code` | String | oui | unique, uppercase | — |
+| `code` | String | oui | unique, uppercase — format `RG-XXXX` généré côté client | — |
 | `presenter` | ObjectId | oui | ref: User | — |
 | `status` | String | non | enum: `draft`, `active`, `paused`, `finished` | `draft` |
 | `reaction` | String | non | enum: `👍`, `❤️`, `🔥`, `👏` | `👍` |
-| `reactionCount` | Number | non | — | `0` |
+| `reactionCount` | Number | non | incrémenté via `$inc` à chaque `send_reaction` | `0` |
 | `currentQuestionIndex` | Number | non | — | `0` |
 | `startedAt` | Date | non | défini par `startSession` | — |
 | `endedAt` | Date | non | défini par `endSession` | — |
@@ -56,6 +56,8 @@ draft ──[start]──► active ◄──[resume]── paused
 
 Les transitions sont contrôlées par le backend (409 si état invalide, 403 si pas propriétaire).
 Les votes sont bloqués côté serveur quand la session est en `paused`.
+La suppression (`DELETE /api/sessions/:id`) n'est permise qu'en `draft` ou `finished` et supprime
+aussi les questions et votes associés dans une transaction MongoDB.
 
 ---
 
@@ -79,7 +81,7 @@ Compteur de votes dénormalisé, incrémenté avec `$inc` (opération atomique M
 | `text` | String | oui | trim | — |
 | `order` | Number | oui | position dans la session (1-based) | — |
 | `options` | [Option] | non | sous-documents embarqués | `[]` |
-| `status` | String | non | enum: `pending`, `active`, `closed` | `pending` |
+| `status` | String | non | enum: `pending`, `active`, `closed` — passe à `active` au premier affichage (start / next / previous) ; `closed` n'est pas encore utilisé | `pending` |
 | `createdAt` | Date | auto | timestamps | — |
 | `updatedAt` | Date | auto | timestamps | — |
 
