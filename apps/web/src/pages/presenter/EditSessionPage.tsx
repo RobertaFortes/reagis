@@ -179,7 +179,7 @@ const EditSessionPage = () => {
         ← Retour
       </Link>
 
-      <header className="page-header">
+      <header className="page-header page-header--compact">
         <h1>Modifier la session</h1>
       </header>
 

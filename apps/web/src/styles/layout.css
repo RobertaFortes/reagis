@@ -29,6 +29,11 @@
   margin-bottom: var(--sp-lg);
 }
 
+/* Formulaires : le titre est directement suivi d'un panneau */
+.page-header--compact {
+  margin-bottom: var(--sp-md);
+}
+
 .page-header h1 {
   font-family: var(--font-display);
   font-size: 28px;

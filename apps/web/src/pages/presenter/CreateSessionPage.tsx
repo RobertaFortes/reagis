@@ -107,7 +107,7 @@ const CreateSessionPage = () => {
         ← Retour
       </Link>
 
-      <header className="page-header">
+      <header className="page-header page-header--compact">
         <h1>Créer une session</h1>
       </header>
 
