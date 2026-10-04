@@ -1,4 +1,4 @@
-import "@/styles/Spinner.css";
+import "@/styles/spinner.css";
 
 type SpinnerProps = {
   // Lu par les lecteurs d'écran, invisible à l'écran

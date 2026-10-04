@@ -1,5 +1,5 @@
 import { useAppSelector } from "@/store/hooks";
-import "@/styles/BarReactionCount.css";
+import "@/styles/bar-reaction-count.css";
 
 interface BarReactionCountProps {
   className?: string;

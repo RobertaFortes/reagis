@@ -11,7 +11,7 @@ import FloatingReactions from "@/components/FloatingReactions";
 import SessionResults from "@/components/SessionResults";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import Spinner from "@/components/Spinner";
-import "@/styles/PresentationPage.css";
+import "@/styles/presentation-page.css";
 
 const STATUS_LABEL: Record<Session["status"], { text: string; className: string }> = {
   active:   { text: "● EN DIRECT", className: "badge-live" },

@@ -1,7 +1,7 @@
 import VoteBar from "@/components/VoteBar";
 import SlideResults from "@/components/SlideResults";
 import type { QuestionResult } from "@/types/results";
-import "@/styles/SessionResults.css";
+import "@/styles/session-results.css";
 
 interface SessionResultsProps {
   sessionName: string;

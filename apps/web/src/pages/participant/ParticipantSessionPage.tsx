@@ -9,7 +9,7 @@ import {
 } from "@/store/socketMiddleware";
 
 import { CenteredCard } from "@/components/CenteredCard";
-import "@/styles/ParticipantSessionPage.css";
+import "@/styles/participant-session-page.css";
 
 import {
   joinSessionByCode,
