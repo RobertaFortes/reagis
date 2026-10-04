@@ -172,9 +172,6 @@ const SessionDetailPage = () => {
     0
   );
 
-  // Debug — remove after validating
-  console.log('[dash] liveQuestionId:', liveQuestionId, 'currentQ._id:', currentQuestion?._id, 'match:', questionIdMatch, 'liveVotes:', liveOptions.reduce((s, o) => s + o.votes, 0));
-
   return (
     <>
       <FloatingReactions />
