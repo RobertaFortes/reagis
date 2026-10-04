@@ -10,6 +10,7 @@ import { QRCodeSVG } from "qrcode.react";
 import FloatingReactions from "@/components/FloatingReactions";
 import SessionResults from "@/components/SessionResults";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import Spinner from "@/components/Spinner";
 import "@/styles/PresentationPage.css";
 
 const STATUS_LABEL: Record<Session["status"], { text: string; className: string }> = {
@@ -184,7 +185,7 @@ const PresentationPage = () => {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  if (loading) return <div className="presentation-page"><p>Chargement…</p></div>;
+  if (loading) return <div className="presentation-page"><Spinner fullScreen /></div>;
   if (!session) return <div className="presentation-page"><p className="error">{error || "Session introuvable."}</p></div>;
 
   const status = liveStatus || session.status;

@@ -11,6 +11,7 @@ import { QRCodeSVG } from "qrcode.react";
 import FloatingReactions from "@/components/FloatingReactions";
 import SessionResults from "@/components/SessionResults";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import Spinner from "@/components/Spinner";
 
 const STATUS_LABEL: Record<Session["status"], { text: string; className: string }> = {
   active:   { text: "● EN DIRECT", className: "badge-live" },
@@ -152,7 +153,7 @@ const SessionDetailPage = () => {
     );
   }, [questions, session?.currentQuestionIndex, dispatch]);
 
-  if (loading) return <p>Chargement…</p>;
+  if (loading) return <Spinner />;
   if (!session) return <p className="error">{error || "Session introuvable."}</p>;
 
   const badge = STATUS_LABEL[session.status];

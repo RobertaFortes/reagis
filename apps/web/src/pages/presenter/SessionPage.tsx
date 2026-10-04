@@ -5,6 +5,7 @@ import Button from '@/components/Button';
 import DeleteIconButton from '@/components/DeleteIconButton';
 import Badge, { STATUS_LABEL } from '@/components/Badge';
 import Pagination from '@/components/Pagination';
+import Spinner from "@/components/Spinner";
 
 type SortColumn = "name" | "code" | "createdAt" | "status";
 type SortDirection = "asc" | "desc";
@@ -206,7 +207,7 @@ const SessionsPage = () => {
         ))}
       </div>
 
-      {loading && <p>Chargement…</p>}
+      {loading && <Spinner />}
       {error && <p className="error">{error}</p>}
 
       {!loading && !error && view === "list" && (

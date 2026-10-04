@@ -5,6 +5,7 @@ import { getUser } from "@/api/authStorage";
 import Button from '@/components/Button';
 import Badge from '@/components/Badge';
 import KpiCard from '@/components/KpiCard';
+import Spinner from "@/components/Spinner";
 
 // La Home est un tableau de bord : on n'y montre que les dernières sessions terminées.
 // La liste complète (recherche, pagination, suppression) vit dans Mes sessions.
@@ -58,7 +59,7 @@ const HomePage = () => {
         />
       </header>
 
-      {loading && <p>Chargement…</p>}
+      {loading && <Spinner />}
       {error && <p className="error">{error}</p>}
 
       {!loading && !error && sessions.length === 0 && (

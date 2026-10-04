@@ -9,6 +9,7 @@ import {
   type Question,
 } from "@/api/questionApi";
 import Button from "@/components/Button";
+import Spinner from "@/components/Spinner";
 
 const EditSessionPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -168,7 +169,7 @@ const EditSessionPage = () => {
     }
   };
 
-  if (loading) return <p>Chargement…</p>;
+  if (loading) return <Spinner />;
   if (error && !session) return <p className="error">{error}</p>;
   if (!session) return <p>Session introuvable.</p>;
 

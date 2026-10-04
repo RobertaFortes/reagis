@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LandingPage from "@/pages/LandingPage";
 import LoginPage from "@/pages/presenter/LoginPage";
 import RequireAuth from "@/components/RequireAuth";
+import Spinner from "@/components/Spinner";
 
 const JoinPage = lazy(() => import("@/pages/participant/JoinPage"));
 const AppLayout = lazy(() => import("@/components/AppLayout"));
@@ -20,7 +21,7 @@ function App() {
 
   return (
     <BrowserRouter>    
-      <Suspense fallback={<div>Chargement...</div>}>
+      <Suspense fallback={<Spinner fullScreen />}>
         <Routes>
           {/* Participant — sans auth, sans sidebar */}
           <Route path="/join" element={<JoinPage />} />

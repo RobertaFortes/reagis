@@ -6,6 +6,7 @@ import { CenteredCard } from "@/components/CenteredCard";
 import "@/styles/JoinPage.css";
 import Button from '@/components/Button';
 import LogoScan from '@/components/LogoScan';
+import Spinner from "@/components/Spinner";
 
 /**
  * Entry point for participants.
@@ -86,7 +87,7 @@ const JoinPage = () => {
             Rejoindre →
           </Button>
         </form>
-      ) : (<Suspense fallback={<div>Chargement du scanner…</div>}>
+      ) : (<Suspense fallback={<Spinner label="Chargement du scanner…" />}>
             <div className="join-page__scanner">
               <Scanner
                 onScan={handleScan}
