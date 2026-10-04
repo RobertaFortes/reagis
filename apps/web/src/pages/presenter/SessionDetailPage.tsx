@@ -167,6 +167,10 @@ const SessionDetailPage = () => {
     : currentQuestion?.options ?? [];
 
   const totalVotes = options.reduce((sum, o) => sum + o.votes, 0);
+  const resultVotes = questions.reduce(
+    (sum, q) => sum + q.options.reduce((s, o) => s + o.votes, 0),
+    0
+  );
 
   // Debug — remove after validating
   console.log('[dash] liveQuestionId:', liveQuestionId, 'currentQ._id:', currentQuestion?._id, 'match:', questionIdMatch, 'liveVotes:', liveOptions.reduce((s, o) => s + o.votes, 0));
@@ -192,7 +196,15 @@ const SessionDetailPage = () => {
               </button>
             )}
           </div>
-          <span className={badge.className}>{badge.text}</span>
+          <div className="page-header__meta">
+            <span className={badge.className}>{badge.text}</span>
+            {session.status === "finished" && (
+              <span className="page-header__summary">
+                {questions.length} question{questions.length !== 1 ? "s" : ""} · {resultVotes} vote{resultVotes !== 1 ? "s" : ""}
+                {session.endedAt && ` · terminée le ${new Date(session.endedAt).toLocaleDateString("fr-FR")}`}
+              </span>
+            )}
+          </div>
         </div>
 
         {session.status === "draft" && (
@@ -229,7 +241,7 @@ const SessionDetailPage = () => {
       </header>
 
       {session.status === "finished" ? (
-        <SessionResults sessionName={session.name} questions={questions} />
+        <SessionResults sessionName={session.name} questions={questions} showHeader={false} />
       ) : (
         <>
           <div className="kpi-grid">

@@ -9,6 +9,10 @@
   margin-bottom: var(--sp-md);
 }
 
+.session-results__header .badge-finished {
+  align-self: flex-start;
+}
+
 .session-results__title {
   font-family: var(--font-display);
   font-size: 24px;
