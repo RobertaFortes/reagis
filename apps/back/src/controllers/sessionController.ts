@@ -11,7 +11,6 @@ import { sessionRoom } from '../sockets/rooms';
 interface CreateSessionBody {
   name: string;
   code: string;
-  presenter: string;
   reaction?: '👍' | '❤️' | '🔥' | '👏';
 }
 
@@ -20,11 +19,14 @@ export const createSession = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { name, code, presenter, reaction } = req.body;
+    const { name, code, reaction } = req.body;
+    // Le présentateur vient du JWT, jamais du body : sinon n'importe qui
+    // pourrait créer une session au nom d'un autre.
+    const presenter = req.user.userId;
 
-    if (!name || !code || !presenter) {
+    if (!name || !code) {
       res.status(400).json({
-        message: 'name, code et presenter sont obligatoires',
+        message: 'name et code sont obligatoires',
       });
       return;
     }

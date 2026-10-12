@@ -18,7 +18,7 @@ import {
 
 const router = express.Router();
 
-router.post('/', createSession);
+router.post('/', authenticateToken, createSession);
 router.get('/my-sessions', authenticateToken, getSessionByIdUser); //Attention à l'ordre
 router.delete('/:id', authenticateToken, deleteSession);
 

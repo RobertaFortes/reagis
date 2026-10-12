@@ -43,7 +43,7 @@ npm -w @reagis/back run seed:demo  # Populate DB with demo data
 npm -w @reagis/back run ws:demo    # WebSocket test client
 ```
 
-No linter, no coverage tool. Tests live next to the code in `__tests__/` folders: 11 test files, 39 cases (9 back: sessionController, joinHandler; 30 web: authStorage, RequireAuth, sessionSlice, components). Not covered: vote/reaction/presenter socket handlers, socketMiddleware, auth routes.
+No linter, no coverage tool. Tests live next to the code in `__tests__/` folders: 12 test files, 48 cases (18 back: sessionController, questionController, joinHandler; 30 web: authStorage, RequireAuth, sessionSlice, components). Not covered: vote/reaction/presenter socket handlers, socketMiddleware, auth routes.
 
 ### Run the full stack locally
 ```bash
@@ -133,10 +133,12 @@ Full reference: `docs/api-routes.md`.
 - Auth routes (`/api/auth/*`): `{ result: true/false, error?, token?, user? }`
 - All other routes: bare document on success, `{ message: string }` on error
 
-**Auth guards status** (known gaps):
-- Protected (presenter JWT + ownership check): `GET /sessions/my-sessions`, `PATCH /sessions/:id`, `DELETE /sessions/:id`, `PATCH /sessions/:id/{start,next-question,previous-question,pause,resume,end}`
+**Auth guards status**:
+- Protected (presenter JWT + ownership check): `GET /sessions/my-sessions`, `PATCH /sessions/:id`, `DELETE /sessions/:id`, `PATCH /sessions/:id/{start,next-question,previous-question,pause,resume,end}`, `POST /questions`, `PATCH /questions/:id`, `DELETE /questions/:id`, `PATCH /questions/reorder/:sessionId`
+- Protected (presenter JWT, presenter taken from the token, body value ignored): `POST /sessions`
 - Protected (participant JWT): `POST /votes/vote`
-- Unprotected (should be): `POST /sessions` (presenter taken from body), `POST /questions`, `PATCH /questions/:id`, `DELETE /questions/:id`, `PATCH /questions/reorder/:sessionId`
+- Public by design: `GET /sessions/:id`, `GET /questions/session/:sessionId`, `POST /sessions/code/:code` (participant join)
+- No rate limit on `/api/auth/login`
 - CORS falls back to `*` when `CLIENT_URL` is not set
 
 **WebSocket events implemented** (all of `wsEvents.ts`): `join_session`, `presenter_join`, `submit_vote`, `send_reaction`, `vote_update`, `reaction_update`, `question_changed`, `session_started`, `session_paused`, `session_resumed`, `session_ended`, `participant_count`. Votes go through WebSocket (`submit_vote`); the REST `POST /votes/vote` is an unused fallback.
