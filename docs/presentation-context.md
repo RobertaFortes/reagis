@@ -93,11 +93,11 @@ Un presentateur cree une session de sondage depuis un dashboard web, genere un Q
 |--------|------------|
 | Double vote | Index unique MongoDB (niveau DB, pas applicatif) |
 | JWT vole | Expiration 1 jour (presentateur), 6h (participant) ; deux secrets distincts |
-| Acces aux sessions d'un autre | Controle « proprietaire » (403) sur toutes les transitions et la suppression |
+| Acces aux sessions d'un autre | Controle « proprietaire » (403) sur les transitions, la suppression et toutes les routes d'ecriture des questions |
 | Injection | Mongoose ODM (pas de queries brutes) |
 | CORS | Restreint a `CLIENT_URL` (retombe sur `*` si la variable n'est pas definie) |
 | Mots de passe | bcrypt (10 salt rounds) |
-| Routes de creation sans auth | Limitation connue — `POST /sessions` et les routes `questions` ne sont pas encore protegees |
+| Creation de session | `POST /sessions` protege par JWT ; le presentateur est extrait du token, jamais du body |
 | Identite de vote WS | Limitation connue — le serveur utilise le JWT participant brut, non verifie (voir `auth-et-websocket.md`) |
 
 ---

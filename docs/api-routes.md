@@ -73,13 +73,13 @@ Créer une nouvelle session de sondage.
 
 | | Détail |
 |---|---|
-| Auth | ⚠️ Aucune (devrait être protégée) |
-| Body | `{ name: string, code: string, presenter: string (ObjectId), reaction?: '👍'\|'❤️'\|'🔥'\|'👏' }` |
+| Auth | JWT presenter |
+| Body | `{ name: string, code: string, reaction?: '👍'\|'❤️'\|'🔥'\|'👏' }` |
 | Succès 201 | Document `Session` complet |
-| Erreur 400 | `{ message: 'name, code et presenter sont obligatoires' }` |
+| Erreur 400 | `{ message: 'name et code sont obligatoires' }` |
 | Erreur 409 | `{ message: 'Ce code de session existe déjà' }` |
 
-> Note : le champ `presenter` est envoyé par le client. Idéalement, il devrait être extrait du JWT.
+> Note : le `presenter` est extrait du JWT (`req.user.userId`). Un champ `presenter` envoyé dans le body est ignoré.
 
 ### GET `/api/sessions/my-sessions`
 
@@ -251,11 +251,13 @@ Créer une question liée à une session.
 
 | | Détail |
 |---|---|
-| Auth | ⚠️ Aucune (devrait être protégée) |
+| Auth | JWT presenter + propriétaire de la session |
 | Body | `{ session: string (ObjectId), text: string, order: number, options?: Array<{ label: string }> }` |
 | Note | Le statut de la session n'est pas vérifié (une question peut être ajoutée à une session active) |
 | Succès 201 | Document `Question` |
 | Erreur 400 | `{ message: 'Identifiant de session invalide' }` ou `{ message: 'Le texte et l'ordre de la question sont obligatoires' }` |
+| Erreur 403 | `{ message: 'Non autorisé' }` — la session n'appartient pas au présentateur |
+| Erreur 404 | `{ message: 'Session introuvable' }` |
 
 ### PATCH `/api/questions/:id`
 
@@ -263,11 +265,12 @@ Modifier une question (texte et/ou options). Uniquement si la session est en bro
 
 | | Détail |
 |---|---|
-| Auth | ⚠️ Aucune (devrait être protégée) |
+| Auth | JWT presenter + propriétaire de la session |
 | Params | `id` — ObjectId |
 | Body | `{ text?: string, options?: Array<{ label: string }> }` |
 | Succès 200 | Document `Question` mis à jour |
 | Erreur 400 | `{ message: 'Identifiant de question invalide' }` |
+| Erreur 403 | `{ message: 'Non autorisé' }` — la session n'appartient pas au présentateur |
 | Erreur 404 | `{ message: 'Question introuvable' }` |
 | Erreur 409 | `{ message: 'Seule une question d'une session en brouillon peut être modifiée' }` |
 
@@ -277,10 +280,11 @@ Supprimer une question.
 
 | | Détail |
 |---|---|
-| Auth | ⚠️ Aucune (devrait être protégée) |
+| Auth | JWT presenter + propriétaire de la session |
 | Params | `id` — ObjectId |
 | Succès 200 | `{ message: 'Question supprimée avec succès', question: Question }` |
 | Erreur 400 | `{ message: 'Identifiant de question invalide' }` |
+| Erreur 403 | `{ message: 'Non autorisé' }` — la session n'appartient pas au présentateur |
 | Erreur 404 | `{ message: 'Question introuvable' }` |
 
 ### PATCH `/api/questions/reorder/:sessionId`
@@ -289,11 +293,13 @@ Réordonner les questions d'une session.
 
 | | Détail |
 |---|---|
-| Auth | ⚠️ Aucune (devrait être protégée) |
+| Auth | JWT presenter + propriétaire de la session |
 | Params | `sessionId` — ObjectId |
 | Body | `{ questionIds: string[] }` — tableau ordonné d'ObjectIds |
 | Succès 200 | `Question[]` dans le nouvel ordre |
 | Erreur 400 | `'Identifiant de session invalide'`, `'questions doit être un tableau'`, `'Un ou plusieurs identifiants de question sont invalides'`, `'Une ou plusieurs questions n'existent pas ou n'appartiennent pas à cette session'` |
+| Erreur 403 | `{ message: 'Non autorisé' }` — la session n'appartient pas au présentateur |
+| Erreur 404 | `{ message: 'Session introuvable' }` |
 
 > Les positions `order` sont recalculées en 1-based (index + 1) via `bulkWrite`.
 

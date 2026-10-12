@@ -2,6 +2,29 @@ import { Request, Response } from 'express';
 import { JwtPayload } from "../types/auth";
 import mongoose from "mongoose";
 import Question from '../models/Question';
+import Session from '../models/Session';
+
+// Vérifie que la session existe et appartient au présentateur connecté.
+// Envoie elle-même la réponse d'erreur (404/403) et renvoie false dans ce cas.
+const ensureSessionOwner = async (
+  sessionId: string,
+  req: Request,
+  res: Response
+): Promise<boolean> => {
+  const session = await Session.findById(sessionId);
+
+  if (!session) {
+    res.status(404).json({ message: 'Session introuvable' });
+    return false;
+  }
+
+  if (String(session.presenter) !== req.user.userId) {
+    res.status(403).json({ message: 'Non autorisé' });
+    return false;
+  }
+
+  return true;
+};
 
 // Récupérer les questions d'une session
 export const getQuestionsBySession = async (
@@ -48,6 +71,8 @@ export const createQuestion = async (
       return;
     }
 
+    if (!(await ensureSessionOwner(session, req, res))) return;
+
     const question = await Question.create({
       session,
       text,
@@ -78,7 +103,7 @@ export const updateQuestion = async (
       return;
     }
 
-    const question = await Question.findById(id).populate('session', 'status');
+    const question = await Question.findById(id).populate('session', 'status presenter');
 
     if (!question) {
       res.status(404).json({ message: 'Question introuvable' });
@@ -86,6 +111,11 @@ export const updateQuestion = async (
     }
 
     const session = question.session as any;
+    if (String(session.presenter) !== req.user.userId) {
+      res.status(403).json({ message: 'Non autorisé' });
+      return;
+    }
+
     if (session.status !== 'draft') {
       res.status(409).json({ message: 'Seule une question d\'une session en brouillon peut être modifiée' });
       return;
@@ -120,7 +150,7 @@ export const deleteQuestion = async (
       return;
     }
 
-    const question = await Question.findByIdAndDelete(id);
+    const question = await Question.findById(id);
 
     if (!question) {
       res.status(404).json({
@@ -128,6 +158,10 @@ export const deleteQuestion = async (
       });
       return;
     }
+
+    if (!(await ensureSessionOwner(String(question.session), req, res))) return;
+
+    await question.deleteOne();
 
     res.status(200).json({
       message: 'Question supprimée avec succès',
@@ -178,6 +212,8 @@ export const reorderQuestions = async (
       });
       return;
     }
+
+    if (!(await ensureSessionOwner(sessionId, req, res))) return;
 
     // Récupération des questions appartenant à la session
     const questions = await Question.find({

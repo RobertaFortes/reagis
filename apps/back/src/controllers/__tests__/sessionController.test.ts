@@ -6,6 +6,8 @@ vi.mock('../../models/Session', () => ({
   default: {
     findById: vi.fn(),
     find: vi.fn(),
+    findOne: vi.fn(),
+    create: vi.fn(),
   },
 }));
 
@@ -17,7 +19,7 @@ vi.mock('../../models/Question', () => ({
 }));
 
 import Session from '../../models/Session';
-import { startSession, getSessionByIdUser } from '../sessionController';
+import { createSession, startSession, getSessionByIdUser } from '../sessionController';
 
 function mockReq(overrides: Record<string, any> = {}) {
   return {
@@ -145,5 +147,27 @@ describe('getSessionByIdUser', () => {
     expect(select).toHaveBeenCalledWith(expect.stringContaining('status'));
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith(sessions);
+  });
+});
+
+describe('createSession', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('prend le présentateur dans le JWT et ignore celui du body', async () => {
+    vi.mocked(Session.findOne).mockResolvedValue(null);
+    vi.mocked(Session.create).mockResolvedValue({ _id: 'new-session' } as any);
+
+    const res = mockRes();
+    await createSession(
+      mockReq({ body: { name: 'Quiz', code: 'RG-1234', presenter: 'other-user' } }),
+      res
+    );
+
+    expect(Session.create).toHaveBeenCalledWith(
+      expect.objectContaining({ presenter: 'user-1' })
+    );
+    expect(res.status).toHaveBeenCalledWith(201);
   });
 });
